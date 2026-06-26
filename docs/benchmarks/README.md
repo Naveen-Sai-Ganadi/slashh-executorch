@@ -42,6 +42,10 @@ Calibration-temperature envelope across 5 inits: T in 0.410…0.410 (median 0.41
 
 fp32->INT8 confidence-calibration drift over 640 windows: ECE fp32 0.2395 -> INT8 0.2405 (drift +0.0010); shipped fp32 temperature transfers to the deployed INT8 model: True. _(`int8_calibration_drift.json` · [details](int8_calibration_drift.md))_
 
+### Per-SNR calibration breakdown
+
+Per-SNR calibration across 5 noise levels: ECE grows with noise: True; the confidence read-out is trustworthy at the -5 dB floor: True. _(`calibration_snr.json` · [details](calibration_snr.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_

@@ -170,6 +170,19 @@ def _summarize_calibration_envelope(d: dict) -> str:
     )
 
 
+def _summarize_calibration_snr(d: dict) -> str:
+    n = d.get("n_levels", "?")
+    floor = d.get("floor_snr_db")
+    floor_label = "clean" if floor is None else f"{floor:g} dB"
+    trust = d.get("floor_trustworthy")
+    grows = d.get("ece_increases_with_noise")
+    return (
+        f"Per-SNR calibration across {n} noise levels: ECE grows with noise: "
+        f"{grows}; the confidence read-out is trustworthy at the {floor_label} "
+        f"floor: {trust}."
+    )
+
+
 def _summarize_int8_calibration_drift(d: dict) -> str:
     fp32 = d.get("fp32", {})
     int8 = d.get("int8", {})
@@ -332,6 +345,7 @@ _ARTIFACTS = [
     ("calibration.json", "Score calibration (reliability & ECE)", _summarize_calibration),
     ("calibration_envelope.json", "Cross-init calibration-temperature envelope", _summarize_calibration_envelope),
     ("int8_calibration_drift.json", "fp32 -> INT8 calibration drift", _summarize_int8_calibration_drift),
+    ("calibration_snr.json", "Per-SNR calibration breakdown", _summarize_calibration_snr),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),

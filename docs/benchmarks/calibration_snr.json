@@ -1,0 +1,56 @@
+{
+  "global_temperature": 0.41,
+  "threshold": 0.6,
+  "n_levels": 5,
+  "floor_snr_db": -5.0,
+  "floor_trustworthy": true,
+  "ece_increases_with_noise": true,
+  "verdict": "the *prediction* is reliable across the whole sweep \u2014 even at the -5 dB floor accuracy holds at 1.00. But the *confidence number* drifts under-confident with noise: ECE climbs 0.148->0.373 from quiet to floor, and even after the global T=0.41 the floor keeps 0.226 residual ECE vs 0.015 in the quiet. Trust the decision everywhere; treat low-SNR confidence as under-stated (a single global temperature under-corrects at the edge).",
+  "per_snr": [
+    {
+      "snr_db": null,
+      "n": 192,
+      "accuracy": 1.0,
+      "ece": 0.14785982544223467,
+      "fitted_temperature": 0.41000000000000003,
+      "ece_after_fitted": 0.014621496200561523,
+      "trustworthy": true
+    },
+    {
+      "snr_db": 20.0,
+      "n": 192,
+      "accuracy": 1.0,
+      "ece": 0.1611709762364626,
+      "fitted_temperature": 0.41000000000000003,
+      "ece_after_fitted": 0.01915454864501953,
+      "trustworthy": true
+    },
+    {
+      "snr_db": 10.0,
+      "n": 192,
+      "accuracy": 1.0,
+      "ece": 0.23692322988063097,
+      "fitted_temperature": 0.41000000000000003,
+      "ece_after_fitted": 0.08187457267194986,
+      "trustworthy": true
+    },
+    {
+      "snr_db": 0.0,
+      "n": 192,
+      "accuracy": 0.9635416865348816,
+      "ece": 0.2925591232875983,
+      "fitted_temperature": 0.41000000000000003,
+      "ece_after_fitted": 0.16652841990192732,
+      "trustworthy": true
+    },
+    {
+      "snr_db": -5.0,
+      "n": 192,
+      "accuracy": 1.0,
+      "ece": 0.3731449702754617,
+      "fitted_temperature": 0.41000000000000003,
+      "ece_after_fitted": 0.22609129548072815,
+      "trustworthy": true
+    }
+  ]
+}
