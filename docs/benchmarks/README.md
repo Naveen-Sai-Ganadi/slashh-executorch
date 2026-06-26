@@ -62,6 +62,10 @@ INT8 weight granularity A/B (per-channel vs per-tensor): per-channel reliable to
 
 Front-end float32 vs float64 parity: worst |Δscore| 1.19e-07, 0/960 decisions flip; precision-robust: True. _(`frontend_precision_ab.json` · [details](frontend_precision_ab.md))_
 
+### Base-rate (prior-shift) alarm precision (A/B)
+
+Base-rate precision @ 2.0% prevalence: worst alarm precision 100.0%, break-even 0.00%; usable in field: True. _(`base_rate_precision.json` · [details](base_rate_precision.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_

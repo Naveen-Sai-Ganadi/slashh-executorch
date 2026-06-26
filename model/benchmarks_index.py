@@ -280,6 +280,20 @@ def _summarize_frontend_precision(d: dict) -> str:
     )
 
 
+def _summarize_base_rate_precision(d: dict) -> str:
+    rp = d.get("realistic_prior")
+    wbe = d.get("worst_break_even")
+    wp = d.get("worst_precision_at_realistic")
+    usable = d.get("usable_at_realistic")
+    rp_txt = f"{rp:.1%}" if isinstance(rp, (int, float)) else "?"
+    wbe_txt = f"{wbe:.2%}" if isinstance(wbe, (int, float)) else "—"
+    wp_txt = f"{wp:.1%}" if isinstance(wp, (int, float)) else "—"
+    return (
+        f"Base-rate precision @ {rp_txt} prevalence: worst alarm precision "
+        f"{wp_txt}, break-even {wbe_txt}; usable in field: {usable}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -429,6 +443,7 @@ _ARTIFACTS = [
     ("pte_footprint.json", "fp32 vs INT8 .pte footprint (A/B)", _summarize_pte_footprint),
     ("int8_granularity_ab.json", "Per-channel vs per-tensor INT8 (A/B)", _summarize_int8_granularity),
     ("frontend_precision_ab.json", "Front-end float32 vs float64 parity (A/B)", _summarize_frontend_precision),
+    ("base_rate_precision.json", "Base-rate (prior-shift) alarm precision (A/B)", _summarize_base_rate_precision),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
