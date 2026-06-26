@@ -38,6 +38,10 @@ Across 5 independent inits, the conservative envelope is reliable down to **10 d
 
 End-to-end detector (8-window traces): latches stress reliably down to **10 dB** (detect target met, false alarms in tolerance). _(`detector_robustness.json` · [details](detector_robustness.md))_
 
+### Detector A/B under noise
+
+Detector knobs A/B'd under noise: recommend **`default`** (stress=0.6, alpha=0.4) — detection floor 10 dB, worst false alarm 0.0312 (≤ 20%). _(`detector_noise_ab.json` · [details](detector_noise_ab.md))_
+
 ### Noise-augmented training
 
 Clean-trained floor 10 dB → augmented floor **none (holds at all tested SNRs)**. _(`robust_train.json` · [details](robust_train.md))_

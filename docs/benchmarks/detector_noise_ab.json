@@ -1,0 +1,285 @@
+{
+  "fa_tolerance": 0.2,
+  "recommended": {
+    "config": {
+      "label": "default",
+      "stress_threshold": 0.6,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.4
+    },
+    "detection_floor_db": 10.0,
+    "worst_false_alarm_rate": 0.0312,
+    "mean_detect_rate": 0.5417,
+    "mean_latency_windows": 1.25,
+    "points": [
+      {
+        "snr_db": null,
+        "detect_rate": 1.0,
+        "false_alarm_rate": 0.0,
+        "median_latency_windows": 1.0,
+        "n_traces": 32
+      },
+      {
+        "snr_db": 20.0,
+        "detect_rate": 1.0,
+        "false_alarm_rate": 0.0,
+        "median_latency_windows": 1.0,
+        "n_traces": 32
+      },
+      {
+        "snr_db": 10.0,
+        "detect_rate": 1.0,
+        "false_alarm_rate": 0.0312,
+        "median_latency_windows": 1.0,
+        "n_traces": 32
+      },
+      {
+        "snr_db": 0.0,
+        "detect_rate": 0.25,
+        "false_alarm_rate": 0.0,
+        "median_latency_windows": 2.0,
+        "n_traces": 32
+      },
+      {
+        "snr_db": -5.0,
+        "detect_rate": 0.0,
+        "false_alarm_rate": 0.0,
+        "median_latency_windows": null,
+        "n_traces": 32
+      },
+      {
+        "snr_db": -10.0,
+        "detect_rate": 0.0,
+        "false_alarm_rate": 0.0,
+        "median_latency_windows": null,
+        "n_traces": 32
+      }
+    ]
+  },
+  "results": [
+    {
+      "config": {
+        "label": "default",
+        "stress_threshold": 0.6,
+        "release_threshold": 0.45,
+        "ema_alpha": 0.4
+      },
+      "detection_floor_db": 10.0,
+      "worst_false_alarm_rate": 0.0312,
+      "mean_detect_rate": 0.5417,
+      "mean_latency_windows": 1.25,
+      "points": [
+        {
+          "snr_db": null,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 20.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 10.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0312,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 0.0,
+          "detect_rate": 0.25,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 2.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": -5.0,
+          "detect_rate": 0.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": null,
+          "n_traces": 32
+        },
+        {
+          "snr_db": -10.0,
+          "detect_rate": 0.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": null,
+          "n_traces": 32
+        }
+      ]
+    },
+    {
+      "config": {
+        "label": "lower-threshold",
+        "stress_threshold": 0.5,
+        "release_threshold": 0.4,
+        "ema_alpha": 0.4
+      },
+      "detection_floor_db": 20.0,
+      "worst_false_alarm_rate": 0.3125,
+      "mean_detect_rate": 0.6667,
+      "mean_latency_windows": 1.0,
+      "points": [
+        {
+          "snr_db": null,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 20.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 10.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.3125,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 0.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": -5.0,
+          "detect_rate": 0.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": null,
+          "n_traces": 32
+        },
+        {
+          "snr_db": -10.0,
+          "detect_rate": 0.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": null,
+          "n_traces": 32
+        }
+      ]
+    },
+    {
+      "config": {
+        "label": "fast-attack",
+        "stress_threshold": 0.5,
+        "release_threshold": 0.4,
+        "ema_alpha": 1.0
+      },
+      "detection_floor_db": 20.0,
+      "worst_false_alarm_rate": 0.7188,
+      "mean_detect_rate": 0.6667,
+      "mean_latency_windows": 1.0,
+      "points": [
+        {
+          "snr_db": null,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 20.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 10.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.7188,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 0.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": -5.0,
+          "detect_rate": 0.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": null,
+          "n_traces": 32
+        },
+        {
+          "snr_db": -10.0,
+          "detect_rate": 0.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": null,
+          "n_traces": 32
+        }
+      ]
+    },
+    {
+      "config": {
+        "label": "aggressive",
+        "stress_threshold": 0.45,
+        "release_threshold": 0.35,
+        "ema_alpha": 1.0
+      },
+      "detection_floor_db": 20.0,
+      "worst_false_alarm_rate": 0.8438,
+      "mean_detect_rate": 0.6667,
+      "mean_latency_windows": 1.0,
+      "points": [
+        {
+          "snr_db": null,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 20.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 10.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.8438,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": 0.0,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": 1.0,
+          "n_traces": 32
+        },
+        {
+          "snr_db": -5.0,
+          "detect_rate": 0.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": null,
+          "n_traces": 32
+        },
+        {
+          "snr_db": -10.0,
+          "detect_rate": 0.0,
+          "false_alarm_rate": 0.0,
+          "median_latency_windows": null,
+          "n_traces": 32
+        }
+      ]
+    }
+  ]
+}

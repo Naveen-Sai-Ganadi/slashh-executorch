@@ -148,6 +148,26 @@ def _summarize_detector_robustness(d: dict) -> str:
     )
 
 
+def _summarize_detector_noise_ab(d: dict) -> str:
+    rec = d.get("recommended")
+    tol = d.get("fa_tolerance")
+    tol_txt = f"{tol:.0%}" if isinstance(tol, (int, float)) else "budget"
+    if not rec:
+        return (
+            f"Detector knobs A/B'd under noise: **no config** stays within the "
+            f"{tol_txt} false-alarm budget across the sweep — keep the default "
+            "and treat noisy regimes as low-confidence."
+        )
+    cfg = rec.get("config", {})
+    floor = rec.get("detection_floor_db")
+    return (
+        f"Detector knobs A/B'd under noise: recommend **`{cfg.get('label')}`** "
+        f"(stress={cfg.get('stress_threshold')}, alpha={cfg.get('ema_alpha')}) "
+        f"— detection floor {_fmt_floor(floor)}, worst false alarm "
+        f"{rec.get('worst_false_alarm_rate')} (≤ {tol_txt})."
+    )
+
+
 def _summarize_robust_train(d: dict) -> str:
     base = d.get("baseline", {}).get("floor_db")
     aug = d.get("augmented", {}).get("floor_db")
@@ -168,6 +188,7 @@ _ARTIFACTS = [
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
     ("init_envelope.json", "Cross-initialization envelope", _summarize_init_envelope),
     ("detector_robustness.json", "End-to-end detector robustness", _summarize_detector_robustness),
+    ("detector_noise_ab.json", "Detector A/B under noise", _summarize_detector_noise_ab),
     ("robust_train.json", "Noise-augmented training", _summarize_robust_train),
     ("production.json", "Production model (shipped recipe)", _summarize_production),
 ]
