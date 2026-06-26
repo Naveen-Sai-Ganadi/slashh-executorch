@@ -98,6 +98,24 @@ def _summarize_int8_robustness(d: dict) -> str:
     )
 
 
+def _summarize_int8_calib_ab(d: dict) -> str:
+    verdict = d.get("verdict", "?")
+    rec = d.get("recommended", "?")
+    by = {r.get("label"): r for r in d.get("results", [])}
+    cf = by.get("clean", {}).get("reliable_floor_db")
+    nf = by.get("noise-aware", {}).get("reliable_floor_db")
+    gloss = {
+        "better": "noise-aware calibration **deepens the floor**",
+        "same": "**no difference** — clean calibration is sufficient",
+        "worse": "noise-aware calibration is **worse**",
+    }.get(verdict, verdict)
+    return (
+        f"INT8 calibration A/B (clean vs noise-aware): clean reliable to "
+        f"{_fmt_floor(cf)}, noise-aware to {_fmt_floor(nf)} — {gloss}; "
+        f"ship **`{rec}`** calibration."
+    )
+
+
 def _summarize_noise_colors(d: dict) -> str:
     floors = d.get("reliable_floor_db", {})
     parts = ", ".join(f"{c} {_fmt_floor(v)}" for c, v in floors.items())
@@ -224,6 +242,7 @@ _ARTIFACTS = [
     ("detector_tuning.json", "Detector tuning sweep", _summarize_tuning),
     ("robustness.json", "Noise robustness", _summarize_robustness),
     ("int8_robustness.json", "INT8 vs fp32 robustness", _summarize_int8_robustness),
+    ("int8_calib_ab.json", "INT8 calibration A/B (clean vs noise-aware)", _summarize_int8_calib_ab),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
     ("init_envelope.json", "Cross-initialization envelope", _summarize_init_envelope),

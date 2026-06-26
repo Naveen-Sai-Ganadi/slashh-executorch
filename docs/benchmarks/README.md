@@ -22,6 +22,10 @@ Operating floor: **20 dB**. _(`robustness.json` · [details](robustness.md))_
 
 INT8 vs fp32 under noise: fp32 reliable to -5 dB, INT8 to -5 dB — **INT8 preserves the floor**. _(`int8_robustness.json` · [details](int8_robustness.md))_
 
+### INT8 calibration A/B (clean vs noise-aware)
+
+INT8 calibration A/B (clean vs noise-aware): clean reliable to -5 dB, noise-aware to -5 dB — **no difference** — clean calibration is sufficient; ship **`clean`** calibration. _(`int8_calib_ab.json` · [details](int8_calib_ab.md))_
+
 ### Robustness across noise colors
 
 Reliable floor by noise color: white -5 dB, pink -5 dB, brown -5 dB — **holds across colors**. _(`noise_colors.json` · [details](noise_colors.md))_
