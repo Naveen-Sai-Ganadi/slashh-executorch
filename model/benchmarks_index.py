@@ -152,6 +152,24 @@ def _summarize_calibration(d: dict) -> str:
     return f"Score calibration: **{verdict}** (ECE {ece_txt}){temp_txt} — {gloss}."
 
 
+def _summarize_calibration_envelope(d: dict) -> str:
+    n = d.get("n_inits", "?")
+    lo, hi = d.get("temp_min"), d.get("temp_max")
+    med = d.get("temp_median")
+    default = d.get("default_temperature")
+    verdict = d.get("verdict", "?")
+    span = (
+        f"{lo:.3f}…{hi:.3f} (median {med:.3f})"
+        if isinstance(lo, (int, float)) and isinstance(hi, (int, float))
+        else "?"
+    )
+    dtxt = f"{default:g}" if isinstance(default, (int, float)) else "?"
+    return (
+        f"Calibration-temperature envelope across {n} inits: T in {span} vs shipped "
+        f"`DEFAULT_TEMPERATURE`={dtxt} — {verdict}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -294,6 +312,7 @@ _ARTIFACTS = [
     ("int8_calib_ab.json", "INT8 calibration A/B (clean vs noise-aware)", _summarize_int8_calib_ab),
     ("latency_rtf.json", "End-to-end latency & Real-Time Factor", _summarize_latency_rtf),
     ("calibration.json", "Score calibration (reliability & ECE)", _summarize_calibration),
+    ("calibration_envelope.json", "Cross-init calibration-temperature envelope", _summarize_calibration_envelope),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
