@@ -27,3 +27,10 @@ android/.idea/
 android/build/
 android/app/build/
 android/local.properties
+
+# QNN/QAIRT SDK (large, downloaded — not vendored)
+.qairt/
+.qairt.zip
+
+# QNN runtime libs — proprietary, regenerate via tools/qnn/build_qnn_pte.sh
+android/app/src/main/jniLibs/arm64-v8a/*.so

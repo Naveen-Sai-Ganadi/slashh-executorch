@@ -81,8 +81,7 @@ class MainActivity : AppCompatActivity() {
         reliefs.values.forEach { root.addView(it as android.view.View) }
         setContentView(root)
 
-        val modelPath = copyAsset("stress_model.pte")
-        classifier = ExecuTorchStressClassifier(modelPath)
+        classifier = loadClassifier()
         pipeline = StressPipeline(classifier!!)
 
         ReliefNotifier.ensureChannel(this)
@@ -194,6 +193,32 @@ class MainActivity : AppCompatActivity() {
     private fun handleIntent(intent: Intent?) {
         val key = intent?.getStringExtra(ReliefNotifier.EXTRA_SHOW_RELIEF) ?: return
         ReliefType.fromKey(key)?.let { showRelief(it) }
+    }
+
+    /**
+     * Load the stress model, preferring the NPU build if present.
+     *
+     * Tries `stress_model_qnn.pte` (a QNN/Hexagon-delegated program) first, then
+     * falls back to `stress_model.pte` (XNNPACK/CPU). This makes the NPU a
+     * drop-in: at the event, add the QNN `.pte` to assets/ and ship the
+     * QNN-enabled ExecuTorch AAR + Qualcomm runtime libs — no code change here.
+     * If the QNN program/libs aren't available, Module.load throws and we fall
+     * back to CPU. See docs/NPU-ON-DEVICE.md.
+     */
+    private fun loadClassifier(): ExecuTorchStressClassifier {
+        val candidates = listOf("stress_model_qnn.pte", "stress_model.pte")
+        val present = runCatching { assets.list("")?.toSet() ?: emptySet() }.getOrDefault(emptySet())
+        for (name in candidates) {
+            if (name !in present) continue
+            try {
+                val c = ExecuTorchStressClassifier(copyAsset(name))
+                Log.i("Slashh", "model loaded: $name (${if (name.contains("qnn")) "NPU/QNN" else "CPU/XNNPACK"})")
+                return c
+            } catch (e: Throwable) {
+                Log.w("Slashh", "could not load $name (${e.message}); trying next")
+            }
+        }
+        error("no loadable stress model in assets")
     }
 
     /** ExecuTorch loads from a filesystem path; copy the bundled asset out once. */
