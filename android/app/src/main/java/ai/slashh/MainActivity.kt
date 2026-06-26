@@ -3,6 +3,7 @@ package ai.slashh
 import ai.slashh.audio.AudioCapture
 import ai.slashh.audio.ExecuTorchStressClassifier
 import ai.slashh.audio.StressPipeline
+import ai.slashh.relief.AuthView
 import ai.slashh.relief.ColorToyView
 import ai.slashh.relief.JokesView
 import ai.slashh.relief.OnboardingView
@@ -54,6 +55,7 @@ class MainActivity : AppCompatActivity() {
      *  notification/deep-link (stays until the user dismisses). */
     private var cueDriven = false
     private var onboarding: OnboardingView? = null
+    private var authView: AuthView? = null
 
     private val askMic = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -89,11 +91,23 @@ class MainActivity : AppCompatActivity() {
             != PackageManager.PERMISSION_GRANTED
         ) askNotif.launch(Manifest.permission.POST_NOTIFICATIONS)
 
-        if (!prefs.onboarded) showOnboarding()
+        meter.onSimulate = { fireRelief(cueDriven = false) }
+        gateAuth()
         handleIntent(intent)
     }
 
     private fun <T : android.view.View> T.gone(): T { visibility = android.view.View.GONE; return this }
+
+    /** Local login/signup gate, then onboarding on first run. */
+    private fun gateAuth() {
+        val auth = AuthView(this, prefs, signup = !prefs.hasAccount) {
+            authView?.let { root.removeView(it) }
+            authView = null
+            if (!prefs.onboarded) showOnboarding()
+        }
+        authView = auth
+        root.addView(auth)
+    }
 
     private fun showOnboarding() {
         val ob = OnboardingView(this) { selected ->
@@ -132,7 +146,7 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 meter.render(model)
                 when {
-                    calmCue.justTriggered -> triggerRelief()
+                    calmCue.justTriggered -> fireRelief(cueDriven = true)
                     !show && cueDriven -> hideCurrent()
                 }
             }
@@ -140,14 +154,16 @@ class MainActivity : AppCompatActivity() {
         }.also { it.start() }
     }
 
-    /** Pick a relief from the user's preferences, show it in-app + notify. */
-    private fun triggerRelief() {
+    /** Pick a relief from the user's preferences, show it in-app + notify.
+     *  cueDriven=true → auto-hide when stress clears; false (simulate/demo) →
+     *  stays until the user dismisses. */
+    private fun fireRelief(cueDriven: Boolean) {
         val enabled = prefs.enabled()
         if (enabled.isEmpty()) return
         val (type, idx) = ReliefSelector.next(enabled, prefs.lastIndex)
         prefs.lastIndex = idx
         showRelief(type)
-        cueDriven = true
+        this.cueDriven = cueDriven
         if (prefs.notify) ReliefNotifier.notify(this, type)
     }
 

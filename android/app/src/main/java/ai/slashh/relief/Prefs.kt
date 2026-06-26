@@ -1,16 +1,40 @@
 package ai.slashh.relief
 
 import android.content.Context
+import java.security.MessageDigest
 
 /**
- * Local, on-device preferences — NO account, NO network (preserves the
- * airplane-mode / privacy story). Stores the onboarding flag, the user's
- * enabled relief set, the rotation index, and whether to also post a
- * notification when relief triggers.
+ * Local, on-device preferences — NO server, NO network (preserves the
+ * airplane-mode / privacy story). Stores a LOCAL account (credentials hashed,
+ * kept only on this device), the onboarding flag, the user's enabled relief
+ * set, the rotation index, and whether to also notify when relief triggers.
  */
 class Prefs(context: Context) {
 
     private val sp = context.getSharedPreferences("slashh_prefs", Context.MODE_PRIVATE)
+
+    // ---- Local account (on-device only) --------------------------------------
+    val hasAccount: Boolean get() = sp.contains(KEY_EMAIL)
+    val name: String get() = sp.getString(KEY_NAME, "") ?: ""
+
+    fun createAccount(name: String, email: String, password: String) {
+        sp.edit()
+            .putString(KEY_NAME, name.trim())
+            .putString(KEY_EMAIL, email.trim().lowercase())
+            .putString(KEY_PWHASH, hash(password))
+            .apply()
+    }
+
+    /** Validate a login against the locally stored credentials. */
+    fun checkLogin(email: String, password: String): Boolean {
+        val storedEmail = sp.getString(KEY_EMAIL, null) ?: return false
+        val storedHash = sp.getString(KEY_PWHASH, null) ?: return false
+        return storedEmail == email.trim().lowercase() && storedHash == hash(password)
+    }
+
+    private fun hash(s: String): String =
+        MessageDigest.getInstance("SHA-256").digest(s.toByteArray())
+            .joinToString("") { "%02x".format(it) }
 
     var onboarded: Boolean
         get() = sp.getBoolean(KEY_ONBOARDED, false)
@@ -42,5 +66,8 @@ class Prefs(context: Context) {
         const val KEY_ENABLED = "enabled_reliefs"
         const val KEY_LAST_INDEX = "last_relief_index"
         const val KEY_NOTIFY = "notify_on_relief"
+        const val KEY_NAME = "acct_name"
+        const val KEY_EMAIL = "acct_email"
+        const val KEY_PWHASH = "acct_pwhash"
     }
 }

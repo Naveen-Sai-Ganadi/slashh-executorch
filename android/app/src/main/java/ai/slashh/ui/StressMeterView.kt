@@ -72,8 +72,18 @@ class StressMeterView @JvmOverloads constructor(
     private val badgeText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFF7FD1A6.toInt(); textAlign = Paint.Align.CENTER
     }
+    private val simBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF2A2230.toInt() }
+    private val simText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFFF6B74D.toInt(); textAlign = Paint.Align.CENTER; isFakeBoldText = true
+    }
     private val oval = RectF()
     private val badgeRect = RectF()
+    private val simRect = RectF()
+
+    /** Tap handler for the demo "Simulate stress" pill. */
+    var onSimulate: (() -> Unit)? = null
+
+    init { isClickable = true }
 
     fun render(m: MeterModel) {
         model = m
@@ -164,7 +174,28 @@ class StressMeterView @JvmOverloads constructor(
         val fm = badgeText.fontMetrics
         canvas.drawText(bt, w / 2f, by + bh / 2f - (fm.ascent + fm.descent) / 2f, badgeText)
 
+        // ---- demo: simulate-stress pill ------------------------------------
+        simText.textSize = w * 0.04f
+        val st = "⚡  Simulate stress"
+        val stw = simText.measureText(st)
+        val sw = stw + w * 0.11f
+        val sh = h * 0.052f
+        val sx = (w - sw) / 2f
+        val sy = h * 0.78f
+        simRect.set(sx, sy, sx + sw, sy + sh)
+        canvas.drawRoundRect(simRect, sh / 2f, sh / 2f, simBg)
+        val sfm = simText.fontMetrics
+        canvas.drawText(st, w / 2f, sy + sh / 2f - (sfm.ascent + sfm.descent) / 2f, simText)
+
         // keep animating while easing or idle-pulsing
         if (!model.hasReading || animPercent != target) postInvalidateOnAnimation()
+    }
+
+    override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
+        if (event.action == android.view.MotionEvent.ACTION_UP && simRect.contains(event.x, event.y)) {
+            onSimulate?.invoke()
+            return true
+        }
+        return super.onTouchEvent(event)
     }
 }
