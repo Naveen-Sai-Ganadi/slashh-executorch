@@ -137,6 +137,39 @@ def test_index_summarizes_augmentation_ab(tmp_path: Path) -> None:
     assert "0 dB" in md
 
 
+def test_index_summarizes_recipe_envelope_moves(tmp_path: Path) -> None:
+    _write(tmp_path / "recipe_envelope.json", {
+        "threshold": 0.8, "n_inits": 4,
+        "deepest": {
+            "recipe": {"label": "aggressive", "snr_choices": [None, 20.0, 10.0, 5.0, 0.0, -5.0]},
+            "envelope_db": -5.0, "mean_clean_acc": 1.0, "floors": [],
+        },
+        "envelopes": [
+            {"recipe": {"label": "production"}, "envelope_db": 10.0},
+            {"recipe": {"label": "aggressive"}, "envelope_db": -5.0},
+        ],
+    })
+    md = build_index(tmp_path)
+    assert "aggressive" in md
+    assert "moves the envelope" in md
+
+
+def test_index_summarizes_recipe_envelope_ties(tmp_path: Path) -> None:
+    _write(tmp_path / "recipe_envelope.json", {
+        "threshold": 0.8, "n_inits": 4,
+        "deepest": {
+            "recipe": {"label": "production", "snr_choices": [None, 20.0, 10.0, 5.0]},
+            "envelope_db": 10.0, "mean_clean_acc": 1.0, "floors": [],
+        },
+        "envelopes": [
+            {"recipe": {"label": "production"}, "envelope_db": 10.0},
+            {"recipe": {"label": "aggressive"}, "envelope_db": 10.0},
+        ],
+    })
+    md = build_index(tmp_path)
+    assert "init-sensitive" in md
+
+
 def test_missing_artifacts_are_skipped_not_fatal(tmp_path: Path) -> None:
     # only one artifact present; others absent
     _write(tmp_path / "benchmark.json", {

@@ -185,6 +185,29 @@ def _summarize_augmentation_ab(d: dict) -> str:
     )
 
 
+def _summarize_recipe_envelope(d: dict) -> str:
+    dee = d.get("deepest")
+    n = d.get("n_inits", "?")
+    envs = d.get("envelopes", [])
+    if not dee:
+        return (
+            f"Recipe envelopes across {n} inits: **no recipe yields a common "
+            "noisy envelope** — some init holds only on clean audio."
+        )
+    label = dee.get("recipe", {}).get("label")
+    env = dee.get("envelope_db")
+    # Did the deepest envelope actually beat the others, or tie?
+    others = [e.get("envelope_db") for e in envs if e is not dee
+              and e.get("recipe", {}).get("label") != label]
+    real = [v for v in others if v is not None]
+    moved = real and env is not None and env < max(real)
+    verdict = "moves the envelope" if moved else "ties the envelope (single-seed gain was init-sensitive)"
+    return (
+        f"Recipe envelopes across {n} inits: deepest is **`{label}`** reliable "
+        f"to {_fmt_floor(env)} — **{verdict}**."
+    )
+
+
 def _summarize_robust_train(d: dict) -> str:
     base = d.get("baseline", {}).get("floor_db")
     aug = d.get("augmented", {}).get("floor_db")
@@ -208,6 +231,7 @@ _ARTIFACTS = [
     ("detector_noise_ab.json", "Detector A/B under noise", _summarize_detector_noise_ab),
     ("robust_train.json", "Noise-augmented training", _summarize_robust_train),
     ("augmentation_ab.json", "Augmentation-recipe A/B", _summarize_augmentation_ab),
+    ("recipe_envelope.json", "Recipe-parameterized cross-init envelope", _summarize_recipe_envelope),
     ("production.json", "Production model (shipped recipe)", _summarize_production),
 ]
 
