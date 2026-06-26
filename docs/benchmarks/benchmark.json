@@ -1,0 +1,45 @@
+{
+  "host": {
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "processor": "arm",
+    "python": "3.11.15",
+    "torch": "2.11.0",
+    "threads": 8
+  },
+  "results": [
+    {
+      "name": "small",
+      "channels": [
+        8,
+        16,
+        32
+      ],
+      "eager_latency_ms": 0.6086,
+      "pte_latency_ms": 0.7082,
+      "pt_bytes": 31271,
+      "pte_bytes": 30596,
+      "accuracy": 0.5,
+      "pte_max_abs_err": 5.960464477539063e-08,
+      "eval_n": 64,
+      "iters": 30,
+      "speedup_eager_over_pte": 0.859
+    },
+    {
+      "name": "base",
+      "channels": [
+        16,
+        32,
+        64
+      ],
+      "eager_latency_ms": 0.7794,
+      "pte_latency_ms": 0.7932,
+      "pt_bytes": 101543,
+      "pte_bytes": 100228,
+      "accuracy": 0.5,
+      "pte_max_abs_err": 5.960464477539063e-08,
+      "eval_n": 64,
+      "iters": 30,
+      "speedup_eager_over_pte": 0.983
+    }
+  ]
+}
