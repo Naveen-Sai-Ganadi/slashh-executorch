@@ -23,7 +23,7 @@ from pathlib import Path
 import torch
 
 from .audio_config import SAMPLE_RATE, WINDOW_SAMPLES
-from .features import extract
+from .features import extract, extract_batch
 
 
 def _synth_waveform(stressed: bool, gen: torch.Generator) -> torch.Tensor:
@@ -50,13 +50,14 @@ def synthetic_dataset(
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Return (features [N,1,N_MELS,N_FRAMES], labels [N,1]) — balanced."""
     gen = torch.Generator().manual_seed(seed)
-    feats, labels = [], []
+    waves, labels = [], []
     for stressed in (False, True):
         for _ in range(n_per_class):
-            wave = _synth_waveform(stressed, gen)
-            feats.append(extract(wave))                 # [1,1,N_MELS,N_FRAMES]
+            waves.append(_synth_waveform(stressed, gen))  # RNG order preserved
             labels.append(float(stressed))
-    x = torch.cat(feats, dim=0)                         # [N,1,N_MELS,N_FRAMES]
+    # One vectorized front-end call over the whole batch instead of N loop
+    # calls to extract() — same features (allclose), much faster to build.
+    x = extract_batch(torch.stack(waves))              # [N,1,N_MELS,N_FRAMES]
     y = torch.tensor(labels, dtype=torch.float32).unsqueeze(1)
     perm = torch.randperm(x.shape[0], generator=gen)
     return x[perm], y[perm]

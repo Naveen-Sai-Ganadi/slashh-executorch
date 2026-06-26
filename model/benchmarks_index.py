@@ -152,6 +152,19 @@ def _summarize_calibration(d: dict) -> str:
     return f"Score calibration: **{verdict}** (ECE {ece_txt}){temp_txt} — {gloss}."
 
 
+def _summarize_feature_batching(d: dict) -> str:
+    sp = d.get("speedup")
+    n = d.get("n")
+    ok = d.get("parity_ok")
+    sp_txt = f"{sp:.2f}×" if isinstance(sp, (int, float)) else "?"
+    parity = "parity holds" if ok else "**parity BREAK**"
+    return (
+        f"Batched log-mel front-end (`extract_batch`) is **{sp_txt}** faster "
+        f"than the per-sample loop building {n} windows ({parity}) — host "
+        "throughput for dataset/A-B builds; device extractor unchanged."
+    )
+
+
 def _summarize_noise_colors(d: dict) -> str:
     floors = d.get("reliable_floor_db", {})
     parts = ", ".join(f"{c} {_fmt_floor(v)}" for c, v in floors.items())
@@ -281,6 +294,7 @@ _ARTIFACTS = [
     ("int8_calib_ab.json", "INT8 calibration A/B (clean vs noise-aware)", _summarize_int8_calib_ab),
     ("latency_rtf.json", "End-to-end latency & Real-Time Factor", _summarize_latency_rtf),
     ("calibration.json", "Score calibration (reliability & ECE)", _summarize_calibration),
+    ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
     ("init_envelope.json", "Cross-initialization envelope", _summarize_init_envelope),
