@@ -25,13 +25,13 @@ import kotlin.math.min
 class BreathOverlayView(
     context: Context,
     private val onDismiss: () -> Unit,
-) : View(context) {
+) : View(context), ai.slashh.relief.ReliefScreen {
 
     private val inhaleMs = 4_000f
     private val exhaleMs = 4_000f
     private val cycleMs = inhaleMs + exhaleMs
 
-    private val scrim = Paint().apply { color = 0xF20A0E14.toInt() } // deep calming dim
+    private val scrim = Paint().apply { color = 0xFF0A0E14.toInt() } // deep calming dim
     private val circle = Paint(Paint.ANTI_ALIAS_FLAG)
     private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE; color = 0x554FC3F7.toInt()
@@ -46,7 +46,7 @@ class BreathOverlayView(
     private var startMs = 0L
 
     /** Show the overlay and give a single haptic nudge. */
-    fun show() {
+    override fun show() {
         if (visibility == VISIBLE) return
         startMs = SystemClock.uptimeMillis()
         visibility = VISIBLE
@@ -54,7 +54,7 @@ class BreathOverlayView(
         postInvalidateOnAnimation()
     }
 
-    fun hide() {
+    override fun hide() {
         if (visibility != VISIBLE) return
         visibility = GONE
     }
