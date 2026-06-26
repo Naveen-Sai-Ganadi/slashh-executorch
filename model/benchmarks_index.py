@@ -67,11 +67,17 @@ def _summarize_robustness(d: dict) -> str:
 def _summarize_production(d: dict) -> str:
     ch = tuple(d.get("channels", []))
     kb = d.get("pte_bytes", 0) / 1024
-    floor = d.get("robustness", {}).get("floor_db")
+    rob = d.get("robustness", {})
+    reliable = rob.get("reliable_floor_db")
+    if reliable is not None:
+        floor_txt = f"reliable to {reliable:g} dB"
+    else:
+        # older records (no reliable_floor_db) fall back to the failing floor
+        floor_txt = f"floor {_fmt_floor(rob.get('floor_db'))}"
     msg = (
         f"Shipped width **`{ch}`** ({d.get('params', '?'):,} params, {kb:.1f} KB "
         f".pte), clean acc {d.get('val_acc', float('nan')):.3f}, "
-        f"floor {_fmt_floor(floor)}."
+        f"{floor_txt}."
     )
     int8 = d.get("int8_bytes")
     if int8 is not None:

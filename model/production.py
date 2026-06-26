@@ -139,8 +139,12 @@ class ProductionResult:
         return d
 
 
-def _floor_label(floor_db: float | None) -> str:
-    return "none (holds at all tested SNRs)" if floor_db is None else f"{floor_db:g} dB"
+def _reliable_label(snr_db: float | None) -> str:
+    return "clean only" if snr_db is None else f"{snr_db:g} dB"
+
+
+def _drops_label(floor_db: float | None) -> str:
+    return "never (holds at all tested SNRs)" if floor_db is None else f"{floor_db:g} dB"
 
 
 def to_markdown(out: ProductionResult) -> str:
@@ -151,7 +155,9 @@ def to_markdown(out: ProductionResult) -> str:
         f"({out.meta['params']:,} params), noise-augmented training, exported to "
         f"a **{out.pte_bytes / 1024:.1f} KB** `.pte`.\n\n"
         f"- clean val accuracy: **{out.meta['val_acc']:.3f}**\n"
-        f"- operating floor: **{_floor_label(r.floor_db)}**\n"
+        f"- reliable down to: **{_reliable_label(r.reliable_floor_db)}** "
+        "(accuracy ≥ 0.80)\n"
+        f"- drops below 0.80 at: {_drops_label(r.floor_db)}\n"
     )
     if out.int8_bytes is not None:
         header += (
@@ -160,6 +166,11 @@ def to_markdown(out: ProductionResult) -> str:
             f"{out.meta['params']:,} params the program is overhead-dominated, so "
             "INT8's win here is integer compute on the NPU, not size.\n"
         )
+    header += (
+        "\nThe floors above are measured for *this* trained artifact. Because a "
+        "net this small is init-sensitive below 10 dB, the conservative claim we "
+        "stand on across re-trains is 10 dB (see the project README).\n"
+    )
     header += "\n| SNR | accuracy | f1 |\n|---|---|---|\n"
     rows = []
     for p in r.points:
@@ -228,7 +239,11 @@ def _rebuild_curve(d: dict) -> RobustnessResult:
         )
         for p in d["points"]
     ]
-    return RobustnessResult(points=points, floor_db=d["floor_db"])
+    return RobustnessResult(
+        points=points,
+        floor_db=d["floor_db"],
+        reliable_floor_db=d.get("reliable_floor_db"),
+    )
 
 
 def main() -> None:

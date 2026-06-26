@@ -3,8 +3,11 @@
 Architecture **`(4, 8, 16)`** (1,549 params), noise-augmented training, exported to a **12.9 KB** `.pte`.
 
 - clean val accuracy: **0.947**
-- operating floor: **-5 dB**
+- reliable down to: **0 dB** (accuracy ≥ 0.80)
+- drops below 0.80 at: -5 dB
 - **INT8** (PT2E + XNNPACK) export: **12.3 KB** (scores within 0.0040 of eager). At ~1,549 params the program is overhead-dominated, so INT8's win here is integer compute on the NPU, not size.
+
+The floors above are measured for *this* trained artifact. Because a net this small is init-sensitive below 10 dB, the conservative claim we stand on across re-trains is 10 dB (see the project README).
 
 | SNR | accuracy | f1 |
 |---|---|---|

@@ -19,6 +19,7 @@ from model.robustness import (
     RobustnessPoint,
     noisy_synthetic_dataset,
     operating_floor,
+    reliable_floor,
     robustness_curve,
 )
 from model.data import synthetic_dataset
@@ -73,6 +74,17 @@ def test_robustness_curve_degrades_with_noise(tmp_path: Path) -> None:
     payload = json.loads((tmp_path / "robustness.json").read_text())
     assert len(payload["points"]) == 4
 
+    # the record carries both floors, and the honesty invariant holds: the
+    # reliable floor (if any) names a point that genuinely passed threshold.
+    assert "reliable_floor_db" in payload
+    rel = out.reliable_floor_db
+    if rel is not None:
+        passed = {p.snr_db for p in out.points if p.accuracy >= 0.8}
+        assert rel in passed
+        # the failing floor, if any, is strictly noisier than the reliable one
+        if out.floor_db is not None:
+            assert out.floor_db < rel
+
 
 def test_operating_floor_finds_first_failing_snr() -> None:
     pts = [
@@ -85,3 +97,23 @@ def test_operating_floor_finds_first_failing_snr() -> None:
     assert operating_floor(pts, threshold=0.8) == 0.0
     # nothing below threshold -> None
     assert operating_floor(pts, threshold=0.5) is None
+
+
+def test_reliable_floor_is_lowest_passing_snr() -> None:
+    pts = [
+        RobustnessPoint(snr_db=None, accuracy=0.98, f1=0.98, n=96),
+        RobustnessPoint(snr_db=20.0, accuracy=0.95, f1=0.95, n=96),
+        RobustnessPoint(snr_db=10.0, accuracy=0.82, f1=0.81, n=96),
+        RobustnessPoint(snr_db=0.0, accuracy=0.61, f1=0.60, n=96),
+    ]
+    # lowest numeric SNR still >= threshold, scanning clean -> noisy: 10 dB holds,
+    # 0 dB fails. This is the SNR the model is reliable *down to* -- it pairs with
+    # operating_floor (the next, failing SNR = 0 dB) without contradiction.
+    assert reliable_floor(pts, threshold=0.8) == 10.0
+    assert operating_floor(pts, threshold=0.8) == 0.0
+    assert reliable_floor(pts, threshold=0.8) > operating_floor(pts, threshold=0.8)
+
+    # everything holds -> reliable down to the lowest tested numeric SNR
+    assert reliable_floor(pts, threshold=0.5) == 0.0
+    # even clean fails -> not reliable at any noisy SNR
+    assert reliable_floor(pts, threshold=0.99) is None

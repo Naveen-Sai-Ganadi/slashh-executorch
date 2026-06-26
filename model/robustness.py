@@ -37,6 +37,7 @@ __all__ = [
     "noisy_synthetic_dataset",
     "robustness_curve",
     "operating_floor",
+    "reliable_floor",
 ]
 
 
@@ -89,10 +90,14 @@ class RobustnessPoint:
 class RobustnessResult:
     points: list[RobustnessPoint]
     floor_db: float | None  # first SNR (clean->noisy) below the accuracy threshold
+    # lowest SNR still at/above threshold — the noise the model is reliable *down
+    # to*. Defaults None for back-compat with records written before it existed.
+    reliable_floor_db: float | None = None
 
     def to_dict(self) -> dict:
         return {
             "floor_db": self.floor_db,
+            "reliable_floor_db": self.reliable_floor_db,
             "points": [p.to_dict() for p in self.points],
         }
 
@@ -108,6 +113,30 @@ def operating_floor(
         if p.accuracy < threshold:
             return p.snr_db
     return None
+
+
+def reliable_floor(
+    points: list[RobustnessPoint], *, threshold: float = 0.8
+) -> float | None:
+    """Lowest numeric SNR (scanning clean→noisy) still at/above ``threshold``.
+
+    This is the noise level the model is reliable *down to* — the last point
+    before :func:`operating_floor`'s first failure. It is the honest number to
+    advertise as the "floor": for a curve that holds to 0 dB and only collapses
+    at -5 dB, this returns ``0.0`` while ``operating_floor`` returns ``-5.0``.
+    Reporting the failing SNR alone (and printing it beside its own
+    sub-threshold accuracy row) reads as a contradiction; this pairs with it.
+
+    Returns ``None`` if the model isn't reliable at any *noisy* SNR (only clean,
+    or not even clean) — the clean point (``snr_db=None``) is never a floor.
+    """
+    floor: float | None = None
+    for p in points:
+        if p.accuracy < threshold:
+            break
+        if p.snr_db is not None:
+            floor = p.snr_db
+    return floor
 
 
 def robustness_curve(
@@ -141,7 +170,8 @@ def robustness_curve(
         )
 
     floor = operating_floor(points, threshold=threshold)
-    out = RobustnessResult(points=points, floor_db=floor)
+    reliable = reliable_floor(points, threshold=threshold)
+    out = RobustnessResult(points=points, floor_db=floor, reliable_floor_db=reliable)
 
     if out_dir is not None:
         out_dir = Path(out_dir)
@@ -158,13 +188,24 @@ def _snr_label(snr_db: float | None) -> str:
 
 def to_markdown(out: RobustnessResult, *, threshold: float = 0.8) -> str:
     """Render the accuracy-vs-SNR curve as a table."""
-    floor = "none (holds at all tested SNRs)" if out.floor_db is None else _snr_label(out.floor_db)
+    reliable = (
+        "none (not reliable below clean)"
+        if out.reliable_floor_db is None
+        else _snr_label(out.reliable_floor_db)
+    )
+    drops = (
+        "never (holds at all tested SNRs)"
+        if out.floor_db is None
+        else _snr_label(out.floor_db)
+    )
     header = (
         "# StressNet noise robustness\n\n"
         "White Gaussian noise is added to each waveform at the SNR below, then "
-        "features are re-extracted and the model evaluated. The **operating "
-        f"floor** is the first SNR (clean→noisy) where accuracy < {threshold:.2f}.\n\n"
-        f"- **operating floor: {floor}**\n\n"
+        "features are re-extracted and the model evaluated. The model is "
+        f"reliable down to the lowest SNR where accuracy ≥ {threshold:.2f}, and "
+        "drops below at the next, noisier level.\n\n"
+        f"- **reliable down to: {reliable}** (accuracy ≥ {threshold:.2f})\n"
+        f"- drops below {threshold:.2f} at: {drops}\n\n"
         "| SNR | accuracy | f1 | n |\n"
         "|---|---|---|---|\n"
     )
