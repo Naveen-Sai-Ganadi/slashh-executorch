@@ -168,6 +168,23 @@ def _summarize_detector_noise_ab(d: dict) -> str:
     )
 
 
+def _summarize_augmentation_ab(d: dict) -> str:
+    rec = d.get("recommended")
+    n = len(d.get("results", []))
+    if not rec:
+        floor_txt = d.get("min_clean_acc")
+        return (
+            f"A/B'd {n} augmentation recipe(s): **none** kept clean accuracy "
+            f"above the bar — loosen augmentation or the clean-accuracy floor."
+        )
+    label = rec.get("recipe", {}).get("label")
+    floor = rec.get("reliable_floor_db")
+    return (
+        f"A/B'd {n} augmentation recipe(s): recommend **`{label}`** — reliable "
+        f"floor {_fmt_floor(floor)}, clean acc {rec.get('clean_acc')}."
+    )
+
+
 def _summarize_robust_train(d: dict) -> str:
     base = d.get("baseline", {}).get("floor_db")
     aug = d.get("augmented", {}).get("floor_db")
@@ -190,6 +207,7 @@ _ARTIFACTS = [
     ("detector_robustness.json", "End-to-end detector robustness", _summarize_detector_robustness),
     ("detector_noise_ab.json", "Detector A/B under noise", _summarize_detector_noise_ab),
     ("robust_train.json", "Noise-augmented training", _summarize_robust_train),
+    ("augmentation_ab.json", "Augmentation-recipe A/B", _summarize_augmentation_ab),
     ("production.json", "Production model (shipped recipe)", _summarize_production),
 ]
 

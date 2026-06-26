@@ -46,6 +46,10 @@ Detector knobs A/B'd under noise: recommend **`default`** (stress=0.6, alpha=0.4
 
 Clean-trained floor 10 dB → augmented floor **none (holds at all tested SNRs)**. _(`robust_train.json` · [details](robust_train.md))_
 
+### Augmentation-recipe A/B
+
+A/B'd 4 augmentation recipe(s): recommend **`aggressive`** — reliable floor -5 dB, clean acc 1.0. _(`augmentation_ab.json` · [details](augmentation_ab.md))_
+
 ### Production model (shipped recipe)
 
 Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 0.947, reliable to 0 dB. INT8 variant 12.3 KB (within 0.0040 of eager). _(`production.json` · [details](production.md))_

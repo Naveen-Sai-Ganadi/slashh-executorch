@@ -123,6 +123,20 @@ def test_index_detector_noise_ab_no_recommendation(tmp_path: Path) -> None:
     assert "no config" in md.lower()
 
 
+def test_index_summarizes_augmentation_ab(tmp_path: Path) -> None:
+    _write(tmp_path / "augmentation_ab.json", {
+        "threshold": 0.8, "min_clean_acc": 0.9,
+        "recommended": {
+            "recipe": {"label": "moderate", "snr_choices": [None, 20.0, 10.0, 5.0]},
+            "clean_acc": 0.98, "reliable_floor_db": 0.0, "points": [],
+        },
+        "results": [{}, {}, {}],
+    })
+    md = build_index(tmp_path)
+    assert "moderate" in md
+    assert "0 dB" in md
+
+
 def test_missing_artifacts_are_skipped_not_fatal(tmp_path: Path) -> None:
     # only one artifact present; others absent
     _write(tmp_path / "benchmark.json", {
