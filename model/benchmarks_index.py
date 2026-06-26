@@ -98,6 +98,15 @@ def _summarize_int8_robustness(d: dict) -> str:
     )
 
 
+def _summarize_noise_colors(d: dict) -> str:
+    floors = d.get("reliable_floor_db", {})
+    parts = ", ".join(f"{c} {_fmt_floor(v)}" for c, v in floors.items())
+    verdict = (
+        "holds across colors" if d.get("holds_across_colors") else "breaks for some color"
+    )
+    return f"Reliable floor by noise color: {parts} — **{verdict}**."
+
+
 def _summarize_robust_train(d: dict) -> str:
     base = d.get("baseline", {}).get("floor_db")
     aug = d.get("augmented", {}).get("floor_db")
@@ -114,6 +123,7 @@ _ARTIFACTS = [
     ("detector_tuning.json", "Detector tuning sweep", _summarize_tuning),
     ("robustness.json", "Noise robustness", _summarize_robustness),
     ("int8_robustness.json", "INT8 vs fp32 robustness", _summarize_int8_robustness),
+    ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("robust_train.json", "Noise-augmented training", _summarize_robust_train),
     ("production.json", "Production model (shipped recipe)", _summarize_production),
 ]
