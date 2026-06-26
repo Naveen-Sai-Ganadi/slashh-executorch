@@ -17,3 +17,6 @@ client.ini
 
 # Local datasets (real audio is downloaded, not vendored)
 data/
+
+# JVM unit-test cache (downloaded jars + compiled classes)
+android/.jvmtest/

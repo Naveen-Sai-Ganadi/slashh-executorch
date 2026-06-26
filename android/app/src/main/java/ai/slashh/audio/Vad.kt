@@ -19,9 +19,14 @@ class Vad(
     private val energyMarginDb: Double = 6.0,   // how far above the floor counts as voice
     private val zcrMin: Double = 0.02,
     private val zcrMax: Double = 0.35,
+    private val absFloorRms: Double = 3e-4,     // ~-70 dBFS: never treat quieter than this as voice
 ) {
-    private var noiseFloorRms = 1e-4            // adaptive; seeded low
-    private var seeded = false
+    // Seeded to a quiet-room PRIOR (~-60 dBFS), NOT to the first window. Seeding
+    // from window #1 would make `threshold = rms*margin > rms`, so the first
+    // window could never be voiced — a user who speaks immediately would be
+    // missed until the next window. The floor adapts from here (fast down / slow
+    // up), so it still tracks the real ambient level within a window or two.
+    private var noiseFloorRms = 1e-3
 
     /** Returns true if [window] (mono float PCM) looks like speech. */
     fun isVoiced(window: FloatArray): Boolean {
@@ -39,9 +44,10 @@ class Vad(
         val rms = sqrt(sumSq / window.size)
         val zcr = crossings.toDouble() / window.size
 
-        if (!seeded) { noiseFloorRms = rms.coerceAtLeast(1e-6); seeded = true }
-
-        val threshold = noiseFloorRms * Math.pow(10.0, energyMarginDb / 20.0)
+        // Compare against the floor, but never below an absolute minimum, so a
+        // long silence can't drag the floor to ~0 and then admit faint hum.
+        val floor = noiseFloorRms.coerceAtLeast(absFloorRms)
+        val threshold = floor * Math.pow(10.0, energyMarginDb / 20.0)
         val voiced = rms > threshold && zcr in zcrMin..zcrMax
 
         // adapt the floor on (probable) non-speech: fast down, slow up
