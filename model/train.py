@@ -50,7 +50,13 @@ def train(
     lr: float,
     n_per_class: int,
     seed: int,
+    model: nn.Module | None = None,
 ) -> tuple[nn.Module, dict]:
+    """Train StressNet and return the (in-place) trained model plus a meta dict.
+
+    Pass ``model`` to train a specific instance — e.g. a particular width
+    variant for an A/B experiment. Omit it to build the default-width net.
+    """
     torch.manual_seed(seed)
 
     if data_dir:
@@ -61,7 +67,8 @@ def train(
         source = "synthetic"
     xtr, ytr, xval, yval = _split(x, y, val_frac=0.2, seed=seed)
 
-    model = build_model()
+    if model is None:
+        model = build_model()
     model.train()
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.BCELoss()

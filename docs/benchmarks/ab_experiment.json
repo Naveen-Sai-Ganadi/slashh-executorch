@@ -1,0 +1,44 @@
+{
+  "recommended": "tiny",
+  "results": [
+    {
+      "name": "tiny",
+      "channels": [
+        4,
+        8,
+        16
+      ],
+      "val_acc": 1.0,
+      "params": 1549,
+      "pte_bytes": 13188,
+      "eager_latency_ms": 0.5331,
+      "acc_per_kb": 0.077646
+    },
+    {
+      "name": "small",
+      "channels": [
+        8,
+        16,
+        32
+      ],
+      "val_acc": 1.0,
+      "params": 5977,
+      "pte_bytes": 30596,
+      "eager_latency_ms": 0.6095,
+      "acc_per_kb": 0.033468
+    },
+    {
+      "name": "base",
+      "channels": [
+        16,
+        32,
+        64
+      ],
+      "val_acc": 1.0,
+      "params": 23473,
+      "pte_bytes": 100228,
+      "eager_latency_ms": 0.7577,
+      "acc_per_kb": 0.010217
+    }
+  ]
+}
