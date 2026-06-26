@@ -30,6 +30,10 @@ Reliable floor by noise color: white 0 dB, pink 0 dB, brown -5 dB — **holds ac
 
 First failure under noise leans **misses stress (false negatives — detector goes silent)**. _(`noise_failure_mode.json` · [details](noise_failure_mode.md))_
 
+### Cross-initialization envelope
+
+Across 5 independent inits, the conservative envelope is reliable down to **10 dB** (holds regardless of training seed). _(`init_envelope.json` · [details](init_envelope.md))_
+
 ### Noise-augmented training
 
 Clean-trained floor 10 dB → augmented floor **none (holds at all tested SNRs)**. _(`robust_train.json` · [details](robust_train.md))_
