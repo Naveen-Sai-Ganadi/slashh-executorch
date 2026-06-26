@@ -1,0 +1,72 @@
+{
+  "baseline": {
+    "floor_db": 10.0,
+    "points": [
+      {
+        "snr_db": null,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 192
+      },
+      {
+        "snr_db": 20.0,
+        "accuracy": 0.8906,
+        "f1": 0.9014,
+        "n": 192
+      },
+      {
+        "snr_db": 10.0,
+        "accuracy": 0.5,
+        "f1": 0.6667,
+        "n": 192
+      },
+      {
+        "snr_db": 5.0,
+        "accuracy": 0.5,
+        "f1": 0.6667,
+        "n": 192
+      },
+      {
+        "snr_db": 0.0,
+        "accuracy": 0.5,
+        "f1": 0.6667,
+        "n": 192
+      }
+    ]
+  },
+  "augmented": {
+    "floor_db": null,
+    "points": [
+      {
+        "snr_db": null,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 192
+      },
+      {
+        "snr_db": 20.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 192
+      },
+      {
+        "snr_db": 10.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 192
+      },
+      {
+        "snr_db": 5.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 192
+      },
+      {
+        "snr_db": 0.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 192
+      }
+    ]
+  }
+}
