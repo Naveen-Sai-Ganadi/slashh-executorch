@@ -265,6 +265,21 @@ def _summarize_int8_granularity(d: dict) -> str:
     )
 
 
+def _summarize_frontend_precision(d: dict) -> str:
+    worst = d.get("worst_abs_diff")
+    flips = d.get("total_flips")
+    n = d.get("total_n")
+    robust = d.get("precision_robust")
+    span = (
+        f"worst |Δscore| {worst:.2e}, {flips}/{n} decisions flip"
+        if isinstance(worst, (int, float)) and isinstance(flips, int)
+        else "?"
+    )
+    return (
+        f"Front-end float32 vs float64 parity: {span}; precision-robust: {robust}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -413,6 +428,7 @@ _ARTIFACTS = [
     ("snr_aware_temperature_ab.json", "SNR-aware vs global temperature (A/B)", _summarize_snr_aware_temperature_ab),
     ("pte_footprint.json", "fp32 vs INT8 .pte footprint (A/B)", _summarize_pte_footprint),
     ("int8_granularity_ab.json", "Per-channel vs per-tensor INT8 (A/B)", _summarize_int8_granularity),
+    ("frontend_precision_ab.json", "Front-end float32 vs float64 parity (A/B)", _summarize_frontend_precision),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
