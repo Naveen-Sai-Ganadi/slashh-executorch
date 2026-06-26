@@ -68,11 +68,18 @@ def _summarize_production(d: dict) -> str:
     ch = tuple(d.get("channels", []))
     kb = d.get("pte_bytes", 0) / 1024
     floor = d.get("robustness", {}).get("floor_db")
-    return (
+    msg = (
         f"Shipped width **`{ch}`** ({d.get('params', '?'):,} params, {kb:.1f} KB "
         f".pte), clean acc {d.get('val_acc', float('nan')):.3f}, "
         f"floor {_fmt_floor(floor)}."
     )
+    int8 = d.get("int8_bytes")
+    if int8 is not None:
+        msg += (
+            f" INT8 variant {int8 / 1024:.1f} KB "
+            f"(within {d.get('int8_max_abs_diff', float('nan')):.4f} of eager)."
+        )
+    return msg
 
 
 def _summarize_robust_train(d: dict) -> str:

@@ -4,6 +4,7 @@ Architecture **`(4, 8, 16)`** (1,549 params), noise-augmented training, exported
 
 - clean val accuracy: **0.947**
 - operating floor: **-5 dB**
+- **INT8** (PT2E + XNNPACK) export: **12.3 KB** (scores within 0.0040 of eager). At ~1,549 params the program is overhead-dominated, so INT8's win here is integer compute on the NPU, not size.
 
 | SNR | accuracy | f1 |
 |---|---|---|
