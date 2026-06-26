@@ -243,6 +243,28 @@ def _summarize_pte_footprint(d: dict) -> str:
     )
 
 
+def _summarize_int8_granularity(d: dict) -> str:
+    fc = d.get("floor_per_channel")
+    ft = d.get("floor_per_tensor")
+    sav = d.get("byte_savings_pct")
+    mx = d.get("max_abs_delta")
+    worth = d.get("worth_per_channel")
+
+    def _floor(v):
+        return "clean" if v is None else f"{v:g} dB"
+
+    span = (
+        f"per-channel reliable to {_floor(fc)}, per-tensor to {_floor(ft)}; "
+        f"per-tensor {sav:+.1f}% on size, max |Δacc| {mx:.3f}"
+        if isinstance(sav, (int, float)) and isinstance(mx, (int, float))
+        else "?"
+    )
+    return (
+        f"INT8 weight granularity A/B (per-channel vs per-tensor): {span}; "
+        f"per-channel worth its cost: {worth}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -390,6 +412,7 @@ _ARTIFACTS = [
     ("calibration_snr.json", "Per-SNR calibration breakdown", _summarize_calibration_snr),
     ("snr_aware_temperature_ab.json", "SNR-aware vs global temperature (A/B)", _summarize_snr_aware_temperature_ab),
     ("pte_footprint.json", "fp32 vs INT8 .pte footprint (A/B)", _summarize_pte_footprint),
+    ("int8_granularity_ab.json", "Per-channel vs per-tensor INT8 (A/B)", _summarize_int8_granularity),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),

@@ -1,0 +1,45 @@
+{
+  "threshold": 0.8,
+  "per_channel_bytes": 12548,
+  "per_tensor_bytes": 9604,
+  "byte_savings_pct": 23.461906279885238,
+  "floor_per_channel": -5.0,
+  "floor_per_tensor": -5.0,
+  "per_tensor_holds_floor": true,
+  "max_abs_delta": 0.0,
+  "material_accuracy_gap": false,
+  "worth_per_channel": false,
+  "verdict": "**Per-tensor is the cheaper equivalent**: it holds the same reliable floor (-5.0) with no material accuracy gap (max |\u0394| 0.000). For this tiny net the per-channel scale vectors buy nothing \u2014 per-tensor is +23.5% on file size (12548->9604 bytes).",
+  "points": [
+    {
+      "snr_db": null,
+      "acc_per_channel": 1.0,
+      "acc_per_tensor": 1.0,
+      "delta": 0.0
+    },
+    {
+      "snr_db": 20.0,
+      "acc_per_channel": 1.0,
+      "acc_per_tensor": 1.0,
+      "delta": 0.0
+    },
+    {
+      "snr_db": 10.0,
+      "acc_per_channel": 1.0,
+      "acc_per_tensor": 1.0,
+      "delta": 0.0
+    },
+    {
+      "snr_db": 0.0,
+      "acc_per_channel": 0.9609,
+      "acc_per_tensor": 0.9609,
+      "delta": 0.0
+    },
+    {
+      "snr_db": -5.0,
+      "acc_per_channel": 1.0,
+      "acc_per_tensor": 1.0,
+      "delta": 0.0
+    }
+  ]
+}
