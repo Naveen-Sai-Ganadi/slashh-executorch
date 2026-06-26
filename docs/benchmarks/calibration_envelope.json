@@ -1,0 +1,62 @@
+{
+  "default_temperature": 0.41,
+  "n_inits": 5,
+  "temp_min": 0.41,
+  "temp_median": 0.41,
+  "temp_max": 0.41,
+  "temp_mean": 0.41,
+  "temp_std": 0.0,
+  "all_same_direction": true,
+  "default_within_spread": true,
+  "is_stable": true,
+  "verdict": "stable default \u2014 every initialization's deployable (regularized) temperature lands on the same value and the shipped DEFAULT_TEMPERATURE sits inside that spread, so 0.41 is init-independent, not seed-luck. Caveat: the unconstrained NLL optimum is degenerate (collapses to the search floor) on the near-separable synthetic eval, so the temperature is not finitely identifiable here \u2014 re-fit on labeled field audio before trusting any value below 0.41",
+  "fits": [
+    {
+      "seed": 0,
+      "temperature": 0.41,
+      "ece": 0.2423,
+      "ece_after_temp": 0.1017,
+      "unconstrained_temperature": 0.055,
+      "unconstrained_floor_pinned": true
+    },
+    {
+      "seed": 1,
+      "temperature": 0.41,
+      "ece": 0.2025,
+      "ece_after_temp": 0.061,
+      "unconstrained_temperature": 0.05,
+      "unconstrained_floor_pinned": true
+    },
+    {
+      "seed": 2,
+      "temperature": 0.41,
+      "ece": 0.1832,
+      "ece_after_temp": 0.0424,
+      "unconstrained_temperature": 0.05,
+      "unconstrained_floor_pinned": true
+    },
+    {
+      "seed": 3,
+      "temperature": 0.41,
+      "ece": 0.2222,
+      "ece_after_temp": 0.087,
+      "unconstrained_temperature": 0.05,
+      "unconstrained_floor_pinned": true
+    },
+    {
+      "seed": 4,
+      "temperature": 0.41,
+      "ece": 0.2068,
+      "ece_after_temp": 0.0576,
+      "unconstrained_temperature": 0.05,
+      "unconstrained_floor_pinned": true
+    }
+  ],
+  "unconstrained": {
+    "temp_min": 0.05,
+    "temp_median": 0.05,
+    "temp_max": 0.055,
+    "floor_pinned_count": 5,
+    "degenerate": true
+  }
+}
