@@ -1,0 +1,166 @@
+{
+  "hop_seconds": 1.0,
+  "clear_budget_s": 8.0,
+  "n_episodes": 15,
+  "release_rate": 1.0,
+  "median_voiced_release_s": 2.0,
+  "median_wallclock_release_s": 6.0,
+  "max_wallclock_release_s": 18.0,
+  "median_inflation_s": 3.0,
+  "max_inflation_s": 10.0,
+  "holds_through_silence": true,
+  "clears_within_budget": false,
+  "verdict": "**Holds through silence, exceeds budget**: the latch correctly persists through pauses, but a long silence keeps the alarm latched for up to 18s after stress ends (> 8s budget) \u2014 the alarm lingers for the whole quiet stretch. If a pause should clear the meter, add a decay-on-silence or a max-hold timeout to the gated path.",
+  "episodes": [
+    {
+      "gap_windows": 0,
+      "voiced_release_windows": 1,
+      "wallclock_release_windows": 1,
+      "voiced_release_s": 1.0,
+      "wallclock_release_s": 1.0,
+      "inflation_windows": 0,
+      "inflation_s": 0.0,
+      "released": true
+    },
+    {
+      "gap_windows": 3,
+      "voiced_release_windows": 1,
+      "wallclock_release_windows": 4,
+      "voiced_release_s": 1.0,
+      "wallclock_release_s": 4.0,
+      "inflation_windows": 3,
+      "inflation_s": 3.0,
+      "released": true
+    },
+    {
+      "gap_windows": 10,
+      "voiced_release_windows": 1,
+      "wallclock_release_windows": 11,
+      "voiced_release_s": 1.0,
+      "wallclock_release_s": 11.0,
+      "inflation_windows": 10,
+      "inflation_s": 10.0,
+      "released": true
+    },
+    {
+      "gap_windows": 0,
+      "voiced_release_windows": 1,
+      "wallclock_release_windows": 1,
+      "voiced_release_s": 1.0,
+      "wallclock_release_s": 1.0,
+      "inflation_windows": 0,
+      "inflation_s": 0.0,
+      "released": true
+    },
+    {
+      "gap_windows": 3,
+      "voiced_release_windows": 1,
+      "wallclock_release_windows": 4,
+      "voiced_release_s": 1.0,
+      "wallclock_release_s": 4.0,
+      "inflation_windows": 3,
+      "inflation_s": 3.0,
+      "released": true
+    },
+    {
+      "gap_windows": 10,
+      "voiced_release_windows": 1,
+      "wallclock_release_windows": 11,
+      "voiced_release_s": 1.0,
+      "wallclock_release_s": 11.0,
+      "inflation_windows": 10,
+      "inflation_s": 10.0,
+      "released": true
+    },
+    {
+      "gap_windows": 0,
+      "voiced_release_windows": 2,
+      "wallclock_release_windows": 2,
+      "voiced_release_s": 2.0,
+      "wallclock_release_s": 2.0,
+      "inflation_windows": 0,
+      "inflation_s": 0.0,
+      "released": true
+    },
+    {
+      "gap_windows": 3,
+      "voiced_release_windows": 3,
+      "wallclock_release_windows": 6,
+      "voiced_release_s": 3.0,
+      "wallclock_release_s": 6.0,
+      "inflation_windows": 3,
+      "inflation_s": 3.0,
+      "released": true
+    },
+    {
+      "gap_windows": 10,
+      "voiced_release_windows": 2,
+      "wallclock_release_windows": 12,
+      "voiced_release_s": 2.0,
+      "wallclock_release_s": 12.0,
+      "inflation_windows": 10,
+      "inflation_s": 10.0,
+      "released": true
+    },
+    {
+      "gap_windows": 0,
+      "voiced_release_windows": 6,
+      "wallclock_release_windows": 6,
+      "voiced_release_s": 6.0,
+      "wallclock_release_s": 6.0,
+      "inflation_windows": 0,
+      "inflation_s": 0.0,
+      "released": true
+    },
+    {
+      "gap_windows": 3,
+      "voiced_release_windows": 6,
+      "wallclock_release_windows": 9,
+      "voiced_release_s": 6.0,
+      "wallclock_release_s": 9.0,
+      "inflation_windows": 3,
+      "inflation_s": 3.0,
+      "released": true
+    },
+    {
+      "gap_windows": 10,
+      "voiced_release_windows": 8,
+      "wallclock_release_windows": 18,
+      "voiced_release_s": 8.0,
+      "wallclock_release_s": 18.0,
+      "inflation_windows": 10,
+      "inflation_s": 10.0,
+      "released": true
+    },
+    {
+      "gap_windows": 0,
+      "voiced_release_windows": 3,
+      "wallclock_release_windows": 3,
+      "voiced_release_s": 3.0,
+      "wallclock_release_s": 3.0,
+      "inflation_windows": 0,
+      "inflation_s": 0.0,
+      "released": true
+    },
+    {
+      "gap_windows": 3,
+      "voiced_release_windows": 4,
+      "wallclock_release_windows": 7,
+      "voiced_release_s": 4.0,
+      "wallclock_release_s": 7.0,
+      "inflation_windows": 3,
+      "inflation_s": 3.0,
+      "released": true
+    },
+    {
+      "gap_windows": 10,
+      "voiced_release_windows": 3,
+      "wallclock_release_windows": 13,
+      "voiced_release_s": 3.0,
+      "wallclock_release_s": 13.0,
+      "inflation_windows": 10,
+      "inflation_s": 10.0,
+      "released": true
+    }
+  ]
+}
