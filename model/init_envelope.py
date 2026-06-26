@@ -1,7 +1,7 @@
 """Cross-initialization robustness envelope for the shipped StressNet.
 
 The README stands on a specific, falsifiable claim: the production net is small
-enough (~1,549 params) that its noise floor is *init-sensitive*, so "0 dB is
+enough (~1,549 params) that its noise floor is *init-sensitive*, so "-5 dB is
 the envelope we stand on." That is a statement about variance across random
 **initializations** — and nothing measured it. ``model/robustness.py``'s
 ``eval_seeds`` averaging varies the *eval draw* with the model held fixed; it

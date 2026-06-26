@@ -28,12 +28,15 @@ def test_default_recipe_includes_sub_10db_snrs() -> None:
     # The production training recipe is the augmentation pool every shipped model
     # is trained on (build_production_model -> noise_augmented_dataset). The
     # recipe-parameterized cross-init envelope (model/recipe_envelope.py) showed
-    # that training down to -5 dB moves the *conservative cross-init envelope*
-    # from 10 dB to 0 dB at no clean-accuracy cost (5 inits, both hold clean acc
-    # 1.000), so the recipe must reach below 10 dB to earn that 0 dB envelope.
+    # that adding a -10 dB window moves the *conservative cross-init envelope*
+    # from 0 dB to -5 dB at no clean-accuracy cost (5 inits, all hold clean acc
+    # 1.000), and that going deeper (-15 dB) does NOT move it further -- so -5 dB
+    # is the floor of the augmentation approach and -10 dB is the deepest window
+    # worth training on. The recipe must reach -10 dB to earn that -5 dB envelope.
     assert None in DEFAULT_AUG_SNRS          # still trains on clean windows
     assert 0.0 in DEFAULT_AUG_SNRS           # ...and on 0 dB noise
-    assert -5.0 in DEFAULT_AUG_SNRS          # ...and on -5 dB noise (the deep end)
+    assert -5.0 in DEFAULT_AUG_SNRS          # ...and on -5 dB noise
+    assert -10.0 in DEFAULT_AUG_SNRS         # ...and on -10 dB noise (the deep end)
     # ordered clean -> noisiest, no duplicates
     noisy = [s for s in DEFAULT_AUG_SNRS if s is not None]
     assert noisy == sorted(noisy, reverse=True)

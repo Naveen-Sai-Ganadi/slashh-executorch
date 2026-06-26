@@ -16,6 +16,15 @@ same waveform-noise SNR sweep, splits each point into precision/recall + the
 dominant error direction, and names the failure at the first SNR that drops
 below the reliability threshold.
 
+The very-aggressive production recipe ({clean,20,10,5,0,-5,-10}) inverts the old
+story. The clean/10-dB-recipe model failed by going **silent** (misses_stress)
+as soon as noise rose. The robust model holds balanced through its -5 dB
+cross-init envelope and only breaks past it — and when it does, the failure flips
+to **false_alarms**: recall stays ~1.0 while precision collapses (first dominant
+around -15 dB on the production seed). So the sweep reaches below the envelope on
+purpose; the mitigation it implies at the gate is now *more* smoothing / a higher
+threshold at extreme SNR, not a faster attack.
+
     python -m model.noise_failure_mode        # train, sweep, record the breakdown
 
 Records ``docs/benchmarks/noise_failure_mode.{json,md}``. Host-only; no device,
@@ -120,7 +129,7 @@ def _counts_at_snr(
 def noise_failure_mode(
     model: StressNet,
     *,
-    snr_levels: list[float | None] = (None, 20.0, 10.0, 0.0, -5.0, -10.0),
+    snr_levels: list[float | None] = (None, 10.0, 0.0, -5.0, -10.0, -15.0, -20.0),
     n_per_class: int = 64,
     seed: int = 1,
     eval_seeds: Sequence[int] | None = None,
@@ -215,7 +224,7 @@ def build_noise_failure_mode(
     n_per_class: int = 96,
     seed: int = 0,
     eval_n_per_class: int = 64,
-    snr_levels: list[float | None] = (None, 20.0, 10.0, 0.0, -5.0, -10.0),
+    snr_levels: list[float | None] = (None, 10.0, 0.0, -5.0, -10.0, -15.0, -20.0),
     threshold: float = 0.8,
     out_dir: str | Path | None = "docs/benchmarks",
 ) -> FailureModeResult:

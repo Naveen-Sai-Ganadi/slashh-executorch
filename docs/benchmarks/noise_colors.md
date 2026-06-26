@@ -12,5 +12,5 @@ The same waveform-noise SNR sweep is run for each spectral color. White is flat;
 | clean | 1.000 | 1.000 | 1.000 |
 | 20 dB | 1.000 | 1.000 | 1.000 |
 | 10 dB | 1.000 | 1.000 | 1.000 |
-| 0 dB | 1.000 | 1.000 | 1.000 |
-| -5 dB | 1.000 | 1.000 | 1.000 |
+| 0 dB | 0.961 | 1.000 | 1.000 |
+| -5 dB | 1.000 | 0.953 | 1.000 |

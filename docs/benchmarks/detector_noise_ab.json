@@ -7,9 +7,9 @@
       "release_threshold": 0.4,
       "ema_alpha": 0.4
     },
-    "detection_floor_db": -5.0,
-    "worst_false_alarm_rate": 0.0,
-    "mean_detect_rate": 0.8333,
+    "detection_floor_db": -10.0,
+    "worst_false_alarm_rate": 0.0625,
+    "mean_detect_rate": 1.0,
     "mean_latency_windows": 1.0,
     "points": [
       {
@@ -36,7 +36,7 @@
       {
         "snr_db": 0.0,
         "detect_rate": 1.0,
-        "false_alarm_rate": 0.0,
+        "false_alarm_rate": 0.0625,
         "median_latency_windows": 1.0,
         "n_traces": 32
       },
@@ -49,9 +49,9 @@
       },
       {
         "snr_db": -10.0,
-        "detect_rate": 0.0,
+        "detect_rate": 1.0,
         "false_alarm_rate": 0.0,
-        "median_latency_windows": null,
+        "median_latency_windows": 1.0,
         "n_traces": 32
       }
     ]
@@ -66,8 +66,8 @@
       },
       "detection_floor_db": -5.0,
       "worst_false_alarm_rate": 0.0,
-      "mean_detect_rate": 0.8125,
-      "mean_latency_windows": 1.5,
+      "mean_detect_rate": 0.8385,
+      "mean_latency_windows": 1.0,
       "points": [
         {
           "snr_db": null,
@@ -99,16 +99,16 @@
         },
         {
           "snr_db": -5.0,
-          "detect_rate": 0.875,
+          "detect_rate": 1.0,
           "false_alarm_rate": 0.0,
-          "median_latency_windows": 3.5,
+          "median_latency_windows": 1.0,
           "n_traces": 32
         },
         {
           "snr_db": -10.0,
-          "detect_rate": 0.0,
+          "detect_rate": 0.0312,
           "false_alarm_rate": 0.0,
-          "median_latency_windows": null,
+          "median_latency_windows": 1,
           "n_traces": 32
         }
       ]
@@ -120,9 +120,9 @@
         "release_threshold": 0.4,
         "ema_alpha": 0.4
       },
-      "detection_floor_db": -5.0,
-      "worst_false_alarm_rate": 0.0,
-      "mean_detect_rate": 0.8333,
+      "detection_floor_db": -10.0,
+      "worst_false_alarm_rate": 0.0625,
+      "mean_detect_rate": 1.0,
       "mean_latency_windows": 1.0,
       "points": [
         {
@@ -149,7 +149,7 @@
         {
           "snr_db": 0.0,
           "detect_rate": 1.0,
-          "false_alarm_rate": 0.0,
+          "false_alarm_rate": 0.0625,
           "median_latency_windows": 1.0,
           "n_traces": 32
         },
@@ -162,9 +162,9 @@
         },
         {
           "snr_db": -10.0,
-          "detect_rate": 0.0,
+          "detect_rate": 1.0,
           "false_alarm_rate": 0.0,
-          "median_latency_windows": null,
+          "median_latency_windows": 1.0,
           "n_traces": 32
         }
       ]
@@ -176,9 +176,9 @@
         "release_threshold": 0.4,
         "ema_alpha": 1.0
       },
-      "detection_floor_db": -5.0,
-      "worst_false_alarm_rate": 0.0,
-      "mean_detect_rate": 0.8333,
+      "detection_floor_db": 10.0,
+      "worst_false_alarm_rate": 0.6875,
+      "mean_detect_rate": 1.0,
       "mean_latency_windows": 1.0,
       "points": [
         {
@@ -205,7 +205,7 @@
         {
           "snr_db": 0.0,
           "detect_rate": 1.0,
-          "false_alarm_rate": 0.0,
+          "false_alarm_rate": 0.6875,
           "median_latency_windows": 1.0,
           "n_traces": 32
         },
@@ -218,9 +218,9 @@
         },
         {
           "snr_db": -10.0,
-          "detect_rate": 0.0,
+          "detect_rate": 1.0,
           "false_alarm_rate": 0.0,
-          "median_latency_windows": null,
+          "median_latency_windows": 1.0,
           "n_traces": 32
         }
       ]
@@ -232,10 +232,10 @@
         "release_threshold": 0.35,
         "ema_alpha": 1.0
       },
-      "detection_floor_db": -5.0,
-      "worst_false_alarm_rate": 0.0,
-      "mean_detect_rate": 0.8698,
-      "mean_latency_windows": 1.67,
+      "detection_floor_db": 20.0,
+      "worst_false_alarm_rate": 0.875,
+      "mean_detect_rate": 1.0,
+      "mean_latency_windows": 1.0,
       "points": [
         {
           "snr_db": null,
@@ -254,14 +254,14 @@
         {
           "snr_db": 10.0,
           "detect_rate": 1.0,
-          "false_alarm_rate": 0.0,
+          "false_alarm_rate": 0.2812,
           "median_latency_windows": 1.0,
           "n_traces": 32
         },
         {
           "snr_db": 0.0,
           "detect_rate": 1.0,
-          "false_alarm_rate": 0.0,
+          "false_alarm_rate": 0.875,
           "median_latency_windows": 1.0,
           "n_traces": 32
         },
@@ -274,9 +274,9 @@
         },
         {
           "snr_db": -10.0,
-          "detect_rate": 0.2188,
-          "false_alarm_rate": 0.0,
-          "median_latency_windows": 5,
+          "detect_rate": 1.0,
+          "false_alarm_rate": 0.125,
+          "median_latency_windows": 1.0,
           "n_traces": 32
         }
       ]

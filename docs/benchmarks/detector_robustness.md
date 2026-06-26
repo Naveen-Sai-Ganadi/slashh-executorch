@@ -10,5 +10,5 @@ Multi-window traces (8 windows each) are streamed through the EMA + hysteresis d
 | 20 dB | 1.000 | 0.000 | 1 |
 | 10 dB | 1.000 | 0.000 | 1 |
 | 0 dB | 1.000 | 0.000 | 1 |
-| -5 dB | 0.875 | 0.000 | 3.5 |
-| -10 dB | 0.000 | 0.000 | — |
+| -5 dB | 1.000 | 0.000 | 1 |
+| -10 dB | 0.031 | 0.000 | 1 |
