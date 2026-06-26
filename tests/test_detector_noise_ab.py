@@ -1,13 +1,15 @@
 """Tests for the noise-regime detector A/B (model/detector_noise_ab.py).
 
-Two findings motivate this: under noise the model goes *silent*
-(noise_failure_mode.py — recall collapses, no false alarms) and the shipped
-detector's end-to-end detection floor is -5 dB (detector_robustness.py). Both
-point at the same hypothesis — in noisy regimes a *lower stress threshold /
-faster attack* should recover detections at the noisy edge without paying much
-in false alarms, precisely because the model isn't crying wolf there. On the
-robust production recipe this pans out: every config holds the floor at zero
-false alarms, so the more sensitive config wins.
+Two findings motivate this: the brittle model went *silent* under noise
+(noise_failure_mode.py — recall collapses), while the very-aggressive production
+model instead holds through its -5 dB envelope and the shipped detector's
+end-to-end detection floor reaches -10 dB (detector_robustness.py). Both point at
+the same hypothesis — in noisy regimes a *lower stress threshold / faster attack*
+should recover detections at the noisy edge without paying much in false alarms,
+precisely because the robust model isn't crying wolf inside its envelope. On the
+production recipe this pans out: the lower-threshold config holds the floor to
+-10 dB at a worst-case false-alarm rate inside budget, so the more sensitive
+config wins.
 
 This harness A/Bs detector configs over the SAME real model and the SAME noisy
 traces (reusing the detector_robustness sweep per config) and recommends the

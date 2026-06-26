@@ -30,12 +30,14 @@ from .robustness import RobustnessResult, robustness_curve
 from .train import train
 
 # SNRs (dB) sampled per-window during augmentation; None = leave clean.
-# Reaches below 10 dB on purpose: the recipe-parameterized cross-init envelope
-# (model/recipe_envelope.py) showed that adding 0 and -5 dB windows moves the
-# conservative cross-init reliable floor from 10 dB to 0 dB at no clean-accuracy
-# cost (5 inits, both hold clean acc 1.000). This is the recipe the production
-# net ships on, so the advertised envelope is 0 dB.
-DEFAULT_AUG_SNRS: tuple[float | None, ...] = (None, 20.0, 10.0, 5.0, 0.0, -5.0)
+# Reaches to -10 dB on purpose: the recipe-parameterized cross-init envelope
+# (model/recipe_envelope.py) showed that adding a -10 dB window moves the
+# conservative cross-init reliable floor from 0 dB to -5 dB at no clean-accuracy
+# cost (5 inits, all hold clean acc 1.000), and that going deeper still (-15 dB)
+# does NOT move it further -- so -5 dB is the floor of this augmentation approach
+# and -10 dB is the deepest window worth training on. This is the recipe the
+# production net ships on, so the advertised envelope is -5 dB.
+DEFAULT_AUG_SNRS: tuple[float | None, ...] = (None, 20.0, 10.0, 5.0, 0.0, -5.0, -10.0)
 
 
 def _add_noise(wave: torch.Tensor, snr_db: float, gen: torch.Generator) -> torch.Tensor:

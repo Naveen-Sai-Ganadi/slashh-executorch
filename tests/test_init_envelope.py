@@ -1,7 +1,7 @@
 """Tests for the cross-initialization robustness envelope (model/init_envelope.py).
 
 The README stakes a headline claim: the shipped net is small enough that its
-noise floor is *init-sensitive*, so "0 dB is the envelope we stand on." That is
+noise floor is *init-sensitive*, so "-5 dB is the envelope we stand on." That is
 a claim about variance across random initializations — which the eval-seed
 averaging in model/robustness.py does NOT measure (it varies the eval draw with
 the model fixed). This harness trains several independent inits, takes each

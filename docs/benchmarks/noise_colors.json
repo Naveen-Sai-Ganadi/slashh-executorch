@@ -34,8 +34,8 @@
         },
         {
           "snr_db": 0.0,
-          "accuracy": 1.0,
-          "f1": 1.0,
+          "accuracy": 0.9609,
+          "f1": 0.9624,
           "n": 128,
           "acc_std": null
         },
@@ -82,8 +82,8 @@
         },
         {
           "snr_db": -5.0,
-          "accuracy": 1.0,
-          "f1": 1.0,
+          "accuracy": 0.9531,
+          "f1": 0.9552,
           "n": 128,
           "acc_std": null
         }

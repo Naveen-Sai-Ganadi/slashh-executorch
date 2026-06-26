@@ -28,11 +28,11 @@ Reliable floor by noise color: white -5 dB, pink -5 dB, brown -5 dB — **holds 
 
 ### Failure mode under noise
 
-First failure under noise leans **misses stress (false negatives — detector goes silent)**. _(`noise_failure_mode.json` · [details](noise_failure_mode.md))_
+First failure under noise leans **false alarms (false positives — detector cries wolf)**. _(`noise_failure_mode.json` · [details](noise_failure_mode.md))_
 
 ### Cross-initialization envelope
 
-Across 5 independent inits, the conservative envelope is reliable down to **0 dB** (holds regardless of training seed). _(`init_envelope.json` · [details](init_envelope.md))_
+Across 5 independent inits, the conservative envelope is reliable down to **-5 dB** (holds regardless of training seed). _(`init_envelope.json` · [details](init_envelope.md))_
 
 ### End-to-end detector robustness
 
@@ -40,7 +40,7 @@ End-to-end detector (8-window traces): latches stress reliably down to **-5 dB**
 
 ### Detector A/B under noise
 
-Detector knobs A/B'd under noise: recommend **`lower-threshold`** (stress=0.5, alpha=0.4) — detection floor -5 dB, worst false alarm 0.0 (≤ 20%). _(`detector_noise_ab.json` · [details](detector_noise_ab.md))_
+Detector knobs A/B'd under noise: recommend **`lower-threshold`** (stress=0.5, alpha=0.4) — detection floor -10 dB, worst false alarm 0.0625 (≤ 20%). _(`detector_noise_ab.json` · [details](detector_noise_ab.md))_
 
 ### Noise-augmented training
 
@@ -52,8 +52,8 @@ A/B'd 4 augmentation recipe(s): recommend **`aggressive`** — reliable floor -5
 
 ### Recipe-parameterized cross-init envelope
 
-Recipe envelopes across 4 inits: deepest is **`aggressive`** reliable to 0 dB — **moves the envelope**. _(`recipe_envelope.json` · [details](recipe_envelope.md))_
+Recipe envelopes across 5 inits: deepest is **`very-aggressive`** reliable to -5 dB — **moves the envelope**. _(`recipe_envelope.json` · [details](recipe_envelope.md))_
 
 ### Production model (shipped recipe)
 
-Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 1.000, reliable to -5 dB. INT8 variant 12.3 KB (within 0.0058 of eager). _(`production.json` · [details](production.md))_
+Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 1.000, reliable to -5 dB. INT8 variant 12.3 KB (within 0.0035 of eager). _(`production.json` · [details](production.md))_

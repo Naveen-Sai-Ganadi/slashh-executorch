@@ -11,5 +11,5 @@ The shipped deployable is the INT8 `.pte`. The same waveform-noise sweep is run 
 | clean | 1.000 | 1.000 | +0.000 |
 | 20 dB | 1.000 | 1.000 | +0.000 |
 | 10 dB | 1.000 | 1.000 | +0.000 |
-| 0 dB | 1.000 | 1.000 | +0.000 |
+| 0 dB | 0.961 | 0.961 | +0.000 |
 | -5 dB | 1.000 | 1.000 | +0.000 |

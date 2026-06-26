@@ -1,79 +1,50 @@
 {
   "threshold": 0.8,
-  "n_inits": 4,
+  "n_inits": 5,
   "deepest": {
     "recipe": {
-      "label": "aggressive",
+      "label": "very-aggressive",
       "snr_choices": [
         null,
         20.0,
         10.0,
         5.0,
         0.0,
-        -5.0
+        -5.0,
+        -10.0
       ]
     },
-    "envelope_db": 0.0,
+    "envelope_db": -5.0,
     "mean_clean_acc": 1.0,
     "floors": [
       {
         "seed": 0,
         "clean_acc": 1.0,
-        "reliable_floor_db": -5.0
+        "reliable_floor_db": -10.0
       },
       {
         "seed": 1,
         "clean_acc": 1.0,
-        "reliable_floor_db": 0.0
+        "reliable_floor_db": -5.0
       },
       {
         "seed": 2,
         "clean_acc": 1.0,
-        "reliable_floor_db": -5.0
+        "reliable_floor_db": -15.0
       },
       {
         "seed": 3,
+        "clean_acc": 1.0,
+        "reliable_floor_db": -5.0
+      },
+      {
+        "seed": 4,
         "clean_acc": 1.0,
         "reliable_floor_db": -5.0
       }
     ]
   },
   "envelopes": [
-    {
-      "recipe": {
-        "label": "production",
-        "snr_choices": [
-          null,
-          20.0,
-          10.0,
-          5.0
-        ]
-      },
-      "envelope_db": 10.0,
-      "mean_clean_acc": 1.0,
-      "floors": [
-        {
-          "seed": 0,
-          "clean_acc": 1.0,
-          "reliable_floor_db": 0.0
-        },
-        {
-          "seed": 1,
-          "clean_acc": 1.0,
-          "reliable_floor_db": 10.0
-        },
-        {
-          "seed": 2,
-          "clean_acc": 1.0,
-          "reliable_floor_db": 0.0
-        },
-        {
-          "seed": 3,
-          "clean_acc": 1.0,
-          "reliable_floor_db": 0.0
-        }
-      ]
-    },
     {
       "recipe": {
         "label": "aggressive",
@@ -106,6 +77,98 @@
         },
         {
           "seed": 3,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -5.0
+        },
+        {
+          "seed": 4,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -5.0
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "label": "very-aggressive",
+        "snr_choices": [
+          null,
+          20.0,
+          10.0,
+          5.0,
+          0.0,
+          -5.0,
+          -10.0
+        ]
+      },
+      "envelope_db": -5.0,
+      "mean_clean_acc": 1.0,
+      "floors": [
+        {
+          "seed": 0,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -10.0
+        },
+        {
+          "seed": 1,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -5.0
+        },
+        {
+          "seed": 2,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -15.0
+        },
+        {
+          "seed": 3,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -5.0
+        },
+        {
+          "seed": 4,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -5.0
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "label": "extreme",
+        "snr_choices": [
+          null,
+          20.0,
+          10.0,
+          5.0,
+          0.0,
+          -5.0,
+          -10.0,
+          -15.0
+        ]
+      },
+      "envelope_db": -5.0,
+      "mean_clean_acc": 1.0,
+      "floors": [
+        {
+          "seed": 0,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -5.0
+        },
+        {
+          "seed": 1,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -10.0
+        },
+        {
+          "seed": 2,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -10.0
+        },
+        {
+          "seed": 3,
+          "clean_acc": 1.0,
+          "reliable_floor_db": -5.0
+        },
+        {
+          "seed": 4,
           "clean_acc": 1.0,
           "reliable_floor_db": -5.0
         }

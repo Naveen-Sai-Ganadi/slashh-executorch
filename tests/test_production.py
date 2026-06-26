@@ -44,9 +44,9 @@ def test_train_production_is_robust_and_clean_accurate() -> None:
     # clean accuracy is essentially perfect on the synthetic task
     assert meta["val_acc"] > 0.9
     assert meta["channels"] == list(PRODUCTION_CHANNELS)
-    # the reproducible robustness win: the aggressive production recipe holds
+    # the reproducible robustness win: the very-aggressive production recipe holds
     # well past 10 dB SNR, where the clean-trained baseline collapses toward
-    # chance. The cross-init envelope is 0 dB (model/init_envelope.py); a single
+    # chance. The cross-init envelope is -5 dB (model/init_envelope.py); a single
     # init like seed 0 typically holds deeper still, so we assert through 10 dB
     # and keep the floor check defensive against init variance.
     acc = {p["snr_db"]: p["accuracy"] for p in meta["robustness"]["points"]}

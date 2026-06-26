@@ -3,29 +3,33 @@ through the noise the default detector goes silent in?
 
 Two measured findings set this up:
 
-* ``noise_failure_mode.py`` — under noise the model fails by going **silent**
-  (recall → 0, false positives stay near zero). It does not cry wolf.
-* ``detector_robustness.py`` — the shipped detector's end-to-end **detection
-  floor is -5 dB**; below it stressed traces stop latching.
+* ``noise_failure_mode.py`` — the brittle clean/10-dB-recipe model failed by
+  going **silent** under noise (recall → 0). The very-aggressive production
+  model does not: it holds balanced through its -5 dB envelope and, only well
+  past it, flips to *false alarms* (recall ~1.0, precision drops near -15 dB).
+* ``detector_robustness.py`` — on the production recipe the shipped detector's
+  end-to-end **detection floor is now -10 dB**; below it stressed traces stop
+  latching.
 
-Both point at one hypothesis: because the model isn't false-alarming in noise,
-a **lower stress threshold / faster attack (higher EMA α)** should recover
-detections at the noisy edge at little false-alarm cost. The clean-audio tuning
-in ``tune_detector.py`` can't see this — it sweeps abstract score traces, not
-the real model under acoustic noise. So this harness runs the *same* model and
-the *same* noisy traces through ``detector_robustness`` once per candidate
-config and reports, per config, the detection floor, the worst-case false-alarm
-rate, and the mean detection rate — then recommends the config that pushes the
-floor deepest into noise while keeping worst-case false alarms within tolerance.
+Both point at one hypothesis: because the robust model isn't false-alarming
+inside its operating envelope, a **lower stress threshold / faster attack
+(higher EMA α)** should recover detections at the noisy edge at little
+false-alarm cost. The clean-audio tuning in ``tune_detector.py`` can't see this
+— it sweeps abstract score traces, not the real model under acoustic noise. So
+this harness runs the *same* model and the *same* noisy traces through
+``detector_robustness`` once per candidate config and reports, per config, the
+detection floor, the worst-case false-alarm rate, and the mean detection rate —
+then recommends the config that pushes the floor deepest into noise while
+keeping worst-case false alarms within tolerance.
 
 On the brittle clean/10-dB-recipe model this hypothesis was *refuted* — lowering
 the threshold tripped false alarms on the noise that hid stress, so the default
-won. Re-run on the production **aggressive recipe** the picture inverts: the
-model's scores under noise are now clean enough that every config holds the
--5 dB floor at *zero* false alarms, so the recommendation flips to the
-lower-threshold config (a faster, more sensitive gate now costs nothing). The
-robustness lever was training the model, not the knobs — and once the model is
-robust, the knobs are free to be more sensitive.
+won. Re-run on the production **very-aggressive recipe** the picture inverts: the
+model's scores under noise are now clean enough that the lower-threshold config
+holds the floor down to **-10 dB** at a worst-case false-alarm rate well inside
+budget, so the recommendation flips to it (a faster, more sensitive gate now
+costs almost nothing). The robustness lever was training the model, not the
+knobs — and once the model is robust, the knobs are free to be more sensitive.
 
     python -m model.detector_noise_ab
 

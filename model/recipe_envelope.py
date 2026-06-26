@@ -259,11 +259,15 @@ def to_markdown(out: RecipeEnvelopeResult) -> str:
     return header + "\n".join(rows) + "\n"
 
 
-# The shipped production recipe vs the augmentation A/B's deepest single-seed
-# recipe — the head-to-head that settles the envelope-vs-floor question.
+# The promotion ladder: the previous production recipe (`aggressive`, envelope
+# 0 dB) vs the shipped production recipe (`very-aggressive`, adds a -10 dB window)
+# vs going one notch deeper (`extreme`, adds -15 dB). This three-way settles both
+# the promotion (does -10 dB move the envelope past 0 dB?) and the stopping point
+# (does -15 dB move it further, or has the augmentation approach hit its floor?).
 _DEFAULT_RECIPES = [
-    AugRecipe("production", (None, 20.0, 10.0, 5.0)),
     AugRecipe("aggressive", (None, 20.0, 10.0, 5.0, 0.0, -5.0)),
+    AugRecipe("very-aggressive", (None, 20.0, 10.0, 5.0, 0.0, -5.0, -10.0)),
+    AugRecipe("extreme", (None, 20.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0)),
 ]
 
 
@@ -271,14 +275,14 @@ def build_recipe_envelope(
     *,
     recipes: Sequence[AugRecipe] | None = None,
     n_inits: int = 4,
-    snr_levels: list[float | None] = (None, 20.0, 10.0, 0.0, -5.0, -10.0),
+    snr_levels: list[float | None] = (None, 20.0, 10.0, 0.0, -5.0, -10.0, -15.0),
     n_per_class: int = 96,
     eval_n_per_class: int = 64,
     epochs: int = 12,
     base_seed: int = 0,
     out_dir: str | Path | None = "docs/benchmarks",
 ) -> RecipeEnvelopeResult:
-    """Run the production-vs-aggressive head-to-head and write the artifact."""
+    """Run the aggressive→very-aggressive→extreme ladder and write the artifact."""
     return recipe_envelope(
         recipes if recipes is not None else _DEFAULT_RECIPES,
         n_inits=n_inits, snr_levels=snr_levels, n_per_class=n_per_class,

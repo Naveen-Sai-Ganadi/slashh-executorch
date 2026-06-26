@@ -6,11 +6,12 @@ The autonomy loop's experiments converged on one answer:
     variant, ``tiny`` = ``(4, 8, 16)``; and
   * the robustness sweep (``model/robustness.py`` + ``model/robust_train.py``)
     showed that this tiny width, when trained with noise augmentation, holds
-    accuracy through 0 dB SNR — far past where the clean-trained model collapses
-    toward chance — at a fraction of the parameters. (The aggressive recipe
-    ``{clean,20,10,5,0,-5}`` was confirmed by the recipe-parameterized cross-init
-    envelope, ``model/recipe_envelope.py``, to hold a 0 dB *cross-init* floor
-    across 5 inits, so 0 dB is the claim we stand on.)
+    accuracy through -5 dB SNR — far past where the clean-trained model collapses
+    toward chance — at a fraction of the parameters. (The very-aggressive recipe
+    ``{clean,20,10,5,0,-5,-10}`` was confirmed by the recipe-parameterized
+    cross-init envelope, ``model/recipe_envelope.py``, to hold a -5 dB *cross-init*
+    floor across 5 inits; going deeper (-15 dB training) does not move it, so -5 dB
+    is the floor of the augmentation approach and the claim we stand on.)
 
 So the production model is not a compromise between size and robustness: the
 smallest net keeps the robustness that matters. This module bakes that into a
@@ -174,9 +175,9 @@ def to_markdown(out: ProductionResult) -> str:
         )
     header += (
         "\nThe floors above are measured for *this* trained artifact. The "
-        "conservative claim we stand on across re-trains is **0 dB** — the "
-        "cross-init reliable floor the aggressive training recipe holds across 5 "
-        "independent inits (see `model/recipe_envelope.py` and the project "
+        "conservative claim we stand on across re-trains is **-5 dB** — the "
+        "cross-init reliable floor the very-aggressive training recipe holds across "
+        "5 independent inits (see `model/recipe_envelope.py` and the project "
         "README).\n"
     )
     header += "\n| SNR | accuracy | f1 |\n|---|---|---|\n"
