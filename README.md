@@ -75,7 +75,9 @@ python -m pytest tests/ -q
 
 Steps 1–2 are exercised end-to-end on every run by `tests/test_quickstart.py`,
 so a change that breaks this documented path fails CI rather than a fresh
-checkout.
+checkout. The full host suite runs on every push/PR via
+`.github/workflows/ci.yml` (the offline, AOT half — the Android half needs a
+JDK/device).
 
 Train on real data (RAVDESS/CREMA-D/TESS/SAVEE mapped to arousal, per plan §13)
 by arranging `wav`s as `<root>/calm/*.wav` and `<root>/stressed/*.wav`:
