@@ -66,6 +66,10 @@ Front-end float32 vs float64 parity: worst |Δscore| 1.19e-07, 0/960 decisions f
 
 Base-rate precision @ 2.0% prevalence: worst alarm precision 100.0%, break-even 0.00%; usable in field: True. _(`base_rate_precision.json` · [details](base_rate_precision.md))_
 
+### Detector onset/offset latency (time-to-alarm)
+
+Detector time-to-alarm over 20 episodes: detection rate 100%, median onset 1s; responsive: True. _(`detection_latency.json` · [details](detection_latency.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_

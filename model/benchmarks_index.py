@@ -294,6 +294,18 @@ def _summarize_base_rate_precision(d: dict) -> str:
     )
 
 
+def _summarize_detection_latency(d: dict) -> str:
+    dr = d.get("detection_rate")
+    mo = d.get("median_onset_s")
+    resp = d.get("responsive")
+    dr_txt = f"{dr:.0%}" if isinstance(dr, (int, float)) else "?"
+    mo_txt = f"{mo:g}s" if isinstance(mo, (int, float)) else "—"
+    return (
+        f"Detector time-to-alarm over {d.get('n_episodes', '?')} episodes: "
+        f"detection rate {dr_txt}, median onset {mo_txt}; responsive: {resp}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -444,6 +456,7 @@ _ARTIFACTS = [
     ("int8_granularity_ab.json", "Per-channel vs per-tensor INT8 (A/B)", _summarize_int8_granularity),
     ("frontend_precision_ab.json", "Front-end float32 vs float64 parity (A/B)", _summarize_frontend_precision),
     ("base_rate_precision.json", "Base-rate (prior-shift) alarm precision (A/B)", _summarize_base_rate_precision),
+    ("detection_latency.json", "Detector onset/offset latency (time-to-alarm)", _summarize_detection_latency),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
