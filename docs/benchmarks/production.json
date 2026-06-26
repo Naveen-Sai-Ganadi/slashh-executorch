@@ -9,6 +9,7 @@
   "pte_bytes": 13188,
   "robustness": {
     "floor_db": -5.0,
+    "reliable_floor_db": 0.0,
     "points": [
       {
         "snr_db": null,

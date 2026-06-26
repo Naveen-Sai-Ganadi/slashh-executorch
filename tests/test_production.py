@@ -79,3 +79,33 @@ def test_build_production_writes_record(tmp_path: Path) -> None:
     assert payload["channels"] == list(PRODUCTION_CHANNELS)
     assert payload["pte_bytes"] > 0
     assert "robustness" in payload
+
+
+def test_production_record_floor_pair_is_honest(tmp_path: Path) -> None:
+    """The displayed floor must never be an SNR the model actually fails at.
+
+    Regression guard: the record previously printed a bare "operating floor"
+    that was the *first failing* SNR, so it could sit next to its own
+    sub-threshold accuracy row (e.g. floor -5 dB beside a -5 dB = 0.500 row),
+    reading as a contradiction. We now report the SNR the model is reliable
+    *down to* and, separately, where it drops below threshold.
+    """
+    out = build_production(
+        epochs=12, n_per_class=96, seed=0, out_dir=tmp_path,
+    )
+    rob = json.loads((tmp_path / "production.json").read_text())["robustness"]
+    assert "reliable_floor_db" in rob
+
+    acc = {p["snr_db"]: p["accuracy"] for p in rob["points"]}
+    rel = rob["reliable_floor_db"]
+    if rel is not None:
+        # the floor we advertise is a point that genuinely passed threshold
+        assert acc[rel] >= 0.8
+        # and it is cleaner (higher SNR) than where the model breaks down
+        if rob["floor_db"] is not None:
+            assert rob["floor_db"] < rel
+
+    md = (tmp_path / "production.md").read_text()
+    assert "reliable down to" in md
+    # the old self-contradictory bare label is gone
+    assert "operating floor" not in md
