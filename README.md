@@ -79,6 +79,18 @@ checkout. The full host suite runs on every push/PR via
 `.github/workflows/ci.yml` (the offline, AOT half — the Android half needs a
 JDK/device).
 
+To watch the whole runtime loop — waveform → score → detector gate → calibrated
+confidence → calming-cue decision — on a small trained model, run the host
+session demo (the host mirror of the on-device loop, `model.session`):
+
+```bash
+PYTHONPATH=. python -m examples.host_session_demo
+```
+
+It prints a per-window table showing the gate latching, the non-gating
+confidence read-out, and the calming cue firing on sustained stress then
+rate-limiting (no nagging). Kept runnable by `tests/test_examples.py`.
+
 Train on real data (RAVDESS/CREMA-D/TESS/SAVEE mapped to arousal, per plan §13)
 by arranging `wav`s as `<root>/calm/*.wav` and `<root>/stressed/*.wav`:
 
