@@ -74,6 +74,8 @@ def export_to_pte(
 def export_quantized_to_pte(
     model: StressNet,
     calibration: torch.Tensor,
+    *,
+    per_channel: bool = True,
 ) -> bytes:
     """Return INT8-quantized ``.pte`` bytes via PT2E + the XNNPACK quantizer.
 
@@ -85,6 +87,10 @@ def export_quantized_to_pte(
     activation ranges. This is the on-host INT8 optimization — it does NOT touch
     Qualcomm AI Hub or the live token (that is the gated M5); it just produces a
     smaller program that still runs through the ExecuTorch runtime.
+
+    ``per_channel`` selects the weight quantization granularity: ``True`` (the
+    shipped default) gives each output channel its own scale/zero-point;
+    ``False`` uses a single per-tensor scale — smaller and simpler, but coarser.
     """
     # Imported lazily: PT2E quant pulls in torchao, not needed for fp32 export.
     from torchao.quantization.pt2e.quantize_pt2e import convert_pt2e, prepare_pt2e
@@ -99,7 +105,7 @@ def export_quantized_to_pte(
 
     captured = torch.export.export(model, example).module()
     quantizer = XNNPACKQuantizer().set_global(
-        get_symmetric_quantization_config(is_per_channel=True)
+        get_symmetric_quantization_config(is_per_channel=per_channel)
     )
     prepared = prepare_pt2e(captured, quantizer)
     with torch.no_grad():
