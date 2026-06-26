@@ -18,6 +18,10 @@ Best knobs: stress=0.55, release=0.35, alpha=1.0 (acc 1.0, flicker 7). _(`detect
 
 Operating floor: **20 dB**. _(`robustness.json` · [details](robustness.md))_
 
+### INT8 vs fp32 robustness
+
+INT8 vs fp32 under noise: fp32 reliable to 0 dB, INT8 to 0 dB — **INT8 preserves the floor**. _(`int8_robustness.json` · [details](int8_robustness.md))_
+
 ### Noise-augmented training
 
 Clean-trained floor 10 dB → augmented floor **none (holds at all tested SNRs)**. _(`robust_train.json` · [details](robust_train.md))_

@@ -25,6 +25,7 @@ NPU numbers are gated on a device + live AI Hub run and have not been measured.
 - Real-time guarantee: `realtime_factor()` reports median/max processing time and real-time factor for the waveform → state chain, and `tests/test_latency.py` certifies the README real-time claim against hot-path regressions. `df3b999`
 - Reproducibility guarantee: `tests/test_reproducibility.py` asserts two seeded `train_production(seed=0)` runs yield identical validation accuracy, bit-identical weights, and a byte-identical `.pte` despite global-RNG churn between them. `2cb46cc`
 - Multi-seed robustness evidence: `robustness_curve(..., eval_seeds=...)` averages accuracy/F1 across several eval seeds and records the per-SNR accuracy **std** (`acc_std`). `build_production` now ships the production record averaged over 5 eval seeds, so the advertised floors carry a spread (e.g. 0 dB = 0.842 ± 0.015) instead of resting on one lucky draw. `n_eval_seeds=1` keeps the fast single-seed path.
+- INT8↔fp32 robustness comparison (`model/int8_robustness.py`): runs the noise sweep through both the eager fp32 model and the shipped INT8 `.pte` (via the ExecuTorch host runtime) on *identical* inputs, and reports a paired per-SNR accuracy gap plus a verdict. The deployable INT8 model **preserves the fp32 floor** — reliable down to 0 dB with a worst-case −0.008 accuracy delta — so "INT8 on the NPU" holds under noise, not just on clean audio. Recorded in `docs/benchmarks/int8_robustness.{json,md}` and rolled into the index.
 
 ### Changed
 

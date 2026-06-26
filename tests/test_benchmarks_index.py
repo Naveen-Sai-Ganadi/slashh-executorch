@@ -36,6 +36,21 @@ def test_index_summarizes_present_artifacts(tmp_path: Path) -> None:
     assert (tmp_path / "README.md").read_text() == md
 
 
+def test_index_summarizes_int8_robustness(tmp_path: Path) -> None:
+    _write(tmp_path / "int8_robustness.json", {
+        "threshold": 0.8,
+        "fp32_reliable_floor_db": 0.0,
+        "int8_reliable_floor_db": 0.0,
+        "preserves_floor": True,
+        "acc_deltas": [{"snr_db": None, "delta": 0.0}],
+        "fp32": {"floor_db": -5.0, "reliable_floor_db": 0.0, "points": []},
+        "int8": {"floor_db": -5.0, "reliable_floor_db": 0.0, "points": []},
+    })
+    md = build_index(tmp_path)
+    assert "INT8" in md
+    assert "preserves the floor" in md
+
+
 def test_missing_artifacts_are_skipped_not_fatal(tmp_path: Path) -> None:
     # only one artifact present; others absent
     _write(tmp_path / "benchmark.json", {
