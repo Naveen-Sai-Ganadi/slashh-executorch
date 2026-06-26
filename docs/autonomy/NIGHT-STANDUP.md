@@ -1,6 +1,7 @@
 # Night standup — Slashh AI
 
 **Branch:** `feature/night-vad-fix-and-jvm-tests` (base `82ece14`)
+**PR:** [#1](https://github.com/Naveen-Sai-Ganadi/slashh-executorch/pull/1) — first push of the project to GitHub (origin/main was still at the initial commit).
 **Status:** all green — **19 JVM tests** + **19 pytest** passing.
 
 While you were asleep I worked the `.claude` backlog autonomously and shipped
