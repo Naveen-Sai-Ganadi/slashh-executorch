@@ -306,6 +306,19 @@ def _summarize_detection_latency(d: dict) -> str:
     )
 
 
+def _summarize_silence_hold(d: dict) -> str:
+    rr = d.get("release_rate")
+    infl = d.get("max_inflation_s")
+    holds = d.get("holds_through_silence")
+    rr_txt = f"{rr:.0%}" if isinstance(rr, (int, float)) else "?"
+    infl_txt = f"{infl:g}s" if isinstance(infl, (int, float)) else "—"
+    return (
+        f"Detector silence-hold over {d.get('n_episodes', '?')} gap episodes: "
+        f"release rate {rr_txt}, worst silence inflation {infl_txt}; "
+        f"holds through silence: {holds}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -457,6 +470,7 @@ _ARTIFACTS = [
     ("frontend_precision_ab.json", "Front-end float32 vs float64 parity (A/B)", _summarize_frontend_precision),
     ("base_rate_precision.json", "Base-rate (prior-shift) alarm precision (A/B)", _summarize_base_rate_precision),
     ("detection_latency.json", "Detector onset/offset latency (time-to-alarm)", _summarize_detection_latency),
+    ("silence_hold.json", "Detector silence-hold / gap robustness", _summarize_silence_hold),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
