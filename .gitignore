@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Autonomy OS generated state
+.claude/state/green.json
+.claude/state/run-log.jsonl
+.claude/settings.local.json
+
+# Credentials — never commit (live AI Hub token lives in ~/.qai_hub/client.ini)
+client.ini
+*.token
+.env
+
+# Local datasets (real audio is downloaded, not vendored)
+data/
