@@ -73,6 +73,10 @@ python -m model.eval --weights assets/stress_model.pt --pte assets/stress_model.
 python -m pytest tests/ -q
 ```
 
+Steps 1–2 are exercised end-to-end on every run by `tests/test_quickstart.py`,
+so a change that breaks this documented path fails CI rather than a fresh
+checkout.
+
 Train on real data (RAVDESS/CREMA-D/TESS/SAVEE mapped to arousal, per plan §13)
 by arranging `wav`s as `<root>/calm/*.wav` and `<root>/stressed/*.wav`:
 
