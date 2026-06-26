@@ -90,12 +90,36 @@ reimplements `model/features.py` natively (exact 400-pt DFT + HTK mel
 filterbank); a JVM parity test asserts it matches torchaudio within 1e-3 on the
 golden vectors emitted by `python -m model.golden`.
 
+The UI is a live **stress meter** (`ui/Meter.kt` → `StressMeterView`) whose
+band/color logic is a pure-JVM view-model, and a **calming breathing overlay**
+(`ui/CalmCue.kt` → `BreathOverlayView`) that appears only when stress is
+*sustained*, is rate-limited, and is dismissible. The trigger timing and the
+meter mapping are unit-tested on a plain JVM (no device).
+
 ```bash
 cd android
 gradle wrapper                 # first time only
-./gradlew testDebugUnitTest    # log-mel parity + VAD + pipeline (no device)
+./gradlew testDebugUnitTest    # log-mel parity + VAD + pipeline + meter + cue
 ./gradlew installDebug         # build + install to a connected device
+
+# no Android SDK? run the android-free core on a plain JVM:
+sh android/run_jvm_tests.sh    # 19 tests: parity, VAD, pipeline, meter, calm-cue
 ```
+
+## Offline guarantee (airplane mode)
+
+Everything — mic capture, scoring, and the calming intervention — runs on the
+device with no network. The app manifest declares **only `RECORD_AUDIO`**; there
+is no `INTERNET` permission and no network API anywhere in the Android sources.
+This is enforced as a test, so a regression fails CI rather than silently
+shipping a device that can phone home:
+
+```bash
+pytest tests/test_offline_guard.py   # asserts no INTERNET perm, no net APIs
+```
+
+(Build-time tooling that legitimately uses the network — Qualcomm AI Hub
+profiling in `model/` — never runs on the phone and is out of scope.)
 
 ## Snapdragon NPU profiling (Qualcomm AI Hub)
 

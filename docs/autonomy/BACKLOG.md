@@ -60,13 +60,17 @@ See `docs/plan.md` for the full design and section references.
   - `CalmCueTest.kt` — 5 JVM unit tests (brief-spike no-trigger, sustained trigger + haptic edge, dismiss silences episode, cooldown gates next episode, reset). → **19 JVM tests green** (was 14).
 
 ## [M10] Airplane-mode hardening
-- **status:** todo
+- **status:** done (night build — branch `feature/night-vad-fix-and-jvm-tests`)
 - **priority:** P0
 - **role:** qa-engineer
 - **depends-on:** [M7]
 - **acceptance:**
-  - full mic→score→intervention loop works with networking disabled
-  - no outbound network calls at runtime (verified via network inspection / no INTERNET dependence in the hot path)
+  - full mic→score→intervention loop works with networking disabled ✅ (no network code in the path; manifest has no INTERNET)
+  - no outbound network calls at runtime ✅ (enforced by an automated guard, not just inspection)
+- **shipped:**
+  - `tests/test_offline_guard.py` — 4 pytest checks that grep the on-device app tree: manifest declares *only* `RECORD_AUDIO` (no `INTERNET`/network-state perms), and no Kotlin source references `java.net`/`okhttp`/`retrofit`/`android.net`/`HttpURLConnection`/sockets/websockets. Verified it *fails* on an injected `java.net` import, so the guard actually bites.
+  - README "Offline guarantee" section documents the airplane-mode contract and how it's enforced.
+  - Build-time AI Hub networking in `model/` is explicitly out of scope (never runs on device).
 
 ## [M11] Benchmarks + docs
 - **status:** todo
