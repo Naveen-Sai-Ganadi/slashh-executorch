@@ -78,6 +78,10 @@ Detector silence-hold over 15 gap episodes: release rate 100%, worst silence inf
 
 Input-gain (level) robustness over 9 levels: reliable band [-24, +36] dB; level-invariant: False. _(`gain_robustness.json` · [details](gain_robustness.md))_
 
+### Clipping / saturation robustness
+
+Clipping / saturation robustness over 6 levels: reliable down to clip_ratio 0.25; clip-tolerant: False. _(`clipping_robustness.json` · [details](clipping_robustness.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_

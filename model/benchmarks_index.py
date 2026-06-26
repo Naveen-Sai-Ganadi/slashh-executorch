@@ -330,6 +330,16 @@ def _summarize_silence_hold(d: dict) -> str:
     )
 
 
+def _summarize_clipping_robustness(d: dict) -> str:
+    floor = d.get("reliable_floor_ratio")
+    tol = d.get("clip_tolerant")
+    floor_txt = f"clip_ratio {floor:g}" if isinstance(floor, (int, float)) else "—"
+    return (
+        f"Clipping / saturation robustness over {d.get('n_points', '?')} levels: "
+        f"reliable down to {floor_txt}; clip-tolerant: {tol}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -483,6 +493,7 @@ _ARTIFACTS = [
     ("detection_latency.json", "Detector onset/offset latency (time-to-alarm)", _summarize_detection_latency),
     ("silence_hold.json", "Detector silence-hold / gap robustness", _summarize_silence_hold),
     ("gain_robustness.json", "Input-gain (level) robustness", _summarize_gain_robustness),
+    ("clipping_robustness.json", "Clipping / saturation robustness", _summarize_clipping_robustness),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),

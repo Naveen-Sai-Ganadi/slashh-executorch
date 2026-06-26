@@ -1,0 +1,48 @@
+{
+  "accuracy_bar": 0.8,
+  "n_points": 6,
+  "clean_accuracy": 1.0,
+  "worst_accuracy": 0.5,
+  "worst_clip_ratio": 0.1,
+  "clip_tolerant": false,
+  "reliable_floor_ratio": 0.25,
+  "verdict": "**Reliable down to a clip floor**: detection holds above the 80% bar only while clip_ratio stays at or above **0.25** (clamping to 25% of peak); below that, saturation distortion drops accuracy to 50% at clip_ratio 0.1. Loud or close-talking capture that flat-tops harder than this will be missed \u2014 add input headroom / anti-clip limiting, or train with clipped augmentation to widen tolerance.",
+  "points": [
+    {
+      "clip_ratio": 1.0,
+      "accuracy": 1.0,
+      "clipped_fraction": 0.0,
+      "n": 192
+    },
+    {
+      "clip_ratio": 0.5,
+      "accuracy": 1.0,
+      "clipped_fraction": 0.4120286447772135,
+      "n": 192
+    },
+    {
+      "clip_ratio": 0.25,
+      "accuracy": 0.84375,
+      "clipped_fraction": 0.7416437724605203,
+      "n": 192
+    },
+    {
+      "clip_ratio": 0.1,
+      "accuracy": 0.5,
+      "clipped_fraction": 0.907343746162951,
+      "n": 192
+    },
+    {
+      "clip_ratio": 0.05,
+      "accuracy": 0.5,
+      "clipped_fraction": 0.9546612401803335,
+      "n": 192
+    },
+    {
+      "clip_ratio": 0.02,
+      "accuracy": 0.5,
+      "clipped_fraction": 0.9820795360331734,
+      "n": 192
+    }
+  ]
+}
