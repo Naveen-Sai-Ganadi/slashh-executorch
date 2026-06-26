@@ -1,0 +1,68 @@
+{
+  "accuracy_bar": 0.8,
+  "n_points": 9,
+  "unity_accuracy": 1.0,
+  "worst_accuracy": 0.5,
+  "worst_gain_db": -60.0,
+  "level_invariant": false,
+  "reliable_low_db": -24.0,
+  "reliable_high_db": 36.0,
+  "usable_band_db": 60.0,
+  "verdict": "**Reliable within a band**: detection holds above the 80% bar only for input gain in [-24, +36] dB (a 60 dB window); outside it accuracy falls to 50% at -60 dB. Because the front-end isn't level-normalized, very quiet or loud capture shifts the log-mel map out of the learned range \u2014 add input AGC or a per-window level normalization to widen the usable range.",
+  "points": [
+    {
+      "gain_db": -60.0,
+      "gain_factor": 0.001,
+      "accuracy": 0.5,
+      "n": 192
+    },
+    {
+      "gain_db": -48.0,
+      "gain_factor": 0.003981071705534973,
+      "accuracy": 0.5,
+      "n": 192
+    },
+    {
+      "gain_db": -36.0,
+      "gain_factor": 0.015848931924611134,
+      "accuracy": 0.546875,
+      "n": 192
+    },
+    {
+      "gain_db": -24.0,
+      "gain_factor": 0.06309573444801933,
+      "accuracy": 0.9270833134651184,
+      "n": 192
+    },
+    {
+      "gain_db": -12.0,
+      "gain_factor": 0.251188643150958,
+      "accuracy": 1.0,
+      "n": 192
+    },
+    {
+      "gain_db": 0.0,
+      "gain_factor": 1.0,
+      "accuracy": 1.0,
+      "n": 192
+    },
+    {
+      "gain_db": 12.0,
+      "gain_factor": 3.9810717055349722,
+      "accuracy": 1.0,
+      "n": 192
+    },
+    {
+      "gain_db": 24.0,
+      "gain_factor": 15.848931924611133,
+      "accuracy": 1.0,
+      "n": 192
+    },
+    {
+      "gain_db": 36.0,
+      "gain_factor": 63.09573444801933,
+      "accuracy": 0.859375,
+      "n": 192
+    }
+  ]
+}
