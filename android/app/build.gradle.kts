@@ -49,7 +49,7 @@ dependencies {
     // version that produced the .pte (1.2.0) and bundle the QNN backend libs for
     // the Hexagon-NPU path. If no matching Maven artifact is available, build the
     // AAR from the ExecuTorch repo (`extension/android`) and drop it in libs/.
-    implementation("org.pytorch:executorch-android:0.5.0")
+    implementation("org.pytorch:executorch-android:1.2.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")   // JSON in local JVM unit tests

@@ -48,7 +48,9 @@ class MainActivity : AppCompatActivity() {
         }.apply { visibility = android.view.View.GONE }
         val root = FrameLayout(this).apply {
             addView(meter)
-            addView(overlay)
+            // qualify: inside apply{} the receiver is the FrameLayout, whose own
+            // getOverlay() would otherwise shadow MainActivity.overlay.
+            addView(this@MainActivity.overlay)
         }
         setContentView(root)
 

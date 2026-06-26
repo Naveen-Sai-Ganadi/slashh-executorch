@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.RadialGradient
+import android.graphics.Shader
 import android.os.SystemClock
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
@@ -29,13 +31,16 @@ class BreathOverlayView(
     private val exhaleMs = 4_000f
     private val cycleMs = inhaleMs + exhaleMs
 
-    private val scrim = Paint().apply { color = 0xCC101216.toInt() } // ~80% dim
-    private val circle = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF4FC3F7.toInt() }
+    private val scrim = Paint().apply { color = 0xF20A0E14.toInt() } // deep calming dim
+    private val circle = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE; color = 0x554FC3F7.toInt()
+    }
     private val cue = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE; textAlign = Paint.Align.CENTER
+        color = Color.WHITE; textAlign = Paint.Align.CENTER; isFakeBoldText = true
     }
     private val hint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFB0B3B8.toInt(); textAlign = Paint.Align.CENTER
+        color = 0xFF7E96AA.toInt(); textAlign = Paint.Align.CENTER
     }
 
     private var startMs = 0L
@@ -74,17 +79,27 @@ class BreathOverlayView(
         val p = if (inhaling) t / inhaleMs else 1f - (t - inhaleMs) / exhaleMs
         val eased = 0.5f - 0.5f * kotlin.math.cos(p * Math.PI.toFloat()) // smoothstep-ish
 
+        val cx = w / 2f
+        val cy = h * 0.43f
         val rMin = min(w, h) * 0.12f
         val rMax = min(w, h) * 0.34f
         val r = rMin + (rMax - rMin) * eased
-        circle.alpha = (90 + 120 * eased).toInt().coerceIn(0, 255)
-        canvas.drawCircle(w / 2f, h * 0.45f, r, circle)
 
-        cue.textSize = min(w, h) * 0.08f
-        canvas.drawText(if (inhaling) "Breathe in…" else "Breathe out…", w / 2f, h * 0.78f, cue)
+        // soft radial-gradient orb (bright core fading to transparent edge)
+        val core = 0xFF6FD3FF.toInt()
+        val edge = 0x0066C4F5
+        circle.shader = RadialGradient(cx, cy, r, core, edge, Shader.TileMode.CLAMP)
+        canvas.drawCircle(cx, cy, r, circle)
+        // thin outer ring at the breath extent
+        ring.strokeWidth = min(w, h) * 0.006f
+        ring.alpha = (40 + 80 * eased).toInt().coerceIn(0, 255)
+        canvas.drawCircle(cx, cy, r + min(w, h) * 0.03f, ring)
 
-        hint.textSize = min(w, h) * 0.045f
-        canvas.drawText("tap to dismiss", w / 2f, h * 0.88f, hint)
+        cue.textSize = min(w, h) * 0.075f
+        canvas.drawText(if (inhaling) "Breathe in" else "Breathe out", cx, h * 0.74f, cue)
+
+        hint.textSize = min(w, h) * 0.04f
+        canvas.drawText("tap anywhere to dismiss", cx, h * 0.85f, hint)
 
         if (visibility == VISIBLE) postInvalidateOnAnimation()
     }

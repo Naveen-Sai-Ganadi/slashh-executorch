@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Immersive dark theme: no action bar (the view draws its own header),
+         black status bar with light icons so the gradient UI runs edge to edge. -->
+    <style name="Theme.Slashh" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:statusBarColor">#FF05060A</item>
+        <item name="android:navigationBarColor">#FF05060A</item>
+        <item name="android:windowBackground">#FF05060A</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
