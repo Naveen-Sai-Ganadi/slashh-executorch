@@ -86,6 +86,29 @@ by arranging `wav`s as `<root>/calm/*.wav` and `<root>/stressed/*.wav`:
 python -m model.train --data-dir data/arousal --epochs 40
 ```
 
+## Production model (recommended)
+
+The Quickstart trains the default **base** width for clarity, but the
+*recommended shipped recipe* is the smallest robust width `(4, 8, 16)`
+(~1,549 params, ~12.9 KB `.pte` fp32 / ~12.3 KB INT8). It's trained with noise
+augmentation, holds clean validation accuracy ~0.947, and stays accurate
+through 10 dB SNR — below that, a net this small is init-sensitive, so 10 dB is
+the envelope we stand on.
+
+```bash
+# train the recipe, measure robustness, record the evidence
+python -m model.production
+# add --out assets/stress_model.pte to also overwrite the shipped .pte
+```
+
+It writes `docs/benchmarks/production.{json,md}` and is non-destructive by
+default — it only writes a `.pte` when `--out` is given. An INT8 variant
+(PT2E + XNNPACK) is produced and recorded too; at this size the program is
+overhead-dominated, so INT8's win is integer NPU compute with unchanged
+predictions rather than a big size cut. See
+[`docs/benchmarks/production.md`](docs/benchmarks/production.md) for the full
+robustness table.
+
 ## Android app
 
 The on-device pipeline lives in [`android/`](android/README.md): a Kotlin
