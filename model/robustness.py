@@ -43,22 +43,59 @@ __all__ = [
 ]
 
 
-def _add_noise(wave: torch.Tensor, snr_db: float, gen: torch.Generator) -> torch.Tensor:
-    """Add white Gaussian noise to ``wave`` at the requested SNR (dB)."""
+def _colored_noise(n: int, gen: torch.Generator, *, color: str) -> torch.Tensor:
+    """Unit-variance 1-D noise with a ``white``/``pink``/``brown`` spectrum.
+
+    Pink (``1/f`` power) and brown (``1/f^2`` power) shape white noise in the
+    frequency domain, then renormalize to unit variance so the caller's SNR
+    scaling still holds. These approximate real acoustic noise (traffic, fans,
+    HVAC), which carries more energy in the low frequencies than white noise.
+    """
+    white = torch.randn(n, generator=gen)
+    if color == "white":
+        return white
+    spec = torch.fft.rfft(white)
+    freqs = torch.fft.rfftfreq(n)
+    scale = torch.ones_like(freqs)
+    nz = freqs > 0
+    if color == "pink":
+        scale[nz] = freqs[nz] ** -0.5
+    elif color == "brown":
+        scale[nz] = freqs[nz] ** -1.0
+    else:
+        raise ValueError(f"unknown noise color: {color!r}")
+    scale[0] = 0.0  # drop DC so the noise is zero-mean
+    out = torch.fft.irfft(spec * scale, n=n)
+    return out / out.std().clamp(min=1e-12)
+
+
+def _add_noise(
+    wave: torch.Tensor, snr_db: float, gen: torch.Generator, *, color: str = "white"
+) -> torch.Tensor:
+    """Add noise of the given spectral ``color`` to ``wave`` at the SNR (dB)."""
     sig_power = wave.pow(2).mean().clamp(min=1e-12)
     snr = 10.0 ** (snr_db / 10.0)
     noise_power = sig_power / snr
-    noise = torch.randn(wave.shape, generator=gen) * noise_power.sqrt()
-    return wave + noise
+    if color == "white":
+        # Preserve the exact original draw so white-noise records stay stable.
+        noise = torch.randn(wave.shape, generator=gen)
+    else:
+        noise = _colored_noise(wave.numel(), gen, color=color).reshape(wave.shape)
+    return wave + noise * noise_power.sqrt()
 
 
 def noisy_synthetic_dataset(
-    n_per_class: int, seed: int = 0, snr_db: float | None = None
+    n_per_class: int,
+    seed: int = 0,
+    snr_db: float | None = None,
+    noise_color: str = "white",
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Balanced synthetic eval set with optional waveform noise at ``snr_db``.
 
     ``snr_db=None`` injects no noise and reproduces ``synthetic_dataset`` exactly
     (same generator draws), so the clean point is directly comparable.
+    ``noise_color`` selects the noise spectrum (``white``/``pink``/``brown``);
+    the default ``white`` reproduces the original draw byte-for-byte.
     """
     gen = torch.Generator().manual_seed(seed)
     feats, labels = [], []
@@ -66,7 +103,7 @@ def noisy_synthetic_dataset(
         for _ in range(n_per_class):
             wave = _synth_waveform(stressed, gen)
             if snr_db is not None:
-                wave = _add_noise(wave, snr_db, gen)
+                wave = _add_noise(wave, snr_db, gen, color=noise_color)
             feats.append(extract(wave))
             labels.append(float(stressed))
     x = torch.cat(feats, dim=0)
@@ -145,12 +182,15 @@ def reliable_floor(
 
 
 def _eval_one_seed(
-    model: StressNet, snr_levels, n_per_class: int, seed: int
+    model: StressNet, snr_levels, n_per_class: int, seed: int,
+    noise_color: str = "white",
 ) -> list[dict]:
     """Per-SNR accuracy/f1/n for ``model`` at one eval seed."""
     rows = []
     for snr in snr_levels:
-        x, y = noisy_synthetic_dataset(n_per_class, seed=seed, snr_db=snr)
+        x, y = noisy_synthetic_dataset(
+            n_per_class, seed=seed, snr_db=snr, noise_color=noise_color
+        )
         with torch.no_grad():
             pred = model(x)
         m = _confusion(pred, y)
@@ -165,6 +205,7 @@ def robustness_curve(
     n_per_class: int = 64,
     seed: int = 1,
     eval_seeds: Sequence[int] | None = None,
+    noise_color: str = "white",
     threshold: float = 0.8,
     out_dir: str | Path | None = None,
 ) -> RobustnessResult:
@@ -179,7 +220,10 @@ def robustness_curve(
     """
     model = model.eval()
     seeds = list(eval_seeds) if eval_seeds is not None else [seed]
-    per_seed = [_eval_one_seed(model, snr_levels, n_per_class, s) for s in seeds]
+    per_seed = [
+        _eval_one_seed(model, snr_levels, n_per_class, s, noise_color)
+        for s in seeds
+    ]
 
     points: list[RobustnessPoint] = []
     for j, snr in enumerate(snr_levels):

@@ -51,6 +51,18 @@ def test_index_summarizes_int8_robustness(tmp_path: Path) -> None:
     assert "preserves the floor" in md
 
 
+def test_index_summarizes_noise_colors(tmp_path: Path) -> None:
+    _write(tmp_path / "noise_colors.json", {
+        "threshold": 0.8,
+        "reliable_floor_db": {"white": 0.0, "pink": 0.0, "brown": 10.0},
+        "holds_across_colors": True,
+        "curves": {},
+    })
+    md = build_index(tmp_path)
+    assert "noise color" in md.lower()
+    assert "holds across colors" in md
+
+
 def test_missing_artifacts_are_skipped_not_fatal(tmp_path: Path) -> None:
     # only one artifact present; others absent
     _write(tmp_path / "benchmark.json", {
