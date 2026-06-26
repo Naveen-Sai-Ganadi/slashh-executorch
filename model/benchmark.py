@@ -31,7 +31,7 @@ from pathlib import Path
 import torch
 
 from .data import synthetic_dataset
-from .export_executorch import export_to_pte
+from .export_executorch import export_quantized_to_pte, export_to_pte
 from .model import StressNet, example_input
 from .run_pte import run_pte
 
@@ -52,6 +52,7 @@ class BenchmarkResult:
     pte_max_abs_err: float
     eval_n: int
     iters: int
+    quantized: bool = False
 
     @property
     def speedup_eager_over_pte(self) -> float:
@@ -107,12 +108,17 @@ def benchmark_variant(
     name: str,
     *,
     channels: Channels = (16, 32, 64),
+    quantize: bool = False,
     warmup: int = 3,
     iters: int = 20,
     eval_n: int = 32,
     seed: int = 0,
 ) -> BenchmarkResult:
-    """Measure latency, size, accuracy and eager/pte parity for one variant."""
+    """Measure latency, size, accuracy and eager/pte parity for one variant.
+
+    With ``quantize=True`` the program is exported via the host INT8 PT2E +
+    XNNPACK path; parity vs fp32 eager is then expected to be looser (INT8).
+    """
     torch.manual_seed(seed)
     model = StressNet(channels=channels).eval()
 
@@ -128,7 +134,10 @@ def benchmark_variant(
         eager_ms = _time_ms(lambda: model(one), warmup=warmup, iters=iters)
 
     # --- export the real program; size is len(buffer) ---
-    buffer = export_to_pte(model=model)
+    if quantize:
+        buffer = export_quantized_to_pte(model, x)
+    else:
+        buffer = export_to_pte(model=model)
     pte_bytes = len(buffer)
     pt_bytes = _pt_size_bytes(model)
 
@@ -158,20 +167,22 @@ def benchmark_variant(
         pte_max_abs_err=max_err,
         eval_n=eval_n,
         iters=iters,
+        quantized=quantize,
     )
 
 
 def to_markdown(results: list[BenchmarkResult]) -> str:
     """Render an A/B comparison table, one row per variant."""
     header = (
-        "| variant | channels | eager latency (ms) | pte latency (ms) | "
+        "| variant | channels | dtype | eager latency (ms) | pte latency (ms) | "
         "speedup | .pt size (KB) | .pte size (KB) | accuracy | parity max abs err |\n"
-        "|---|---|---|---|---|---|---|---|---|\n"
+        "|---|---|---|---|---|---|---|---|---|---|\n"
     )
     rows = []
     for r in results:
+        dtype = "int8" if r.quantized else "fp32"
         rows.append(
-            f"| {r.name} | {tuple(r.channels)} | {r.eager_latency_ms:.3f} | "
+            f"| {r.name} | {tuple(r.channels)} | {dtype} | {r.eager_latency_ms:.3f} | "
             f"{r.pte_latency_ms:.3f} | {r.speedup_eager_over_pte:.2f}× | "
             f"{r.pt_bytes / 1024:.1f} | {r.pte_bytes / 1024:.1f} | "
             f"{r.accuracy:.3f} | {r.pte_max_abs_err:.2e} |"
@@ -179,8 +190,15 @@ def to_markdown(results: list[BenchmarkResult]) -> str:
     return header + "\n".join(rows) + "\n"
 
 
+def _normalize_spec(spec) -> tuple[Channels, bool]:
+    """A variant value is either a channels tuple or {channels, quantize}."""
+    if isinstance(spec, dict):
+        return tuple(spec["channels"]), bool(spec.get("quantize", False))
+    return tuple(spec), False
+
+
 def run_suite(
-    variants: dict[str, Channels],
+    variants: dict,
     *,
     out_dir: str | Path,
     warmup: int = 3,
@@ -188,13 +206,20 @@ def run_suite(
     eval_n: int = 32,
     seed: int = 0,
 ) -> SuiteResult:
-    """Benchmark each variant and write JSON + markdown artifacts to ``out_dir``."""
-    results = [
-        benchmark_variant(
-            name, channels=ch, warmup=warmup, iters=iters, eval_n=eval_n, seed=seed
+    """Benchmark each variant and write JSON + markdown artifacts to ``out_dir``.
+
+    Each variant value is either a ``(c1, c2, c3)`` channels tuple, or a dict
+    ``{"channels": (...), "quantize": True}`` to request the INT8 export path.
+    """
+    results = []
+    for name, spec in variants.items():
+        channels, quantize = _normalize_spec(spec)
+        results.append(
+            benchmark_variant(
+                name, channels=channels, quantize=quantize,
+                warmup=warmup, iters=iters, eval_n=eval_n, seed=seed,
+            )
         )
-        for name, ch in variants.items()
-    ]
     suite = SuiteResult(results=results, host=_host_info())
 
     out_dir = Path(out_dir)
@@ -217,9 +242,10 @@ def run_suite(
 
 
 # The default A/B suite: a couple of width points spanning the size/accuracy curve.
-DEFAULT_VARIANTS: dict[str, Channels] = {
+DEFAULT_VARIANTS: dict = {
     "small": (8, 16, 32),
     "base": (16, 32, 64),
+    "base-int8": {"channels": (16, 32, 64), "quantize": True},
 }
 
 

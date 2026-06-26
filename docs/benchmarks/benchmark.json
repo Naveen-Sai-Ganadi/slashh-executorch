@@ -14,15 +14,16 @@
         16,
         32
       ],
-      "eager_latency_ms": 0.6086,
-      "pte_latency_ms": 0.7082,
+      "eager_latency_ms": 0.63,
+      "pte_latency_ms": 0.647,
       "pt_bytes": 31271,
       "pte_bytes": 30596,
       "accuracy": 0.5,
       "pte_max_abs_err": 5.960464477539063e-08,
       "eval_n": 64,
       "iters": 30,
-      "speedup_eager_over_pte": 0.859
+      "quantized": false,
+      "speedup_eager_over_pte": 0.974
     },
     {
       "name": "base",
@@ -31,15 +32,34 @@
         32,
         64
       ],
-      "eager_latency_ms": 0.7794,
-      "pte_latency_ms": 0.7932,
+      "eager_latency_ms": 0.7769,
+      "pte_latency_ms": 0.7994,
       "pt_bytes": 101543,
       "pte_bytes": 100228,
       "accuracy": 0.5,
       "pte_max_abs_err": 5.960464477539063e-08,
       "eval_n": 64,
       "iters": 30,
-      "speedup_eager_over_pte": 0.983
+      "quantized": false,
+      "speedup_eager_over_pte": 0.972
+    },
+    {
+      "name": "base-int8",
+      "channels": [
+        16,
+        32,
+        64
+      ],
+      "eager_latency_ms": 0.7286,
+      "pte_latency_ms": 0.6502,
+      "pt_bytes": 101543,
+      "pte_bytes": 34564,
+      "accuracy": 0.5,
+      "pte_max_abs_err": 0.00023028254508972168,
+      "eval_n": 64,
+      "iters": 30,
+      "quantized": true,
+      "speedup_eager_over_pte": 1.121
     }
   ]
 }

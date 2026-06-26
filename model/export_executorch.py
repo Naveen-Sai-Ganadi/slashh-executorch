@@ -71,6 +71,47 @@ def export_to_pte(
     return et_program.buffer
 
 
+def export_quantized_to_pte(
+    model: StressNet,
+    calibration: torch.Tensor,
+) -> bytes:
+    """Return INT8-quantized ``.pte`` bytes via PT2E + the XNNPACK quantizer.
+
+    Post-training **static** quantization, entirely on the host:
+        export --module--> prepare_pt2e --calibrate--> convert_pt2e
+              --export--> to_edge_transform_and_lower(XNNPACK) --> .pte
+
+    ``calibration`` is a ``[N, 1, N_MELS, N_FRAMES]`` batch used to observe
+    activation ranges. This is the on-host INT8 optimization — it does NOT touch
+    Qualcomm AI Hub or the live token (that is the gated M5); it just produces a
+    smaller program that still runs through the ExecuTorch runtime.
+    """
+    # Imported lazily: PT2E quant pulls in torchao, not needed for fp32 export.
+    from torchao.quantization.pt2e.quantize_pt2e import convert_pt2e, prepare_pt2e
+    from executorch.backends.xnnpack.quantizer.xnnpack_quantizer import (
+        XNNPACKQuantizer,
+        get_symmetric_quantization_config,
+    )
+
+    _ensure_flatc()
+    model = model.eval()
+    example = (example_input(),)
+
+    captured = torch.export.export(model, example).module()
+    quantizer = XNNPACKQuantizer().set_global(
+        get_symmetric_quantization_config(is_per_channel=True)
+    )
+    prepared = prepare_pt2e(captured, quantizer)
+    with torch.no_grad():
+        for i in range(calibration.shape[0]):
+            prepared(calibration[i:i + 1])
+    converted = convert_pt2e(prepared)
+
+    exported = torch.export.export(converted, example)
+    edge = to_edge_transform_and_lower(exported, partitioner=[XnnpackPartitioner()])
+    return edge.to_executorch().buffer
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Export StressNet to a .pte")
     ap.add_argument("--output", "-o", default="assets/stress_model.pte",
@@ -79,13 +120,21 @@ def main() -> None:
                     help="optional checkpoint to load before export")
     ap.add_argument("--no-delegate", action="store_true",
                     help="export portable (no XNNPACK) — for debugging")
+    ap.add_argument("--quantize", action="store_true",
+                    help="INT8 post-training quantization (PT2E + XNNPACK)")
     args = ap.parse_args()
 
-    buffer = export_to_pte(args.weights, delegate=not args.no_delegate)
+    if args.quantize:
+        from .data import synthetic_dataset
+        calib, _ = synthetic_dataset(32, seed=1000)
+        buffer = export_quantized_to_pte(build_model(args.weights), calib)
+        backend = "XNNPACK-INT8"
+    else:
+        buffer = export_to_pte(args.weights, delegate=not args.no_delegate)
+        backend = "portable" if args.no_delegate else "XNNPACK"
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(buffer)
-    backend = "portable" if args.no_delegate else "XNNPACK"
     print(f"wrote {out}  ({len(buffer):,} bytes, backend={backend})")
 
 
