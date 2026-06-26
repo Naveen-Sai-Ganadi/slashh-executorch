@@ -30,6 +30,10 @@ INT8 calibration A/B (clean vs noise-aware): clean reliable to -5 dB, noise-awar
 
 End-to-end PCM→log-mel→score: fastest **`pte-fp32`** at 0.588 ms/window (hop 1.0s, ~1702× real-time head-room) — **all backends real-time**. _(`latency_rtf.json` · [details](latency_rtf.md))_
 
+### Score calibration (reliability & ECE)
+
+Score calibration: **underconfident** (ECE 0.242); temperature T=0.41 → ECE 0.102 — scores under-state certainty — the gate is conservative. _(`calibration.json` · [details](calibration.md))_
+
 ### Robustness across noise colors
 
 Reliable floor by noise color: white -5 dB, pink -5 dB, brown -5 dB — **holds across colors**. _(`noise_colors.json` · [details](noise_colors.md))_

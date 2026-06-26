@@ -134,6 +134,24 @@ def _summarize_latency_rtf(d: dict) -> str:
     )
 
 
+def _summarize_calibration(d: dict) -> str:
+    verdict = d.get("verdict", "?")
+    ece = d.get("ece")
+    t = d.get("temperature")
+    after = d.get("ece_after_temp")
+    gloss = {
+        "well-calibrated": "scores are trustworthy probabilities — the gate is sound",
+        "overconfident": "scores claim more certainty than earned",
+        "underconfident": "scores under-state certainty — the gate is conservative",
+    }.get(verdict, verdict)
+    temp_txt = (
+        f"; temperature T={t:g} → ECE {after:.3f}"
+        if isinstance(t, (int, float)) and t != 1.0 else ""
+    )
+    ece_txt = f"{ece:.3f}" if isinstance(ece, (int, float)) else "?"
+    return f"Score calibration: **{verdict}** (ECE {ece_txt}){temp_txt} — {gloss}."
+
+
 def _summarize_noise_colors(d: dict) -> str:
     floors = d.get("reliable_floor_db", {})
     parts = ", ".join(f"{c} {_fmt_floor(v)}" for c, v in floors.items())
@@ -262,6 +280,7 @@ _ARTIFACTS = [
     ("int8_robustness.json", "INT8 vs fp32 robustness", _summarize_int8_robustness),
     ("int8_calib_ab.json", "INT8 calibration A/B (clean vs noise-aware)", _summarize_int8_calib_ab),
     ("latency_rtf.json", "End-to-end latency & Real-Time Factor", _summarize_latency_rtf),
+    ("calibration.json", "Score calibration (reliability & ECE)", _summarize_calibration),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
     ("init_envelope.json", "Cross-initialization envelope", _summarize_init_envelope),
