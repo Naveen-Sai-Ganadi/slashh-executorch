@@ -93,7 +93,10 @@ The Quickstart trains the default **base** width for clarity, but the
 (~1,549 params, ~12.9 KB `.pte` fp32 / ~12.3 KB INT8). It's trained with noise
 augmentation, holds clean validation accuracy ~0.947, and stays accurate
 through 10 dB SNR — below that, a net this small is init-sensitive, so 10 dB is
-the envelope we stand on.
+the envelope we stand on. That envelope is measured, not guessed: across 5
+independent initializations most hold to 0 dB but one only to 10 dB, so 10 dB is
+the conservative floor that holds regardless of the training seed (`python -m
+model.init_envelope`, recorded in `docs/benchmarks/init_envelope.md`).
 
 ```bash
 # train the recipe, measure robustness, record the evidence

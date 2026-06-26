@@ -74,6 +74,18 @@ def test_index_summarizes_noise_failure_mode(tmp_path: Path) -> None:
     assert "misses stress" in md
 
 
+def test_index_summarizes_init_envelope(tmp_path: Path) -> None:
+    _write(tmp_path / "init_envelope.json", {
+        "threshold": 0.8,
+        "envelope_db": 10.0,
+        "n_inits": 5,
+        "floors": [],
+    })
+    md = build_index(tmp_path)
+    assert "envelope" in md.lower()
+    assert "10 dB" in md
+
+
 def test_missing_artifacts_are_skipped_not_fatal(tmp_path: Path) -> None:
     # only one artifact present; others absent
     _write(tmp_path / "benchmark.json", {

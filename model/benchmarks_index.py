@@ -119,6 +119,20 @@ def _summarize_noise_failure_mode(d: dict) -> str:
     return f"First failure under noise leans **{gloss}**."
 
 
+def _summarize_init_envelope(d: dict) -> str:
+    env = d.get("envelope_db")
+    n = d.get("n_inits", "?")
+    if env is None:
+        return (
+            f"Across {n} inits, no common noisy envelope — some init is reliable "
+            "only on clean audio."
+        )
+    return (
+        f"Across {n} independent inits, the conservative envelope is reliable "
+        f"down to **{_fmt_floor(env)}** (holds regardless of training seed)."
+    )
+
+
 def _summarize_robust_train(d: dict) -> str:
     base = d.get("baseline", {}).get("floor_db")
     aug = d.get("augmented", {}).get("floor_db")
@@ -137,6 +151,7 @@ _ARTIFACTS = [
     ("int8_robustness.json", "INT8 vs fp32 robustness", _summarize_int8_robustness),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
+    ("init_envelope.json", "Cross-initialization envelope", _summarize_init_envelope),
     ("robust_train.json", "Noise-augmented training", _summarize_robust_train),
     ("production.json", "Production model (shipped recipe)", _summarize_production),
 ]
