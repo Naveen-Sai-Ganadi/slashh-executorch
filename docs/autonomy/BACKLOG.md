@@ -46,13 +46,18 @@ See `docs/plan.md` for the full design and section references.
   - `MeterTest.kt` — 5 JVM unit tests (idle, calm/green, elevated/amber, latched-HIGH-in-band, percent round/clamp). `run_jvm_tests.sh` generalized to discover test classes across packages → **14 JVM tests green** (was 9).
 
 ## [M9] Calming intervention
-- **status:** todo
+- **status:** done (night build — branch `feature/night-vad-fix-and-jvm-tests`)
 - **priority:** P1
 - **role:** runtime-engineer
 - **depends-on:** [M8]
 - **acceptance:**
-  - sustained stress triggers a calming cue (breathing prompt / haptic)
-  - intervention is dismissible and rate-limited (no nagging)
+  - sustained stress triggers a calming cue (breathing prompt / haptic) ✅
+  - intervention is dismissible and rate-limited (no nagging) ✅
+- **shipped:**
+  - `ui/CalmCue.kt` — pure-JVM trigger/rate-limit state machine with an injected clock: shows only after stress is *sustained* (`sustainMs`, default 4s), at most once per `cooldownMs` (default 60s), stays quiet for the rest of an episode after dismissal, and exposes `justTriggered` for a one-shot haptic.
+  - `ui/BreathOverlayView.kt` — dimmed full-screen overlay with a 4s-in/4s-out breathing circle + "Breathe in/out" cue; haptic on show; tap to dismiss.
+  - `MainActivity` stacks the overlay over the meter in a `FrameLayout`; feeds `state.stressed` + `SystemClock.uptimeMillis()` into `CalmCue`; resets on pause.
+  - `CalmCueTest.kt` — 5 JVM unit tests (brief-spike no-trigger, sustained trigger + haptic edge, dismiss silences episode, cooldown gates next episode, reset). → **19 JVM tests green** (was 14).
 
 ## [M10] Airplane-mode hardening
 - **status:** todo
