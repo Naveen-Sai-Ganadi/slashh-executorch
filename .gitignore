@@ -20,3 +20,10 @@ data/
 
 # JVM unit-test cache (downloaded jars + compiled classes)
 android/.jvmtest/
+
+# Android build / IDE / machine-specific (never commit)
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/local.properties
