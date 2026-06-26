@@ -19,9 +19,13 @@ Host-only; no device, no AI Hub, no live token.
 
 from __future__ import annotations
 
+import statistics
+import time
+
 import torch
 from torch import nn
 
+from .audio_config import SAMPLE_RATE, WINDOW_SAMPLES
 from .detector import StressDetector, StressState
 from .features import extract
 
@@ -63,3 +67,36 @@ class HostStressPipeline:
     def reset(self) -> None:
         self.detector.reset()
         self._last = _NEUTRAL
+
+
+def realtime_factor(
+    pipe: HostStressPipeline, waveforms, *, warmup: int = 5
+) -> dict:
+    """Measure how fast the pipeline processes a window vs. the window duration.
+
+    The real-time factor (RTF) is wall-time-to-process / window-duration; RTF < 1
+    means the pipeline keeps up with the mic. Runs ``warmup`` windows first (to
+    settle lazy init), then times each of ``waveforms`` and reports the median,
+    max, and per-window timings alongside the RTF. Host-only, no token.
+    """
+    window_s = WINDOW_SAMPLES / SAMPLE_RATE
+    waveforms = list(waveforms)
+    for w in waveforms[:warmup]:
+        pipe.process_window(w)
+
+    per_window_ms = []
+    for w in waveforms:
+        t0 = time.perf_counter()
+        pipe.process_window(w)
+        per_window_ms.append((time.perf_counter() - t0) * 1000.0)
+
+    median_ms = statistics.median(per_window_ms)
+    max_ms = max(per_window_ms)
+    return {
+        "window_s": window_s,
+        "median_ms": median_ms,
+        "max_ms": max_ms,
+        "median_rtf": (median_ms / 1000.0) / window_s,
+        "max_rtf": (max_ms / 1000.0) / window_s,
+        "per_window_ms": per_window_ms,
+    }
