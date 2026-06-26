@@ -16,17 +16,17 @@ Maven CPU AAR). So finishing the NPU path is **drop in 3 artifacts, rebuild**.
 | 2 | QNN runtime libs (`libQnnHtp*.so`, `libQnnSystem.so`, V79 skel) | `app/src/main/jniLibs/arm64-v8a/` | ✅ extracted by the same Docker run |
 | 3 | QNN-enabled ExecuTorch **AAR** (`libexecutorch.so` built **with** the QNN backend) | `app/libs/executorch-qnn.aar` | ⚠️ heavy build — see below |
 
-### Artifacts 1 + 2 — one command (no Qualcomm login)
-ExecuTorch 1.2.0's QNN backend **auto-downloads the QNN SDK on Linux x86**, so a
-Docker container does it all — no manual SDK download, no Qualcomm account:
-
+### Artifacts 1 + 2 — DONE, one command (no Qualcomm login) ✅
 ```bash
 bash tools/qnn/build_qnn_pte.sh
 ```
-This runs `tools/qnn/export_qnn_pte.py` in a `linux/amd64` container: PT2E-quantizes
+Runs `tools/qnn/export_qnn_pte.py` in a `linux/amd64` container: PT2E-quantizes
 `StressNet` (w8a8, calibrated on RAVDESS), lowers it to QNN for `SM8750`, writes
-the `.pte`, and copies the QNN runtime `.so`s into `jniLibs/arm64-v8a/`.
-(First run is slow under x86 emulation; pip + SDK are cached for re-runs.)
+`assets/stress_model_qnn.pte`, and copies the essential HTP-V79 runtime `.so`s
+into `jniLibs/arm64-v8a/`. The container mounts the QAIRT Community SDK from
+`.qairt/` (run downloads it once; no Qualcomm login) and sets
+`LD_LIBRARY_PATH=$QNN_SDK_ROOT/lib/x86_64-linux-clang` + installs `libc++1`.
+The `.pte` is committed; the `.so`s are gitignored (regenerate with this script).
 
 ### Artifact 3 — the QNN-enabled AAR (the one hard part)
 The Maven `executorch-android` AAR is CPU-only (no QNN). You need `libexecutorch.so`
