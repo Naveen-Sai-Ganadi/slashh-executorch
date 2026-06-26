@@ -99,6 +99,36 @@ def test_operating_floor_finds_first_failing_snr() -> None:
     assert operating_floor(pts, threshold=0.5) is None
 
 
+def test_robustness_curve_averages_over_eval_seeds() -> None:
+    # Averaging accuracy over several eval seeds (with std) is stronger evidence
+    # than a single draw — it answers "is this floor luck?". The multi-seed
+    # curve must equal the mean of the per-seed single curves and carry a std.
+    model = _trained_model(seed=0)
+    levels = [None, 10.0, 0.0]
+    seeds = (1, 2, 3)
+
+    multi = robustness_curve(model, snr_levels=levels, n_per_class=32, eval_seeds=seeds)
+    singles = [
+        robustness_curve(model, snr_levels=levels, n_per_class=32, seed=s)
+        for s in seeds
+    ]
+
+    assert len(multi.points) == len(levels)
+    for i, p in enumerate(multi.points):
+        accs = [s.points[i].accuracy for s in singles]
+        assert abs(p.accuracy - sum(accs) / len(accs)) < 1e-3
+        assert p.acc_std is not None and p.acc_std >= 0.0
+
+    # deterministic for the same eval seeds
+    again = robustness_curve(model, snr_levels=levels, n_per_class=32, eval_seeds=seeds)
+    assert [p.accuracy for p in multi.points] == [p.accuracy for p in again.points]
+    assert [p.acc_std for p in multi.points] == [p.acc_std for p in again.points]
+
+    # single-seed path is unchanged: no std reported
+    one = robustness_curve(model, snr_levels=levels, n_per_class=32, seed=1)
+    assert all(p.acc_std is None for p in one.points)
+
+
 def test_reliable_floor_is_lowest_passing_snr() -> None:
     pts = [
         RobustnessPoint(snr_db=None, accuracy=0.98, f1=0.98, n=96),

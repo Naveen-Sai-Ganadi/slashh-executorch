@@ -109,3 +109,35 @@ def test_production_record_floor_pair_is_honest(tmp_path: Path) -> None:
     assert "reliable down to" in md
     # the old self-contradictory bare label is gone
     assert "operating floor" not in md
+
+
+def test_build_production_records_multi_seed_spread(tmp_path: Path) -> None:
+    """The shipped record averages robustness over several eval seeds.
+
+    A floor backed by one lucky draw is weak evidence; the shipped artifact
+    instead reports mean ± std per SNR so the spread is visible. Every point
+    must carry an ``acc_std`` and the markdown must surface it.
+    """
+    out = build_production(
+        epochs=8, n_per_class=64, seed=0, n_eval_seeds=3,
+        snr_levels=[None, 10.0, 0.0], out_dir=tmp_path,
+    )
+    rob = json.loads((tmp_path / "production.json").read_text())["robustness"]
+    for p in rob["points"]:
+        assert p["acc_std"] is not None and p["acc_std"] >= 0.0
+    # markdown surfaces the spread in the accuracy column
+    assert "±" in (tmp_path / "production.md").read_text()
+    # the in-memory result agrees
+    assert all(p.acc_std is not None for p in out.robustness.points)
+
+
+def test_build_production_single_seed_has_no_spread(tmp_path: Path) -> None:
+    # n_eval_seeds=1 keeps the fast single-seed path: no std, no ± in the table.
+    out = build_production(
+        epochs=8, n_per_class=64, seed=0, n_eval_seeds=1,
+        snr_levels=[None, 10.0, 0.0], out_dir=tmp_path,
+    )
+    rob = json.loads((tmp_path / "production.json").read_text())["robustness"]
+    assert all(p["acc_std"] is None for p in rob["points"])
+    assert "±" not in (tmp_path / "production.md").read_text()
+    assert all(p.acc_std is None for p in out.robustness.points)

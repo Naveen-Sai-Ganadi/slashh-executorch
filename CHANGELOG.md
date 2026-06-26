@@ -24,6 +24,7 @@ NPU numbers are gated on a device + live AI Hub run and have not been measured.
 - INT8 export of the shipped production recipe (`quantize_production`, PT2E + XNNPACK): a deployable ~12.3 KB INT8 `.pte`. At ~1,549 params the program is overhead-dominated, so INT8 only trims the `.pte` ~5% (versus the ~2.9x seen on the base width); its real win is integer NPU compute with unchanged predictions (scores within ~0.004 of eager). `378a816`
 - Real-time guarantee: `realtime_factor()` reports median/max processing time and real-time factor for the waveform → state chain, and `tests/test_latency.py` certifies the README real-time claim against hot-path regressions. `df3b999`
 - Reproducibility guarantee: `tests/test_reproducibility.py` asserts two seeded `train_production(seed=0)` runs yield identical validation accuracy, bit-identical weights, and a byte-identical `.pte` despite global-RNG churn between them. `2cb46cc`
+- Multi-seed robustness evidence: `robustness_curve(..., eval_seeds=...)` averages accuracy/F1 across several eval seeds and records the per-SNR accuracy **std** (`acc_std`). `build_production` now ships the production record averaged over 5 eval seeds, so the advertised floors carry a spread (e.g. 0 dB = 0.842 ± 0.015) instead of resting on one lucky draw. `n_eval_seeds=1` keeps the fast single-seed path.
 
 ### Changed
 

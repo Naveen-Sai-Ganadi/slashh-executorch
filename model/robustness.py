@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import statistics
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -81,6 +83,9 @@ class RobustnessPoint:
     accuracy: float
     f1: float
     n: int
+    # std of accuracy across eval seeds when the curve is averaged over several;
+    # None for a single-seed curve. Default keeps back-compat with old records.
+    acc_std: float | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -139,33 +144,55 @@ def reliable_floor(
     return floor
 
 
+def _eval_one_seed(
+    model: StressNet, snr_levels, n_per_class: int, seed: int
+) -> list[dict]:
+    """Per-SNR accuracy/f1/n for ``model`` at one eval seed."""
+    rows = []
+    for snr in snr_levels:
+        x, y = noisy_synthetic_dataset(n_per_class, seed=seed, snr_db=snr)
+        with torch.no_grad():
+            pred = model(x)
+        m = _confusion(pred, y)
+        rows.append({"accuracy": m["accuracy"], "f1": m["f1"], "n": int(x.shape[0])})
+    return rows
+
+
 def robustness_curve(
     model: StressNet,
     *,
     snr_levels: list[float | None] = (None, 30.0, 20.0, 10.0, 0.0, -10.0),
     n_per_class: int = 64,
     seed: int = 1,
+    eval_seeds: Sequence[int] | None = None,
     threshold: float = 0.8,
     out_dir: str | Path | None = None,
 ) -> RobustnessResult:
     """Evaluate ``model`` across noise levels; optionally write artifacts.
 
     The clean point is first by convention so ``operating_floor`` scans from
-    least to most noise.
+    least to most noise. With ``eval_seeds`` (a list), each SNR is evaluated at
+    every seed and the curve reports the **mean** accuracy/f1 with the accuracy
+    **std** per point — stronger, less luck-dependent evidence than a single
+    draw. ``eval_seeds=None`` (default) keeps the single-``seed`` behaviour and
+    reports no std (``acc_std=None``).
     """
     model = model.eval()
+    seeds = list(eval_seeds) if eval_seeds is not None else [seed]
+    per_seed = [_eval_one_seed(model, snr_levels, n_per_class, s) for s in seeds]
+
     points: list[RobustnessPoint] = []
-    for snr in snr_levels:
-        x, y = noisy_synthetic_dataset(n_per_class, seed=seed, snr_db=snr)
-        with torch.no_grad():
-            pred = model(x)
-        m = _confusion(pred, y)
+    for j, snr in enumerate(snr_levels):
+        accs = [rows[j]["accuracy"] for rows in per_seed]
+        f1s = [rows[j]["f1"] for rows in per_seed]
+        std = round(statistics.stdev(accs), 4) if len(accs) > 1 else None
         points.append(
             RobustnessPoint(
                 snr_db=snr,
-                accuracy=round(m["accuracy"], 4),
-                f1=round(m["f1"], 4),
-                n=int(x.shape[0]),
+                accuracy=round(statistics.fmean(accs), 4),
+                f1=round(statistics.fmean(f1s), 4),
+                n=per_seed[0][j]["n"],
+                acc_std=std,
             )
         )
 
