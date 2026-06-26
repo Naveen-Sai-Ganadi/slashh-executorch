@@ -74,6 +74,10 @@ Detector time-to-alarm over 20 episodes: detection rate 100%, median onset 1s; r
 
 Detector silence-hold over 15 gap episodes: release rate 100%, worst silence inflation 10s; holds through silence: True. _(`silence_hold.json` · [details](silence_hold.md))_
 
+### Input-gain (level) robustness
+
+Input-gain (level) robustness over 9 levels: reliable band [-24, +36] dB; level-invariant: False. _(`gain_robustness.json` · [details](gain_robustness.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_

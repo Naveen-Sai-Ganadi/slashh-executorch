@@ -306,6 +306,17 @@ def _summarize_detection_latency(d: dict) -> str:
     )
 
 
+def _summarize_gain_robustness(d: dict) -> str:
+    lo = d.get("reliable_low_db")
+    hi = d.get("reliable_high_db")
+    inv = d.get("level_invariant")
+    band = f"[{lo:+g}, {hi:+g}] dB" if isinstance(lo, (int, float)) and isinstance(hi, (int, float)) else "—"
+    return (
+        f"Input-gain (level) robustness over {d.get('n_points', '?')} levels: "
+        f"reliable band {band}; level-invariant: {inv}."
+    )
+
+
 def _summarize_silence_hold(d: dict) -> str:
     rr = d.get("release_rate")
     infl = d.get("max_inflation_s")
@@ -471,6 +482,7 @@ _ARTIFACTS = [
     ("base_rate_precision.json", "Base-rate (prior-shift) alarm precision (A/B)", _summarize_base_rate_precision),
     ("detection_latency.json", "Detector onset/offset latency (time-to-alarm)", _summarize_detection_latency),
     ("silence_hold.json", "Detector silence-hold / gap robustness", _summarize_silence_hold),
+    ("gain_robustness.json", "Input-gain (level) robustness", _summarize_gain_robustness),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
