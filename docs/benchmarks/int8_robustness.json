@@ -1,0 +1,110 @@
+{
+  "threshold": 0.8,
+  "fp32_reliable_floor_db": 0.0,
+  "int8_reliable_floor_db": 0.0,
+  "preserves_floor": true,
+  "acc_deltas": [
+    {
+      "snr_db": null,
+      "delta": 0.0
+    },
+    {
+      "snr_db": 20.0,
+      "delta": 0.0
+    },
+    {
+      "snr_db": 10.0,
+      "delta": 0.0
+    },
+    {
+      "snr_db": 0.0,
+      "delta": -0.0078
+    },
+    {
+      "snr_db": -5.0,
+      "delta": 0.0
+    }
+  ],
+  "fp32": {
+    "floor_db": -5.0,
+    "reliable_floor_db": 0.0,
+    "points": [
+      {
+        "snr_db": null,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 20.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 10.0,
+        "accuracy": 0.9531,
+        "f1": 0.9552,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 0.0,
+        "accuracy": 0.9219,
+        "f1": 0.9153,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": -5.0,
+        "accuracy": 0.5,
+        "f1": 0.0,
+        "n": 128,
+        "acc_std": null
+      }
+    ]
+  },
+  "int8": {
+    "floor_db": -5.0,
+    "reliable_floor_db": 0.0,
+    "points": [
+      {
+        "snr_db": null,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 20.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 10.0,
+        "accuracy": 0.9531,
+        "f1": 0.9552,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 0.0,
+        "accuracy": 0.9141,
+        "f1": 0.906,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": -5.0,
+        "accuracy": 0.5,
+        "f1": 0.0,
+        "n": 128,
+        "acc_std": null
+      }
+    ]
+  }
+}

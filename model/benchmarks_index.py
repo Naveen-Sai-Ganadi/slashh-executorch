@@ -88,6 +88,16 @@ def _summarize_production(d: dict) -> str:
     return msg
 
 
+def _summarize_int8_robustness(d: dict) -> str:
+    fp = d.get("fp32_reliable_floor_db")
+    q = d.get("int8_reliable_floor_db")
+    verdict = "preserves the floor" if d.get("preserves_floor") else "degrades the floor"
+    return (
+        f"INT8 vs fp32 under noise: fp32 reliable to {_fmt_floor(fp)}, "
+        f"INT8 to {_fmt_floor(q)} — **INT8 {verdict}**."
+    )
+
+
 def _summarize_robust_train(d: dict) -> str:
     base = d.get("baseline", {}).get("floor_db")
     aug = d.get("augmented", {}).get("floor_db")
@@ -103,6 +113,7 @@ _ARTIFACTS = [
     ("ab_experiment.json", "Trained architecture A/B", _summarize_ab),
     ("detector_tuning.json", "Detector tuning sweep", _summarize_tuning),
     ("robustness.json", "Noise robustness", _summarize_robustness),
+    ("int8_robustness.json", "INT8 vs fp32 robustness", _summarize_int8_robustness),
     ("robust_train.json", "Noise-augmented training", _summarize_robust_train),
     ("production.json", "Production model (shipped recipe)", _summarize_production),
 ]
