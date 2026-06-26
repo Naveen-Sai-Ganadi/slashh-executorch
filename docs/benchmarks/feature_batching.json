@@ -1,0 +1,10 @@
+{
+  "n": 128,
+  "repeats": 5,
+  "loop_ms": 42.90858400054276,
+  "batch_ms": 13.560624996898696,
+  "speedup": 3.1642040105346116,
+  "max_abs_diff": 0.0,
+  "parity_atol": 1e-05,
+  "parity_ok": true
+}

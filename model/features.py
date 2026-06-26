@@ -78,3 +78,32 @@ def extract(pcm: torch.Tensor) -> torch.Tensor:
     elif frames > N_FRAMES:
         logmel = logmel[..., :N_FRAMES]
     return logmel.reshape(1, 1, N_MELS, N_FRAMES)
+
+
+def extract_batch(pcm: torch.Tensor) -> torch.Tensor:
+    """Batched PCM -> model input ``[B, 1, N_MELS, N_FRAMES]``.
+
+    ``pcm`` is ``[B, WINDOW_SAMPLES]`` — every row a fixed-length window. The
+    log-mel front-end is vectorized across the batch in a *single*
+    ``MelSpectrogram`` call instead of ``B`` Python-loop calls to
+    :func:`extract`, which is the per-sample cost the dataset/robustness/A-B
+    builders pay hundreds of times per run. The result matches stacking
+    per-window :func:`extract` to ~1e-6 (the batched mel matmul reorders
+    reductions, so it is allclose rather than bit-equal).
+
+    This is a host-side throughput convenience; the on-device extractor is
+    unaffected — it still streams one window at a time.
+    """
+    if pcm.dim() != 2:
+        raise ValueError(f"expected 2-D [B, samples] PCM, got shape {tuple(pcm.shape)}")
+    with torch.no_grad():
+        logmel = _shared_extractor()(pcm)            # [B, N_MELS, frames]
+    frames = logmel.shape[-1]
+    if frames < N_FRAMES:
+        logmel = torch.nn.functional.pad(logmel, (0, N_FRAMES - frames))
+    elif frames > N_FRAMES:
+        logmel = logmel[..., :N_FRAMES]
+    # Match extract()'s effective contiguity (per-sample + torch.cat is always
+    # contiguous): the ExecuTorch runtime rejects non-contiguous forward inputs,
+    # and these features feed straight into exported .pte programs.
+    return logmel.reshape(pcm.shape[0], 1, N_MELS, N_FRAMES).contiguous()

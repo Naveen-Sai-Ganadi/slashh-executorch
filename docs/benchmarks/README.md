@@ -34,6 +34,10 @@ End-to-end PCM→log-mel→score: fastest **`pte-fp32`** at 0.588 ms/window (hop
 
 Score calibration: **underconfident** (ECE 0.242); temperature T=0.41 → ECE 0.102 — scores under-state certainty — the gate is conservative. _(`calibration.json` · [details](calibration.md))_
 
+### Front-end throughput (loop vs batched)
+
+Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_
+
 ### Robustness across noise colors
 
 Reliable floor by noise color: white -5 dB, pink -5 dB, brown -5 dB — **holds across colors**. _(`noise_colors.json` · [details](noise_colors.md))_
