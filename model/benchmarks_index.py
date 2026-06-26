@@ -64,6 +64,17 @@ def _summarize_robustness(d: dict) -> str:
     return f"Operating floor: **{_fmt_floor(d.get('floor_db'))}**."
 
 
+def _summarize_production(d: dict) -> str:
+    ch = tuple(d.get("channels", []))
+    kb = d.get("pte_bytes", 0) / 1024
+    floor = d.get("robustness", {}).get("floor_db")
+    return (
+        f"Shipped width **`{ch}`** ({d.get('params', '?'):,} params, {kb:.1f} KB "
+        f".pte), clean acc {d.get('val_acc', float('nan')):.3f}, "
+        f"floor {_fmt_floor(floor)}."
+    )
+
+
 def _summarize_robust_train(d: dict) -> str:
     base = d.get("baseline", {}).get("floor_db")
     aug = d.get("augmented", {}).get("floor_db")
@@ -80,6 +91,7 @@ _ARTIFACTS = [
     ("detector_tuning.json", "Detector tuning sweep", _summarize_tuning),
     ("robustness.json", "Noise robustness", _summarize_robustness),
     ("robust_train.json", "Noise-augmented training", _summarize_robust_train),
+    ("production.json", "Production model (shipped recipe)", _summarize_production),
 ]
 
 

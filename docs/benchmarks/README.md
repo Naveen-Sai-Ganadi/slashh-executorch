@@ -21,3 +21,7 @@ Operating floor: **20 dB**. _(`robustness.json` · [details](robustness.md))_
 ### Noise-augmented training
 
 Clean-trained floor 10 dB → augmented floor **none (holds at all tested SNRs)**. _(`robust_train.json` · [details](robust_train.md))_
+
+### Production model (shipped recipe)
+
+Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 0.947, floor -5 dB. _(`production.json` · [details](production.md))_
