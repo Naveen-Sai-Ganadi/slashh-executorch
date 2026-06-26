@@ -16,11 +16,19 @@ REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 WORK="${WORK:-$HOME/et-qnn-build}"
 mkdir -p "$WORK" && cd "$WORK"
 
-# 1) QNN SDK
+# 1) QNN SDK — reuse repo .qairt/ if present, else download QAIRT Community (public, no login)
+QNN_VER=2.37.0.250724
 if [ -z "${QNN_SDK_ROOT:-}" ]; then
   QNN_SDK_ROOT="$(find "$REPO/.qairt" -maxdepth 3 -type d -name '2.37.0.*' 2>/dev/null | head -1 || true)"
 fi
-[ -n "${QNN_SDK_ROOT:-}" ] || { echo "Set QNN_SDK_ROOT (or run build_qnn_pte.sh first to fetch .qairt/)"; exit 1; }
+if [ -z "${QNN_SDK_ROOT:-}" ]; then
+  echo "downloading QAIRT $QNN_VER ..."
+  curl -L -o "$WORK/qairt.zip" \
+    "https://softwarecenter.qualcomm.com/api/download/software/sdks/Qualcomm_AI_Runtime_Community/All/${QNN_VER}/v${QNN_VER}.zip"
+  unzip -q "$WORK/qairt.zip" -d "$WORK/qairt-sdk"
+  QNN_SDK_ROOT="$(find "$WORK/qairt-sdk" -maxdepth 3 -type d -name "${QNN_VER}" | head -1)"
+fi
+[ -n "${QNN_SDK_ROOT:-}" ] || { echo "QNN SDK not found"; exit 1; }
 export QNN_SDK_ROOT
 echo "QNN_SDK_ROOT=$QNN_SDK_ROOT"
 

@@ -28,23 +28,23 @@ into `jniLibs/arm64-v8a/`. The container mounts the QAIRT Community SDK from
 `LD_LIBRARY_PATH=$QNN_SDK_ROOT/lib/x86_64-linux-clang` + installs `libc++1`.
 The `.pte` is committed; the `.so`s are gitignored (regenerate with this script).
 
-### Artifact 3 — the QNN-enabled AAR (the one hard part)
-The Maven `executorch-android` AAR is CPU-only (no QNN). You need `libexecutorch.so`
-built with `-DEXECUTORCH_BUILD_QNN=ON`. Build it on a **Linux x86_64** host (a
-native box or cloud VM is far better than emulated Docker for this) with the
-Android NDK + the QNN SDK:
+### Artifact 3 — the QNN-enabled AAR (build once on a Linux x64 VM)
+The Maven `executorch-android` AAR is CPU-only. We need `libexecutorch.so` built
+with the QNN backend. `tools/qnn/build_qnn_aar.sh` does it in one command (clones
+executorch v1.2.0, fetches the NDK, auto-downloads QAIRT, builds for arm64-v8a,
+and drops `executorch-qnn.aar` into `app/libs/`).
 
+On a fresh **Ubuntu 22.04 x86_64** box (e.g. a cheap cloud VM — no GPU needed):
 ```bash
-git clone --branch v1.2.0 https://github.com/pytorch/executorch.git
-cd executorch && ./install_requirements.sh
-export QNN_SDK_ROOT=/path/to/qairt/<version>     # the SDK ExecuTorch fetched, or QPM
-export ANDROID_NDK=/path/to/android-ndk-r26d
-# build the Android AAR with the QNN backend enabled:
-EXECUTORCH_BUILD_QNN=ON ANDROID_ABIS=arm64-v8a \
-  scripts/build_android_library.sh
-# -> copy the resulting executorch.aar to <repo>/android/app/libs/executorch-qnn.aar
+sudo apt-get update && sudo apt-get install -y \
+  git cmake ninja-build python3.11 python3-pip openjdk-17-jdk unzip curl libc++1
+git clone https://github.com/Naveen-Sai-Ganadi/slashh-executorch.git
+cd slashh-executorch
+bash tools/qnn/build_qnn_aar.sh            # ~20-40 min
+# -> android/app/libs/executorch-qnn.aar
 ```
-Best done with an on-site Qualcomm/Meta mentor, or on a cloud Ubuntu 22.04 x64 VM.
+Then copy that single `executorch-qnn.aar` to `android/app/libs/` on the machine
+that builds the APK. (Or grab a prebuilt QNN AAR from an on-site Qualcomm mentor.)
 
 ## Put it together + test on the S25 (your teammate)
 1. Ensure all three artifacts are in place (1+2 from the Docker run, 3 from the AAR build).
