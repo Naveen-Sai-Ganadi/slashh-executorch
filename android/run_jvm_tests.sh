@@ -51,10 +51,15 @@ echo "[jvm-tests] compiling $(echo $MAIN $TEST | wc -w | tr -d ' ') Kotlin files
 "$KOTLINC" $MAIN $TEST -cp "$CP" -d "$OUT" 2>&1 | grep -v 'warning: redundant' || true
 
 # --- discover test classes (top-level classes in test/) ---------------------
-CLASSES=$(find "$APP/test/java" -name '*.kt' -exec grep -h '^class ' {} \; \
-          | sed -E 's/^class ([A-Za-z0-9_]+).*/\1/')
-PKG=ai.slashh.audio
-FQ=$(for c in $CLASSES; do echo "$PKG.$c"; done)
+# Build fully-qualified names per file from its own `package` line, so tests in
+# any package (ai.slashh.audio, ai.slashh.ui, …) are picked up automatically.
+FQ=""
+for f in $(find "$APP/test/java" -name '*.kt'); do
+  pkg=$(sed -nE 's/^package ([A-Za-z0-9_.]+).*/\1/p' "$f" | head -1)
+  for c in $(sed -nE 's/^class ([A-Za-z0-9_]+).*/\1/p' "$f"); do
+    FQ="$FQ ${pkg:+$pkg.}$c"
+  done
+done
 
 echo "[jvm-tests] running: $FQ"
 # shellcheck disable=SC2086

@@ -3,11 +3,12 @@ package ai.slashh
 import ai.slashh.audio.AudioCapture
 import ai.slashh.audio.ExecuTorchStressClassifier
 import ai.slashh.audio.StressPipeline
+import ai.slashh.ui.Meter
+import ai.slashh.ui.StressMeterView
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -22,19 +23,19 @@ import java.io.File
  */
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var levelView: TextView
+    private lateinit var meter: StressMeterView
     private var capture: AudioCapture? = null
     private var classifier: ExecuTorchStressClassifier? = null
     private lateinit var pipeline: StressPipeline
 
     private val askMic = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted -> if (granted) startListening() else levelView.text = getString(R.string.need_mic) }
+    ) { granted -> if (granted) startListening() else meter.render(Meter.needMic()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        levelView = TextView(this).apply { textSize = 22f; text = "…" }
-        setContentView(levelView)
+        meter = StressMeterView(this)
+        setContentView(meter)
 
         val modelPath = copyAsset("stress_model.pte")
         classifier = ExecuTorchStressClassifier(modelPath)
@@ -59,15 +60,8 @@ class MainActivity : AppCompatActivity() {
         if (capture != null) return
         capture = AudioCapture { window ->
             val state = pipeline.onWindow(window)
-            val text = when {
-                !state.voiced && state.level == null -> "Listening…"
-                state.level == null -> "Listening…"
-                else -> "Stress: %.0f%%%s".format(
-                    state.level!! * 100,
-                    if (state.stressed) "  ⚠ take a breath" else "",
-                )
-            }
-            runOnUiThread { levelView.text = text }
+            val model = Meter.from(state)
+            runOnUiThread { meter.render(model) }
             Log.d("Slashh", "voiced=${state.voiced} raw=${state.rawScore} level=${state.level} stressed=${state.stressed}")
         }.also { it.start() }
     }

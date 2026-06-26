@@ -32,13 +32,18 @@ See `docs/plan.md` for the full design and section references.
   - **note:** needs a JDK17 + Android Studio / device; not buildable on the current host (no JDK)
 
 ## [M8] Stress meter UI
-- **status:** todo
+- **status:** done (night build — branch `feature/night-vad-fix-and-jvm-tests`)
 - **priority:** P1
 - **role:** runtime-engineer
 - **depends-on:** [M7]
 - **acceptance:**
-  - live meter driven by the EMA-smoothed score (`EMA_ALPHA`), crosses at `STRESS_THRESHOLD` / releases at `RELEASE_THRESHOLD`
-  - no flicker at the boundary (hysteresis observed)
+  - live meter driven by the EMA-smoothed score (`EMA_ALPHA`), crosses at `STRESS_THRESHOLD` / releases at `RELEASE_THRESHOLD` ✅
+  - no flicker at the boundary (hysteresis observed) ✅
+- **shipped:**
+  - `ui/Meter.kt` — pure-JVM view-model: `StressState → MeterModel {percent, band(IDLE/CALM/ELEVATED/HIGH), label, argb, stressed}`. Band agrees with the pipeline latch (`state.stressed` ⇒ HIGH even inside the hysteresis band), so the meter never contradicts the decision loop.
+  - `ui/StressMeterView.kt` — thin custom `View` rendering `MeterModel` (percentage + band-colored proportional bar + label); no logic.
+  - `MainActivity` rewired from a `TextView` to `StressMeterView`.
+  - `MeterTest.kt` — 5 JVM unit tests (idle, calm/green, elevated/amber, latched-HIGH-in-band, percent round/clamp). `run_jvm_tests.sh` generalized to discover test classes across packages → **14 JVM tests green** (was 9).
 
 ## [M9] Calming intervention
 - **status:** todo
