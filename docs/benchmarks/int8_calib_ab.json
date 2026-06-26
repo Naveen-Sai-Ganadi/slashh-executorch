@@ -1,0 +1,189 @@
+{
+  "threshold": 0.8,
+  "fp32_reliable_floor_db": -5.0,
+  "verdict": "same",
+  "recommended": "clean",
+  "fp32": {
+    "floor_db": null,
+    "reliable_floor_db": -5.0,
+    "points": [
+      {
+        "snr_db": null,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 20.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 10.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": 0.0,
+        "accuracy": 0.9609,
+        "f1": 0.9624,
+        "n": 128,
+        "acc_std": null
+      },
+      {
+        "snr_db": -5.0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "n": 128,
+        "acc_std": null
+      }
+    ]
+  },
+  "results": [
+    {
+      "label": "clean",
+      "calib_desc": "clean synthetic audio (the current shipped calibration)",
+      "reliable_floor_db": -5.0,
+      "mean_abs_delta": 0.0,
+      "preserves_fp32_floor": true,
+      "acc_deltas": [
+        {
+          "snr_db": null,
+          "delta": 0.0
+        },
+        {
+          "snr_db": 20.0,
+          "delta": 0.0
+        },
+        {
+          "snr_db": 10.0,
+          "delta": 0.0
+        },
+        {
+          "snr_db": 0.0,
+          "delta": 0.0
+        },
+        {
+          "snr_db": -5.0,
+          "delta": 0.0
+        }
+      ],
+      "int8": {
+        "floor_db": null,
+        "reliable_floor_db": -5.0,
+        "points": [
+          {
+            "snr_db": null,
+            "accuracy": 1.0,
+            "f1": 1.0,
+            "n": 128,
+            "acc_std": null
+          },
+          {
+            "snr_db": 20.0,
+            "accuracy": 1.0,
+            "f1": 1.0,
+            "n": 128,
+            "acc_std": null
+          },
+          {
+            "snr_db": 10.0,
+            "accuracy": 1.0,
+            "f1": 1.0,
+            "n": 128,
+            "acc_std": null
+          },
+          {
+            "snr_db": 0.0,
+            "accuracy": 0.9609,
+            "f1": 0.9624,
+            "n": 128,
+            "acc_std": null
+          },
+          {
+            "snr_db": -5.0,
+            "accuracy": 1.0,
+            "f1": 1.0,
+            "n": 128,
+            "acc_std": null
+          }
+        ]
+      }
+    },
+    {
+      "label": "noise-aware",
+      "calib_desc": "noise-augmented audio (SNR pool {clean,20,10,5,0,-5,-10})",
+      "reliable_floor_db": -5.0,
+      "mean_abs_delta": 0.0,
+      "preserves_fp32_floor": true,
+      "acc_deltas": [
+        {
+          "snr_db": null,
+          "delta": 0.0
+        },
+        {
+          "snr_db": 20.0,
+          "delta": 0.0
+        },
+        {
+          "snr_db": 10.0,
+          "delta": 0.0
+        },
+        {
+          "snr_db": 0.0,
+          "delta": 0.0
+        },
+        {
+          "snr_db": -5.0,
+          "delta": 0.0
+        }
+      ],
+      "int8": {
+        "floor_db": null,
+        "reliable_floor_db": -5.0,
+        "points": [
+          {
+            "snr_db": null,
+            "accuracy": 1.0,
+            "f1": 1.0,
+            "n": 128,
+            "acc_std": null
+          },
+          {
+            "snr_db": 20.0,
+            "accuracy": 1.0,
+            "f1": 1.0,
+            "n": 128,
+            "acc_std": null
+          },
+          {
+            "snr_db": 10.0,
+            "accuracy": 1.0,
+            "f1": 1.0,
+            "n": 128,
+            "acc_std": null
+          },
+          {
+            "snr_db": 0.0,
+            "accuracy": 0.9609,
+            "f1": 0.9624,
+            "n": 128,
+            "acc_std": null
+          },
+          {
+            "snr_db": -5.0,
+            "accuracy": 1.0,
+            "f1": 1.0,
+            "n": 128,
+            "acc_std": null
+          }
+        ]
+      }
+    }
+  ]
+}
