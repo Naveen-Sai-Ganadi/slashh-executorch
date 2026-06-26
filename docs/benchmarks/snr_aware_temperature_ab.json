@@ -1,0 +1,60 @@
+{
+  "global_temperature": 0.41,
+  "n_levels": 5,
+  "pooled_ece_global": 0.10165407819052538,
+  "pooled_ece_oracle": 0.004246339807286859,
+  "pooled_reduction": 0.09740773838323852,
+  "floor_snr_db": -5.0,
+  "floor_reduction": 0.22561725974082947,
+  "material": true,
+  "oracle_degenerate": true,
+  "worth_it": false,
+  "verdict": "the prize exists but isn't safely reachable: an oracle recovers 0.226 ECE at the -5 dB floor (0.226->0.000), but only by sharpening below the 0.41 regularization floor \u2014 the same degenerate sub-floor temperature calibration_envelope flags on near-separable synthetic audio. An SNR-aware schedule can't claim this gain without real field audio to prove the sub-floor temperature generalizes; until then ship the single global temperature and treat low-SNR confidence as under-stated.",
+  "per_snr": [
+    {
+      "snr_db": null,
+      "n": 192,
+      "ece_global": 0.014621496200561523,
+      "ece_oracle": 0.0,
+      "oracle_temperature": 0.05,
+      "oracle_floor_pinned": true,
+      "reduction": 0.014621496200561523
+    },
+    {
+      "snr_db": 20.0,
+      "n": 192,
+      "ece_global": 0.01915454864501953,
+      "ece_oracle": 0.0,
+      "oracle_temperature": 0.05,
+      "oracle_floor_pinned": true,
+      "reduction": 0.01915454864501953
+    },
+    {
+      "snr_db": 10.0,
+      "n": 192,
+      "ece_global": 0.08187457267194986,
+      "ece_oracle": 9.816884994506836e-05,
+      "oracle_temperature": 0.05,
+      "oracle_floor_pinned": true,
+      "reduction": 0.0817764038220048
+    },
+    {
+      "snr_db": 0.0,
+      "n": 192,
+      "ece_global": 0.16652841990192732,
+      "ece_oracle": 0.020658929444228608,
+      "oracle_temperature": 0.065,
+      "oracle_floor_pinned": false,
+      "reduction": 0.1458694904576987
+    },
+    {
+      "snr_db": -5.0,
+      "n": 192,
+      "ece_global": 0.22609129548072815,
+      "ece_oracle": 0.00047403573989868164,
+      "oracle_temperature": 0.05,
+      "oracle_floor_pinned": true,
+      "reduction": 0.22561725974082947
+    }
+  ]
+}

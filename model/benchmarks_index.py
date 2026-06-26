@@ -201,6 +201,29 @@ def _summarize_int8_calibration_drift(d: dict) -> str:
     )
 
 
+def _summarize_snr_aware_temperature_ab(d: dict) -> str:
+    pg = d.get("pooled_ece_global")
+    po = d.get("pooled_ece_oracle")
+    red = d.get("pooled_reduction")
+    worth = d.get("worth_it")
+    degen = d.get("oracle_degenerate")
+    floor = d.get("floor_snr_db")
+    floor_red = d.get("floor_reduction")
+    floor_label = "clean" if floor is None else f"{floor:g} dB"
+    span = (
+        f"pooled ECE {pg:.4f} -> {po:.4f} (recovers {red:+.4f}), floor "
+        f"{floor_red:+.4f} at {floor_label}"
+        if all(isinstance(v, (int, float)) for v in (pg, po, red, floor_red))
+        else "?"
+    )
+    return (
+        f"global vs unconstrained-oracle SNR-aware temperature over "
+        f"{d.get('n_levels', '?')} noise levels: {span}; oracle relies on "
+        f"degenerate sub-floor T: {degen}; worth a deployable SNR estimator: "
+        f"{worth}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -346,6 +369,7 @@ _ARTIFACTS = [
     ("calibration_envelope.json", "Cross-init calibration-temperature envelope", _summarize_calibration_envelope),
     ("int8_calibration_drift.json", "fp32 -> INT8 calibration drift", _summarize_int8_calibration_drift),
     ("calibration_snr.json", "Per-SNR calibration breakdown", _summarize_calibration_snr),
+    ("snr_aware_temperature_ab.json", "SNR-aware vs global temperature (A/B)", _summarize_snr_aware_temperature_ab),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
