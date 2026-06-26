@@ -1,0 +1,175 @@
+{
+  "hop_seconds": 1.0,
+  "onset_budget_s": 3.0,
+  "n_episodes": 20,
+  "detection_rate": 1.0,
+  "median_onset_windows": 1.0,
+  "median_onset_s": 1.0,
+  "max_onset_s": 3.0,
+  "release_rate": 1.0,
+  "median_release_s": 2.0,
+  "responsive": true,
+  "verdict": "**Responsive**: the detector fires on every episode with a median onset latency of 1s (worst 3s, budget 3s) and releases a median 2s after stress ends. The EMA + hysteresis smoothing buys flicker-freedom without making the alarm feel sluggish.",
+  "episodes": [
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 1,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 1.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 1,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 1.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 1,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 1.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 1,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 1.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 1,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 1.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 1,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 1.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 1,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 1.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 1,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 1.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 2,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 2.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 2,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 2.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 2,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 2.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 3,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 3.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 5,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 5.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 5,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 5.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 4,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 4.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 1,
+      "release_latency_windows": 10,
+      "onset_latency_s": 1.0,
+      "release_latency_s": 10.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 2,
+      "release_latency_windows": 3,
+      "onset_latency_s": 2.0,
+      "release_latency_s": 3.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 3,
+      "release_latency_windows": 3,
+      "onset_latency_s": 3.0,
+      "release_latency_s": 3.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 2,
+      "release_latency_windows": 2,
+      "onset_latency_s": 2.0,
+      "release_latency_s": 2.0,
+      "detected": true,
+      "released": true
+    },
+    {
+      "onset_latency_windows": 2,
+      "release_latency_windows": 3,
+      "onset_latency_s": 2.0,
+      "release_latency_s": 3.0,
+      "detected": true,
+      "released": true
+    }
+  ]
+}
