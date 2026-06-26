@@ -33,10 +33,12 @@ from pathlib import Path
 
 import torch
 
-from .export_executorch import export_to_pte
+from .data import synthetic_dataset
+from .export_executorch import export_quantized_to_pte, export_to_pte
 from .model import StressNet
 from .robust_train import noise_augmented_dataset
 from .robustness import RobustnessResult, robustness_curve
+from .run_pte import run_pte
 from .train import train
 
 # The A/B-recommended and most-robust width (see module docstring).
@@ -86,20 +88,55 @@ def train_production(
     return model, meta
 
 
+def quantize_production(model: StressNet, *, calib_n: int = 24, seed: int = 2024) -> bytes:
+    """INT8 (PT2E + XNNPACK) export of the production model — the deployable form.
+
+    Calibrated on a clean synthetic set. NOTE: for a net this small the program
+    is dominated by fixed runtime overhead, so INT8 barely shrinks the ``.pte``
+    (~1.05x, vs ~3x on the base width). Its value here is integer compute on the
+    NPU and predictions that stay put — not size. Host-only, no AI Hub token.
+    """
+    calib, _ = synthetic_dataset(calib_n, seed=seed)
+    return export_quantized_to_pte(model.eval(), calib)
+
+
+def _int8_max_abs_diff(model: StressNet, int8_pte: bytes, *, n: int = 16, seed: int = 4242) -> float:
+    """Largest |int8 runtime score - eager score| over a clean eval set."""
+    xs, _ = synthetic_dataset(n, seed=seed)
+    with torch.no_grad():
+        eager = model(xs).flatten()
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as td:
+        pte = Path(td) / "prod_int8.pte"
+        pte.write_bytes(int8_pte)
+        worst = 0.0
+        for i in range(xs.shape[0]):
+            s = float(run_pte(pte, xs[i : i + 1]).flatten()[0])
+            worst = max(worst, abs(s - float(eager[i])))
+    return worst
+
+
 @dataclass(frozen=True)
 class ProductionResult:
     meta: dict
     pte_bytes: int
     robustness: RobustnessResult
+    int8_bytes: int | None = None
+    int8_max_abs_diff: float | None = None
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "channels": self.meta["channels"],
             "params": self.meta["params"],
             "val_acc": self.meta["val_acc"],
             "pte_bytes": self.pte_bytes,
             "robustness": self.robustness.to_dict(),
         }
+        if self.int8_bytes is not None:
+            d["int8_bytes"] = self.int8_bytes
+            d["int8_max_abs_diff"] = self.int8_max_abs_diff
+        return d
 
 
 def _floor_label(floor_db: float | None) -> str:
@@ -114,9 +151,16 @@ def to_markdown(out: ProductionResult) -> str:
         f"({out.meta['params']:,} params), noise-augmented training, exported to "
         f"a **{out.pte_bytes / 1024:.1f} KB** `.pte`.\n\n"
         f"- clean val accuracy: **{out.meta['val_acc']:.3f}**\n"
-        f"- operating floor: **{_floor_label(r.floor_db)}**\n\n"
-        "| SNR | accuracy | f1 |\n|---|---|---|\n"
+        f"- operating floor: **{_floor_label(r.floor_db)}**\n"
     )
+    if out.int8_bytes is not None:
+        header += (
+            f"- **INT8** (PT2E + XNNPACK) export: **{out.int8_bytes / 1024:.1f} KB** "
+            f"(scores within {out.int8_max_abs_diff:.4f} of eager). At ~"
+            f"{out.meta['params']:,} params the program is overhead-dominated, so "
+            "INT8's win here is integer compute on the NPU, not size.\n"
+        )
+    header += "\n| SNR | accuracy | f1 |\n|---|---|---|\n"
     rows = []
     for p in r.points:
         snr = "clean" if p.snr_db is None else f"{p.snr_db:g} dB"
@@ -131,6 +175,7 @@ def build_production(
     seed: int = 0,
     snr_levels: list[float | None] = (None, 20.0, 10.0, 0.0, -5.0),
     threshold: float = 0.8,
+    quantize: bool = True,
     out_dir: str | Path | None = "docs/benchmarks",
     pte_out: str | Path | None = None,
 ) -> ProductionResult:
@@ -138,16 +183,25 @@ def build_production(
 
     Writes ``production.{json,md}`` into ``out_dir``. If ``pte_out`` is given,
     also writes the exported ``.pte`` there (overwriting the shipped artifact).
+    With ``quantize`` (default), also produces the INT8 variant and records its
+    size and its score agreement with the eager model.
     """
     model, meta = train_production(
         epochs=epochs, n_per_class=n_per_class, seed=seed,
         snr_levels=snr_levels, threshold=threshold,
     )
     pte = export_to_pte(model=model)
+    int8_bytes = int8_diff = None
+    if quantize:
+        q = quantize_production(model)
+        int8_bytes = len(q)
+        int8_diff = _int8_max_abs_diff(model, q)
     result = ProductionResult(
         meta=meta,
         pte_bytes=len(pte),
         robustness=_rebuild_curve(meta["robustness"]),
+        int8_bytes=int8_bytes,
+        int8_max_abs_diff=int8_diff,
     )
 
     if out_dir is not None:

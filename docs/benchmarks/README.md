@@ -24,4 +24,4 @@ Clean-trained floor 10 dB → augmented floor **none (holds at all tested SNRs)*
 
 ### Production model (shipped recipe)
 
-Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 0.947, floor -5 dB. _(`production.json` · [details](production.md))_
+Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 0.947, floor -5 dB. INT8 variant 12.3 KB (within 0.0040 of eager). _(`production.json` · [details](production.md))_
