@@ -51,15 +51,21 @@ def train(
     n_per_class: int,
     seed: int,
     model: nn.Module | None = None,
+    dataset: tuple[torch.Tensor, torch.Tensor] | None = None,
 ) -> tuple[nn.Module, dict]:
     """Train StressNet and return the (in-place) trained model plus a meta dict.
 
     Pass ``model`` to train a specific instance — e.g. a particular width
     variant for an A/B experiment. Omit it to build the default-width net.
+    Pass ``dataset=(x, y)`` to train on pre-built features (e.g. a noise-
+    augmented set) instead of the synthetic/folder source.
     """
     torch.manual_seed(seed)
 
-    if data_dir:
+    if dataset is not None:
+        x, y = dataset
+        source = "provided"
+    elif data_dir:
         x, y = folder_dataset(data_dir)
         source = f"folder:{data_dir}"
     else:
