@@ -26,6 +26,10 @@ INT8 vs fp32 under noise: fp32 reliable to -5 dB, INT8 to -5 dB — **INT8 prese
 
 INT8 calibration A/B (clean vs noise-aware): clean reliable to -5 dB, noise-aware to -5 dB — **no difference** — clean calibration is sufficient; ship **`clean`** calibration. _(`int8_calib_ab.json` · [details](int8_calib_ab.md))_
 
+### End-to-end latency & Real-Time Factor
+
+End-to-end PCM→log-mel→score: fastest **`pte-fp32`** at 0.588 ms/window (hop 1.0s, ~1702× real-time head-room) — **all backends real-time**. _(`latency_rtf.json` · [details](latency_rtf.md))_
+
 ### Robustness across noise colors
 
 Reliable floor by noise color: white -5 dB, pink -5 dB, brown -5 dB — **holds across colors**. _(`noise_colors.json` · [details](noise_colors.md))_

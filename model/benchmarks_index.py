@@ -116,6 +116,24 @@ def _summarize_int8_calib_ab(d: dict) -> str:
     )
 
 
+def _summarize_latency_rtf(d: dict) -> str:
+    results = d.get("results", [])
+    if not results:
+        return "_(no backends timed)_"
+    fastest = d.get("fastest", "?")
+    best = min(results, key=lambda r: r.get("total_mean_ms", float("inf")))
+    rtf_hop = best.get("rtf_hop")
+    headroom = (
+        f", ~{1.0 / rtf_hop:.0f}× real-time head-room" if rtf_hop else ""
+    )
+    rt = "**all backends real-time**" if d.get("real_time_all") else "**a backend misses the hop budget**"
+    return (
+        f"End-to-end PCM→log-mel→score: fastest **`{fastest}`** at "
+        f"{best.get('total_mean_ms', float('nan')):.3f} ms/window (hop "
+        f"{d.get('hop_seconds')}s{headroom}) — {rt}."
+    )
+
+
 def _summarize_noise_colors(d: dict) -> str:
     floors = d.get("reliable_floor_db", {})
     parts = ", ".join(f"{c} {_fmt_floor(v)}" for c, v in floors.items())
@@ -243,6 +261,7 @@ _ARTIFACTS = [
     ("robustness.json", "Noise robustness", _summarize_robustness),
     ("int8_robustness.json", "INT8 vs fp32 robustness", _summarize_int8_robustness),
     ("int8_calib_ab.json", "INT8 calibration A/B (clean vs noise-aware)", _summarize_int8_calib_ab),
+    ("latency_rtf.json", "End-to-end latency & Real-Time Factor", _summarize_latency_rtf),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
     ("init_envelope.json", "Cross-initialization envelope", _summarize_init_envelope),
