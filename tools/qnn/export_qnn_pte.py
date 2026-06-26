@@ -12,7 +12,11 @@ the NPU; quantized is smaller/faster.
 Output: android/app/src/main/assets/stress_model_qnn.pte
 """
 
+import os
 import sys
+
+sys.path.insert(0, os.getcwd())  # repo root (mounted at /work) so `model` imports
+
 import torch
 
 from model.audio_config import MODEL_INPUT_SHAPE
@@ -100,28 +104,27 @@ def _extract_qnn_runtime_libs():
 
     dest = "android/app/src/main/jniLibs/arm64-v8a"
     os.makedirs(dest, exist_ok=True)
-    patterns = [
-        "lib/aarch64-android/libQnn*.so",
-        "lib/hexagon-v79/unsigned/libQnnHtpV79Skel.so",
-        "lib/hexagon-v79/unsigned/libQnnHtpV79.so",
+    # Only the libs needed to run an HTP/V79 (Snapdragon 8 Elite) context on the
+    # S25 — keeps the APK small (drops other SoC/backends and the 66 MB online
+    # 'Prepare' lib, which an AOT-compiled context doesn't need at runtime).
+    essential = [
+        "libQnnHtp.so", "libQnnSystem.so",
+        "libQnnHtpV79.so", "libQnnHtpV79Stub.so",
+        "libQnnHtpV79Skel.so", "libQnnHtpV79CalculatorStub.so",
     ]
-    copied = 0
-    seen = set()
-    for root in roots:
-        for pat in patterns:
-            for src in glob.glob(os.path.join(root, "**", pat), recursive=True):
-                base = os.path.basename(src)
-                if base in seen:
-                    continue
-                shutil.copy2(src, os.path.join(dest, base))
-                seen.add(base)
-                copied += 1
-                print(f"[libs] {base}")
-    if copied:
-        print(f"[libs] copied {copied} QNN runtime libs -> {dest}")
-    else:
-        print("[libs] WARNING: no QNN runtime libs found; check SDK layout. "
-              "Roots tried:", roots[:3])
+    copied, seen = 0, set()
+    for name in essential:
+        for root in roots:
+            hits = glob.glob(os.path.join(root, "**", name), recursive=True)
+            if hits and name not in seen:
+                shutil.copy2(hits[0], os.path.join(dest, name))
+                seen.add(name); copied += 1
+                print(f"[libs] {name}")
+                break
+    missing = [n for n in essential if n not in seen]
+    print(f"[libs] copied {copied}/{len(essential)} essential QNN libs -> {dest}")
+    if missing:
+        print("[libs] WARNING missing:", missing, "| roots:", roots[:3])
 
 
 if __name__ == "__main__":
