@@ -1,0 +1,13 @@
+{
+  "fp32_bytes": 13188,
+  "int8_bytes": 12548,
+  "n_params": 1549,
+  "compression_ratio": 1.051004144086707,
+  "savings_pct": 4.8528965726417965,
+  "pct_of_theoretical": 26.275103602167675,
+  "fp32_bytes_per_param": 8.513879922530665,
+  "int8_bytes_per_param": 8.100710135571337,
+  "material_shrink": false,
+  "theoretical_ratio": 4.0,
+  "verdict": "INT8 shrinks the program only modestly: 1.05x smaller (4.9% off, 13188->12548 bytes); that is 26% of the 4x weight-only ceiling \u2014 the gap is fixed .pte overhead that doesn't compress on a 1549-param net. Below the 25% bar \u2014 the deployment win for this tiny model is NPU speed/power, not file size."
+}

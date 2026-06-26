@@ -50,6 +50,10 @@ Per-SNR calibration across 5 noise levels: ECE grows with noise: True; the confi
 
 global vs unconstrained-oracle SNR-aware temperature over 5 noise levels: pooled ECE 0.1017 -> 0.0042 (recovers +0.0974), floor +0.2256 at -5 dB; oracle relies on degenerate sub-floor T: True; worth a deployable SNR estimator: False. _(`snr_aware_temperature_ab.json` · [details](snr_aware_temperature_ab.md))_
 
+### fp32 vs INT8 .pte footprint (A/B)
+
+fp32 vs INT8 .pte footprint for the 1549-param net: fp32 13,188B -> INT8 12,548B (1.05x, +4.9%, 26% of the 4x weight-only ceiling); materially smaller: False. _(`pte_footprint.json` · [details](pte_footprint.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_

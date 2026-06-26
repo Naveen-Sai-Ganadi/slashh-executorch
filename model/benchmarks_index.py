@@ -224,6 +224,25 @@ def _summarize_snr_aware_temperature_ab(d: dict) -> str:
     )
 
 
+def _summarize_pte_footprint(d: dict) -> str:
+    f32 = d.get("fp32_bytes")
+    i8 = d.get("int8_bytes")
+    ratio = d.get("compression_ratio")
+    sav = d.get("savings_pct")
+    pct = d.get("pct_of_theoretical")
+    material = d.get("material_shrink")
+    span = (
+        f"fp32 {f32:,}B -> INT8 {i8:,}B ({ratio:.2f}x, {sav:+.1f}%, {pct:.0f}% of "
+        "the 4x weight-only ceiling)"
+        if all(isinstance(v, (int, float)) for v in (f32, i8, ratio, sav, pct))
+        else "?"
+    )
+    return (
+        f"fp32 vs INT8 .pte footprint for the {d.get('n_params', '?')}-param net: "
+        f"{span}; materially smaller: {material}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -370,6 +389,7 @@ _ARTIFACTS = [
     ("int8_calibration_drift.json", "fp32 -> INT8 calibration drift", _summarize_int8_calibration_drift),
     ("calibration_snr.json", "Per-SNR calibration breakdown", _summarize_calibration_snr),
     ("snr_aware_temperature_ab.json", "SNR-aware vs global temperature (A/B)", _summarize_snr_aware_temperature_ab),
+    ("pte_footprint.json", "fp32 vs INT8 .pte footprint (A/B)", _summarize_pte_footprint),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
