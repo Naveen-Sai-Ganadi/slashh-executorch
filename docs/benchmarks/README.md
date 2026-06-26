@@ -38,6 +38,10 @@ Score calibration: **underconfident** (ECE 0.242); temperature T=0.41 → ECE 0.
 
 Calibration-temperature envelope across 5 inits: T in 0.410…0.410 (median 0.410) vs shipped `DEFAULT_TEMPERATURE`=0.41 — stable default — every initialization's deployable (regularized) temperature lands on the same value and the shipped DEFAULT_TEMPERATURE sits inside that spread, so 0.41 is init-independent, not seed-luck. Caveat: the unconstrained NLL optimum is degenerate (collapses to the search floor) on the near-separable synthetic eval, so the temperature is not finitely identifiable here — re-fit on labeled field audio before trusting any value below 0.41. _(`calibration_envelope.json` · [details](calibration_envelope.md))_
 
+### fp32 -> INT8 calibration drift
+
+fp32->INT8 confidence-calibration drift over 640 windows: ECE fp32 0.2395 -> INT8 0.2405 (drift +0.0010); shipped fp32 temperature transfers to the deployed INT8 model: True. _(`int8_calibration_drift.json` · [details](int8_calibration_drift.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_

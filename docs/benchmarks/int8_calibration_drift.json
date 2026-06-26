@@ -1,0 +1,24 @@
+{
+  "n": 640,
+  "shipped_temperature": 0.41,
+  "ece_drift": 0.0010382328182459433,
+  "drift_is_small": true,
+  "int8_ece_shipped_temp": 0.0990937509573996,
+  "shipped_temp_helps_int8": true,
+  "temperature_transfers": true,
+  "verdict": "INT8 quantization raises ECE by 0.001 (fp32 0.239 -> INT8 0.241); the drift is within 0.025 and the shipped fp32 temperature (T=0.41) still cuts INT8 ECE to 0.099, so it transfers to the deployed model \u2014 no re-fit needed.",
+  "fp32": {
+    "label": "fp32",
+    "n": 640,
+    "ece": 0.23948671305552122,
+    "fitted_temperature": 0.41000000000000003,
+    "ece_after_fitted": 0.09928232645615935
+  },
+  "int8": {
+    "label": "int8",
+    "n": 640,
+    "ece": 0.24052494587376716,
+    "fitted_temperature": 0.41000000000000003,
+    "ece_after_fitted": 0.0990937509573996
+  }
+}
