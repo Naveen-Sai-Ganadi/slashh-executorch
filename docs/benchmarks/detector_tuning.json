@@ -1,0 +1,733 @@
+{
+  "best": {
+    "stress_threshold": 0.55,
+    "release_threshold": 0.35,
+    "ema_alpha": 1.0,
+    "accuracy": 1.0,
+    "flicker": 7,
+    "n_windows": 96,
+    "score": 0.9635
+  },
+  "results": [
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.2,
+      "accuracy": 0.625,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.5885
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.3,
+      "accuracy": 0.7812,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7448
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.4,
+      "accuracy": 0.875,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8385
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9271,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8906
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.35,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.2,
+      "accuracy": 0.7396,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7031
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.3,
+      "accuracy": 0.8229,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7865
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8854,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.849
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9583,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9219
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.4,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.2,
+      "accuracy": 0.7708,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7344
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.3,
+      "accuracy": 0.8438,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8073
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.4,
+      "accuracy": 0.9167,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8802
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9792,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9427
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.45,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.2,
+      "accuracy": 0.8125,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.776
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.3,
+      "accuracy": 0.875,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8385
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.4,
+      "accuracy": 0.9271,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8906
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9896,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9531
+    },
+    {
+      "stress_threshold": 0.55,
+      "release_threshold": 0.5,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.2,
+      "accuracy": 0.5833,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.5469
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.3,
+      "accuracy": 0.7812,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7448
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8438,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8073
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9062,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8698
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.35,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.2,
+      "accuracy": 0.6979,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.6615
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.3,
+      "accuracy": 0.8229,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7865
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8542,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8177
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9375,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.901
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.4,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.2,
+      "accuracy": 0.7292,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.6927
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.3,
+      "accuracy": 0.8438,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8073
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8854,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.849
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9583,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9219
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.45,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.2,
+      "accuracy": 0.7708,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7344
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.3,
+      "accuracy": 0.875,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8385
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8958,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8594
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9688,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9323
+    },
+    {
+      "stress_threshold": 0.6,
+      "release_threshold": 0.5,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.2,
+      "accuracy": 0.5312,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.4948
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.3,
+      "accuracy": 0.7292,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.6927
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8333,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7969
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.6,
+      "accuracy": 0.8854,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.849
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.35,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.2,
+      "accuracy": 0.6458,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.6094
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.3,
+      "accuracy": 0.7708,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7344
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8438,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8073
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9167,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8802
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.4,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.2,
+      "accuracy": 0.6771,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.6406
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.3,
+      "accuracy": 0.7917,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7552
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.4,
+      "accuracy": 0.875,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8385
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9375,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.901
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.45,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.2,
+      "accuracy": 0.7188,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.6823
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.3,
+      "accuracy": 0.8229,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7865
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8854,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.849
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9479,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9115
+    },
+    {
+      "stress_threshold": 0.65,
+      "release_threshold": 0.5,
+      "ema_alpha": 1.0,
+      "accuracy": 1.0,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9635
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.2,
+      "accuracy": 0.4375,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.401
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.3,
+      "accuracy": 0.6771,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.6406
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.4,
+      "accuracy": 0.7917,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7552
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.35,
+      "ema_alpha": 0.6,
+      "accuracy": 0.875,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8385
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.35,
+      "ema_alpha": 1.0,
+      "accuracy": 0.9896,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9531
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.2,
+      "accuracy": 0.5521,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.5156
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.3,
+      "accuracy": 0.7188,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.6823
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8021,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7656
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.4,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9062,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8698
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.4,
+      "ema_alpha": 1.0,
+      "accuracy": 0.9896,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9531
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.2,
+      "accuracy": 0.5833,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.5469
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.3,
+      "accuracy": 0.7396,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7031
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8333,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7969
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.45,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9271,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8906
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.45,
+      "ema_alpha": 1.0,
+      "accuracy": 0.9896,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9531
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.2,
+      "accuracy": 0.625,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.5885
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.3,
+      "accuracy": 0.7708,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.7344
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.4,
+      "accuracy": 0.8438,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.8073
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.5,
+      "ema_alpha": 0.6,
+      "accuracy": 0.9375,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.901
+    },
+    {
+      "stress_threshold": 0.7,
+      "release_threshold": 0.5,
+      "ema_alpha": 1.0,
+      "accuracy": 0.9896,
+      "flicker": 7,
+      "n_windows": 96,
+      "score": 0.9531
+    }
+  ]
+}
