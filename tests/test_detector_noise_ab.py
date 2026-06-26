@@ -2,10 +2,12 @@
 
 Two findings motivate this: under noise the model goes *silent*
 (noise_failure_mode.py — recall collapses, no false alarms) and the shipped
-detector's end-to-end detection floor is 10 dB (detector_robustness.py). Both
+detector's end-to-end detection floor is -5 dB (detector_robustness.py). Both
 point at the same hypothesis — in noisy regimes a *lower stress threshold /
-faster attack* should recover detections below 10 dB without paying much in
-false alarms, precisely because the model isn't crying wolf there.
+faster attack* should recover detections at the noisy edge without paying much
+in false alarms, precisely because the model isn't crying wolf there. On the
+robust production recipe this pans out: every config holds the floor at zero
+false alarms, so the more sensitive config wins.
 
 This harness A/Bs detector configs over the SAME real model and the SAME noisy
 traces (reusing the detector_robustness sweep per config) and recommends the

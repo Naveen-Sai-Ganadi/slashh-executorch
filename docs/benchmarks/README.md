@@ -20,11 +20,11 @@ Operating floor: **20 dB**. _(`robustness.json` · [details](robustness.md))_
 
 ### INT8 vs fp32 robustness
 
-INT8 vs fp32 under noise: fp32 reliable to 0 dB, INT8 to 0 dB — **INT8 preserves the floor**. _(`int8_robustness.json` · [details](int8_robustness.md))_
+INT8 vs fp32 under noise: fp32 reliable to -5 dB, INT8 to -5 dB — **INT8 preserves the floor**. _(`int8_robustness.json` · [details](int8_robustness.md))_
 
 ### Robustness across noise colors
 
-Reliable floor by noise color: white 0 dB, pink 0 dB, brown -5 dB — **holds across colors**. _(`noise_colors.json` · [details](noise_colors.md))_
+Reliable floor by noise color: white -5 dB, pink -5 dB, brown -5 dB — **holds across colors**. _(`noise_colors.json` · [details](noise_colors.md))_
 
 ### Failure mode under noise
 
@@ -32,15 +32,15 @@ First failure under noise leans **misses stress (false negatives — detector go
 
 ### Cross-initialization envelope
 
-Across 5 independent inits, the conservative envelope is reliable down to **10 dB** (holds regardless of training seed). _(`init_envelope.json` · [details](init_envelope.md))_
+Across 5 independent inits, the conservative envelope is reliable down to **0 dB** (holds regardless of training seed). _(`init_envelope.json` · [details](init_envelope.md))_
 
 ### End-to-end detector robustness
 
-End-to-end detector (8-window traces): latches stress reliably down to **10 dB** (detect target met, false alarms in tolerance). _(`detector_robustness.json` · [details](detector_robustness.md))_
+End-to-end detector (8-window traces): latches stress reliably down to **-5 dB** (detect target met, false alarms in tolerance). _(`detector_robustness.json` · [details](detector_robustness.md))_
 
 ### Detector A/B under noise
 
-Detector knobs A/B'd under noise: recommend **`default`** (stress=0.6, alpha=0.4) — detection floor 10 dB, worst false alarm 0.0312 (≤ 20%). _(`detector_noise_ab.json` · [details](detector_noise_ab.md))_
+Detector knobs A/B'd under noise: recommend **`lower-threshold`** (stress=0.5, alpha=0.4) — detection floor -5 dB, worst false alarm 0.0 (≤ 20%). _(`detector_noise_ab.json` · [details](detector_noise_ab.md))_
 
 ### Noise-augmented training
 
@@ -56,4 +56,4 @@ Recipe envelopes across 4 inits: deepest is **`aggressive`** reliable to 0 dB �
 
 ### Production model (shipped recipe)
 
-Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 0.947, reliable to 0 dB. INT8 variant 12.3 KB (within 0.0040 of eager). _(`production.json` · [details](production.md))_
+Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 1.000, reliable to -5 dB. INT8 variant 12.3 KB (within 0.0058 of eager). _(`production.json` · [details](production.md))_

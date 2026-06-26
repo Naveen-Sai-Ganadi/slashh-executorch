@@ -2,7 +2,7 @@
   "window_count": 8,
   "detect_target": 0.8,
   "fa_tolerance": 0.2,
-  "detection_floor_db": 10.0,
+  "detection_floor_db": -5.0,
   "points": [
     {
       "snr_db": null,
@@ -21,22 +21,22 @@
     {
       "snr_db": 10.0,
       "detect_rate": 1.0,
-      "false_alarm_rate": 0.0312,
+      "false_alarm_rate": 0.0,
       "median_latency_windows": 1.0,
       "n_traces": 32
     },
     {
       "snr_db": 0.0,
-      "detect_rate": 0.25,
+      "detect_rate": 1.0,
       "false_alarm_rate": 0.0,
-      "median_latency_windows": 2.0,
+      "median_latency_windows": 1.0,
       "n_traces": 32
     },
     {
       "snr_db": -5.0,
-      "detect_rate": 0.0,
+      "detect_rate": 0.875,
       "false_alarm_rate": 0.0,
-      "median_latency_windows": null,
+      "median_latency_windows": 3.5,
       "n_traces": 32
     },
     {
