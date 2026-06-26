@@ -340,6 +340,19 @@ def _summarize_clipping_robustness(d: dict) -> str:
     )
 
 
+def _summarize_operating_point(d: dict) -> str:
+    auc = d.get("auc")
+    bt = d.get("best_accuracy_threshold")
+    wp = d.get("well_placed")
+    auc_txt = f"{auc:.3f}" if isinstance(auc, (int, float)) else "?"
+    bt_txt = f"{bt:g}" if isinstance(bt, (int, float)) else "?"
+    return (
+        f"Operating-point / ROC sweep over {d.get('n_points', '?')} thresholds: "
+        f"AUC {auc_txt}, accuracy-optimal threshold {bt_txt}; "
+        f"default 0.5 well placed: {wp}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -494,6 +507,7 @@ _ARTIFACTS = [
     ("silence_hold.json", "Detector silence-hold / gap robustness", _summarize_silence_hold),
     ("gain_robustness.json", "Input-gain (level) robustness", _summarize_gain_robustness),
     ("clipping_robustness.json", "Clipping / saturation robustness", _summarize_clipping_robustness),
+    ("operating_point.json", "Operating-point / ROC sweep", _summarize_operating_point),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),

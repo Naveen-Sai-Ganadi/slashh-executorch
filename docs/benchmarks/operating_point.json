@@ -1,0 +1,108 @@
+{
+  "default_threshold": 0.5,
+  "headroom_tol": 0.02,
+  "n_points": 9,
+  "auc": 1.0,
+  "best_accuracy": 1.0,
+  "best_accuracy_threshold": 0.6,
+  "best_f1": 1.0,
+  "best_f1_threshold": 0.6,
+  "best_youden_j": 1.0,
+  "best_youden_threshold": 0.6,
+  "default_accuracy": 0.98828125,
+  "accuracy_headroom": 0.01171875,
+  "well_placed": true,
+  "verdict": "**Default 0.5 is well placed**: AUC 1.000; the default per-window threshold yields 99% accuracy, within 1.2% of the best (100% at 0.6). No retune of the raw decision boundary is warranted \u2014 tune the hysteresis band instead.",
+  "points": [
+    {
+      "threshold": 0.1,
+      "tpr": 1.0,
+      "fpr": 1.0,
+      "accuracy": 0.5,
+      "f1": 0.6666666666666666,
+      "youden_j": 0.0,
+      "n_pos": 384,
+      "n_neg": 384
+    },
+    {
+      "threshold": 0.2,
+      "tpr": 1.0,
+      "fpr": 0.7604166666666666,
+      "accuracy": 0.6197916666666666,
+      "f1": 0.7245283018867925,
+      "youden_j": 0.23958333333333337,
+      "n_pos": 384,
+      "n_neg": 384
+    },
+    {
+      "threshold": 0.3,
+      "tpr": 1.0,
+      "fpr": 0.7369791666666666,
+      "accuracy": 0.6315104166666666,
+      "f1": 0.730732635585157,
+      "youden_j": 0.26302083333333337,
+      "n_pos": 384,
+      "n_neg": 384
+    },
+    {
+      "threshold": 0.4,
+      "tpr": 1.0,
+      "fpr": 0.390625,
+      "accuracy": 0.8046875,
+      "f1": 0.8366013071895425,
+      "youden_j": 0.609375,
+      "n_pos": 384,
+      "n_neg": 384
+    },
+    {
+      "threshold": 0.5,
+      "tpr": 1.0,
+      "fpr": 0.0234375,
+      "accuracy": 0.98828125,
+      "f1": 0.9884169884169884,
+      "youden_j": 0.9765625,
+      "n_pos": 384,
+      "n_neg": 384
+    },
+    {
+      "threshold": 0.6,
+      "tpr": 1.0,
+      "fpr": 0.0,
+      "accuracy": 1.0,
+      "f1": 1.0,
+      "youden_j": 1.0,
+      "n_pos": 384,
+      "n_neg": 384
+    },
+    {
+      "threshold": 0.7,
+      "tpr": 0.7734375,
+      "fpr": 0.0,
+      "accuracy": 0.88671875,
+      "f1": 0.8722466960352423,
+      "youden_j": 0.7734375,
+      "n_pos": 384,
+      "n_neg": 384
+    },
+    {
+      "threshold": 0.8,
+      "tpr": 0.578125,
+      "fpr": 0.0,
+      "accuracy": 0.7890625,
+      "f1": 0.7326732673267327,
+      "youden_j": 0.578125,
+      "n_pos": 384,
+      "n_neg": 384
+    },
+    {
+      "threshold": 0.9,
+      "tpr": 0.0,
+      "fpr": 0.0,
+      "accuracy": 0.5,
+      "f1": 0.0,
+      "youden_j": 0.0,
+      "n_pos": 384,
+      "n_neg": 384
+    }
+  ]
+}

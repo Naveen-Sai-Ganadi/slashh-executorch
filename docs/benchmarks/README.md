@@ -82,6 +82,10 @@ Input-gain (level) robustness over 9 levels: reliable band [-24, +36] dB; level-
 
 Clipping / saturation robustness over 6 levels: reliable down to clip_ratio 0.25; clip-tolerant: False. _(`clipping_robustness.json` · [details](clipping_robustness.md))_
 
+### Operating-point / ROC sweep
+
+Operating-point / ROC sweep over 9 thresholds: AUC 1.000, accuracy-optimal threshold 0.6; default 0.5 well placed: True. _(`operating_point.json` · [details](operating_point.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_
