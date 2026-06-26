@@ -45,11 +45,17 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.activity:activity-ktx:1.9.2")
 
-    // ExecuTorch Android runtime (M7). Align this AAR with the pip `executorch`
-    // version that produced the .pte (1.2.0) and bundle the QNN backend libs for
-    // the Hexagon-NPU path. If no matching Maven artifact is available, build the
-    // AAR from the ExecuTorch repo (`extension/android`) and drop it in libs/.
-    implementation("org.pytorch:executorch-android:1.2.0")
+    // ExecuTorch Android runtime (M7).
+    // - Default: the Maven AAR (XNNPACK/CPU) — what runs today.
+    // - NPU: drop a QNN-enabled AAR at app/libs/executorch-qnn.aar (built per
+    //   docs/NPU-ON-DEVICE.md) + the QNN runtime .so's in
+    //   src/main/jniLibs/arm64-v8a/, and it's used automatically (no code change).
+    val qnnAar = file("libs/executorch-qnn.aar")
+    if (qnnAar.exists()) {
+        implementation(files(qnnAar))
+    } else {
+        implementation("org.pytorch:executorch-android:1.2.0")
+    }
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")   // JSON in local JVM unit tests

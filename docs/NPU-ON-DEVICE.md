@@ -1,78 +1,62 @@
-# Running the model on the Snapdragon NPU (in-app) — event runbook
+# Running the model on the Snapdragon NPU (S25) — runbook
 
-## Where we are
-
-The app runs the **real RAVDESS-trained `StressNet`** via ExecuTorch. Today it
-loads `assets/stress_model.pte` on the **XNNPACK (CPU)** backend — the plan's
-"safety-net" path. The **same model** was profiled on the **Hexagon NPU** via
-Qualcomm AI Hub (**100% NPU, 0.060 ms/window**) — that is the 40% evidence, and
-it stands on its own.
-
-What is NOT yet true: the **live app** executing on the NPU. Three things block
-it, all needing the Qualcomm QNN SDK (Linux), and none verifiable on an emulator
-(emulators have no Hexagon NPU):
-
-1. The Maven `executorch-android:1.2.0` AAR ships **XNNPACK only** — confirmed:
-   it contains just `libexecutorch.so`, no QNN/HTP libs.
-2. The AI Hub artifact `stress_model_qnn.bin` is a **raw QNN context binary**,
-   not an ExecuTorch `.pte`. `Module.load()` needs a **QNN-delegated `.pte`**.
-3. The QNN runtime `.so` libs (`libQnnHtp.so`, `libQnnSystem.so`,
-   `libQnnHtpV*Stub.so`, `libQnnHtpV*Skel.so`, …) are proprietary Qualcomm libs,
-   not redistributed in the PyTorch AAR.
+Goal: the live app runs `StressNet` on the **Hexagon NPU** of a Samsung Galaxy
+S25 (Snapdragon 8 Elite = `SM8750`, HTP **V79**), via ExecuTorch's QNN backend.
 
 The app is already **NPU-ready**: `MainActivity.loadClassifier()` loads
-`stress_model_qnn.pte` if present, else falls back to `stress_model.pte`. So
-finishing the NPU path is a **drop-in** — no app code change.
+`stress_model_qnn.pte` if present (else falls back to CPU), and
+`app/build.gradle.kts` uses `app/libs/executorch-qnn.aar` if present (else the
+Maven CPU AAR). So finishing the NPU path is **drop in 3 artifacts, rebuild**.
 
-## To finish it at the event (with a Qualcomm/Meta mentor)
+## The 3 artifacts and how they're produced
 
-### 1. Produce a QNN-delegated `.pte` (Linux x64 + QNN SDK)
-On an Ubuntu 22.04 box with the QNN SDK installed and ExecuTorch built with the
-Qualcomm backend:
+| # | Artifact | Where it goes | Producible on Mac? |
+|---|----------|---------------|--------------------|
+| 1 | `stress_model_qnn.pte` (QNN-delegated, w8a8) | `app/src/main/assets/` | ✅ via Docker (below) |
+| 2 | QNN runtime libs (`libQnnHtp*.so`, `libQnnSystem.so`, V79 skel) | `app/src/main/jniLibs/arm64-v8a/` | ✅ extracted by the same Docker run |
+| 3 | QNN-enabled ExecuTorch **AAR** (`libexecutorch.so` built **with** the QNN backend) | `app/libs/executorch-qnn.aar` | ⚠️ heavy build — see below |
 
-```python
-# pseudo — use the model + weights from this repo (model/model.py, assets/stress_model.pt)
-from executorch.backends.qualcomm.utils.utils import (
-    generate_qnn_executorch_compiler_spec, to_edge_transform_and_lower_to_qnn,
-    QcomChipset,
-)
-import torch
-from model.model import build_model
-from model.audio_config import MODEL_INPUT_SHAPE
+### Artifacts 1 + 2 — one command (no Qualcomm login)
+ExecuTorch 1.2.0's QNN backend **auto-downloads the QNN SDK on Linux x86**, so a
+Docker container does it all — no manual SDK download, no Qualcomm account:
 
-model = build_model("assets/stress_model.pt").eval()
-example = (torch.randn(*MODEL_INPUT_SHAPE),)
-exported = torch.export.export(model, example)
-spec = generate_qnn_executorch_compiler_spec(soc_model=QcomChipset.SM8750)  # 8 Elite
-edge = to_edge_transform_and_lower_to_qnn(exported, spec)
-open("stress_model_qnn.pte", "wb").write(edge.to_executorch().buffer)
+```bash
+bash tools/qnn/build_qnn_pte.sh
 ```
+This runs `tools/qnn/export_qnn_pte.py` in a `linux/amd64` container: PT2E-quantizes
+`StressNet` (w8a8, calibrated on RAVDESS), lowers it to QNN for `SM8750`, writes
+the `.pte`, and copies the QNN runtime `.so`s into `jniLibs/arm64-v8a/`.
+(First run is slow under x86 emulation; pip + SDK are cached for re-runs.)
 
-(Or ask the mentor to run the standard ExecuTorch Qualcomm export for our model —
-fixed input `[1,1,64,301]`. Quantize w8a8 if time allows; our PT2E check showed
-no accuracy drop.)
+### Artifact 3 — the QNN-enabled AAR (the one hard part)
+The Maven `executorch-android` AAR is CPU-only (no QNN). You need `libexecutorch.so`
+built with `-DEXECUTORCH_BUILD_QNN=ON`. Build it on a **Linux x86_64** host (a
+native box or cloud VM is far better than emulated Docker for this) with the
+Android NDK + the QNN SDK:
 
-### 2. Get a QNN-enabled ExecuTorch Android AAR + Qualcomm libs
-- A `executorch-android` AAR **built with the QNN backend**, OR the
-  `libqnn_executorch_backend.so` added alongside `libexecutorch.so`.
-- The QNN SDK runtime `.so`s for `arm64-v8a` (HTP/V79 for 8 Elite).
-- Drop the AAR in `android/app/libs/` (and switch the dependency to it), and the
-  QNN `.so`s into `android/app/src/main/jniLibs/arm64-v8a/`.
+```bash
+git clone --branch v1.2.0 https://github.com/pytorch/executorch.git
+cd executorch && ./install_requirements.sh
+export QNN_SDK_ROOT=/path/to/qairt/<version>     # the SDK ExecuTorch fetched, or QPM
+export ANDROID_NDK=/path/to/android-ndk-r26d
+# build the Android AAR with the QNN backend enabled:
+EXECUTORCH_BUILD_QNN=ON ANDROID_ABIS=arm64-v8a \
+  scripts/build_android_library.sh
+# -> copy the resulting executorch.aar to <repo>/android/app/libs/executorch-qnn.aar
+```
+Best done with an on-site Qualcomm/Meta mentor, or on a cloud Ubuntu 22.04 x64 VM.
 
-### 3. Drop in the model
-- Put `stress_model_qnn.pte` in `android/app/src/main/assets/`.
-- Rebuild. `loadClassifier()` auto-selects it; logcat prints
-  `model loaded: stress_model_qnn.pte (NPU/QNN)`.
+## Put it together + test on the S25 (your teammate)
+1. Ensure all three artifacts are in place (1+2 from the Docker run, 3 from the AAR build).
+2. `cd android && ./gradlew assembleDebug` → `app-debug.apk`.
+3. On the S25: `adb install -r app-debug.apk`, open the app.
+4. `adb logcat -s Slashh` → expect **`model loaded: stress_model_qnn.pte (NPU/QNN)`**.
+   - If QNN fails to load, the app auto-falls back to CPU (demo never hard-fails).
+5. Speak / tap **Simulate stress**; confirm it responds. For NPU proof, capture an
+   on-device latency/utilization trace (or cite the AI Hub profile: 100% NPU, 0.06 ms).
 
-### 4. Verify on the real S25
-- `adb logcat -s Slashh` → confirm the NPU model loaded.
-- Speak; confirm the meter responds and latency is low.
-- If QNN load fails for any reason, the app **automatically falls back to CPU**,
-  so the demo never hard-fails.
-
-## Demo-claim guidance (be precise)
-- ✅ "Our RAVDESS-trained mel-CNN runs on-device with ExecuTorch."
-- ✅ "We profiled the same model on the Snapdragon Hexagon NPU via AI Hub:
-  100% NPU, 0.06 ms/window."
-- Only say the **live app** runs on the NPU **after** step 4 prints the QNN load
-  line on the actual S25. Until then, the live app runs on CPU (XNNPACK).
+## Demo-claim guidance
+- After step 4 prints the QNN line **on the real S25**, you may say the **live app
+  runs on the Snapdragon NPU**.
+- Until then: "runs on-device via ExecuTorch (CPU today); same model profiled on
+  the Hexagon NPU via AI Hub at 100% NPU / 0.06 ms."
