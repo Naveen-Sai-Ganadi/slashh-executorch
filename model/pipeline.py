@@ -64,6 +64,18 @@ class HostStressPipeline:
         """The most recent state (neutral before any window / after reset)."""
         return self._last
 
+    @property
+    def last_confidence(self):
+        """Calibrated, NON-gating confidence read-out for the most recent window.
+
+        Returns a :class:`model.telemetry.ConfidenceReadout`, or ``None`` before
+        any voiced window. Purely a display/telemetry view — it never feeds back
+        into the detector gate, which stays on the raw score.
+        """
+        from .telemetry import readout
+
+        return readout(self._last)
+
     def reset(self) -> None:
         self.detector.reset()
         self._last = _NEUTRAL
