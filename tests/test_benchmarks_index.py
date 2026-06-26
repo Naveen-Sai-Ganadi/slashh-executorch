@@ -99,6 +99,30 @@ def test_index_summarizes_detector_robustness(tmp_path: Path) -> None:
     assert "10 dB" in md
 
 
+def test_index_summarizes_detector_noise_ab(tmp_path: Path) -> None:
+    _write(tmp_path / "detector_noise_ab.json", {
+        "fa_tolerance": 0.2,
+        "recommended": {
+            "config": {"label": "fast-attack", "stress_threshold": 0.5,
+                       "release_threshold": 0.4, "ema_alpha": 1.0},
+            "detection_floor_db": 0.0,
+            "worst_false_alarm_rate": 0.1,
+        },
+        "results": [],
+    })
+    md = build_index(tmp_path)
+    assert "fast-attack" in md
+    assert "0 dB" in md
+
+
+def test_index_detector_noise_ab_no_recommendation(tmp_path: Path) -> None:
+    _write(tmp_path / "detector_noise_ab.json", {
+        "fa_tolerance": 0.2, "recommended": None, "results": [],
+    })
+    md = build_index(tmp_path)
+    assert "no config" in md.lower()
+
+
 def test_missing_artifacts_are_skipped_not_fatal(tmp_path: Path) -> None:
     # only one artifact present; others absent
     _write(tmp_path / "benchmark.json", {
