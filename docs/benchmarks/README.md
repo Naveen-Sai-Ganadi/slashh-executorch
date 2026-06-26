@@ -50,6 +50,10 @@ Clean-trained floor 10 dB → augmented floor **none (holds at all tested SNRs)*
 
 A/B'd 4 augmentation recipe(s): recommend **`aggressive`** — reliable floor -5 dB, clean acc 1.0. _(`augmentation_ab.json` · [details](augmentation_ab.md))_
 
+### Recipe-parameterized cross-init envelope
+
+Recipe envelopes across 4 inits: deepest is **`aggressive`** reliable to 0 dB — **moves the envelope**. _(`recipe_envelope.json` · [details](recipe_envelope.md))_
+
 ### Production model (shipped recipe)
 
 Shipped width **`(4, 8, 16)`** (1,549 params, 12.9 KB .pte), clean acc 0.947, reliable to 0 dB. INT8 variant 12.3 KB (within 0.0040 of eager). _(`production.json` · [details](production.md))_
