@@ -91,12 +91,16 @@ python -m model.train --data-dir data/arousal --epochs 40
 The Quickstart trains the default **base** width for clarity, but the
 *recommended shipped recipe* is the smallest robust width `(4, 8, 16)`
 (~1,549 params, ~12.9 KB `.pte` fp32 / ~12.3 KB INT8). It's trained with noise
-augmentation, holds clean validation accuracy ~0.947, and stays accurate
-through 10 dB SNR — below that, a net this small is init-sensitive, so 10 dB is
-the envelope we stand on. That envelope is measured, not guessed: across 5
-independent initializations most hold to 0 dB but one only to 10 dB, so 10 dB is
-the conservative floor that holds regardless of the training seed (`python -m
-model.init_envelope`, recorded in `docs/benchmarks/init_envelope.md`).
+augmentation on the aggressive recipe `{clean,20,10,5,0,-5}`, holds clean
+validation accuracy 1.000, and stays accurate through 0 dB SNR — below that, a
+net this small is init-sensitive, so 0 dB is the envelope we stand on. That
+envelope is measured, not guessed: across 5 independent initializations four
+hold to -5 dB and one to 0 dB, so 0 dB is the conservative floor that holds
+regardless of the training seed (`python -m model.init_envelope`, recorded in
+`docs/benchmarks/init_envelope.md`). The recipe itself was chosen by a
+cross-init A/B (`python -m model.recipe_envelope`) that confirmed training on
+0 and -5 dB windows moves this envelope from 10 dB to 0 dB at no
+clean-accuracy cost.
 
 ```bash
 # train the recipe, measure robustness, record the evidence

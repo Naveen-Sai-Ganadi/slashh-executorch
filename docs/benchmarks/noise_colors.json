@@ -1,15 +1,15 @@
 {
   "threshold": 0.8,
   "reliable_floor_db": {
-    "white": 0.0,
-    "pink": 0.0,
+    "white": -5.0,
+    "pink": -5.0,
     "brown": -5.0
   },
   "holds_across_colors": true,
   "curves": {
     "white": {
-      "floor_db": -5.0,
-      "reliable_floor_db": 0.0,
+      "floor_db": null,
+      "reliable_floor_db": -5.0,
       "points": [
         {
           "snr_db": null,
@@ -27,30 +27,30 @@
         },
         {
           "snr_db": 10.0,
-          "accuracy": 0.9531,
-          "f1": 0.9552,
+          "accuracy": 1.0,
+          "f1": 1.0,
           "n": 128,
           "acc_std": null
         },
         {
           "snr_db": 0.0,
-          "accuracy": 0.9219,
-          "f1": 0.9153,
+          "accuracy": 1.0,
+          "f1": 1.0,
           "n": 128,
           "acc_std": null
         },
         {
           "snr_db": -5.0,
-          "accuracy": 0.5,
-          "f1": 0.0,
+          "accuracy": 1.0,
+          "f1": 1.0,
           "n": 128,
           "acc_std": null
         }
       ]
     },
     "pink": {
-      "floor_db": -5.0,
-      "reliable_floor_db": 0.0,
+      "floor_db": null,
+      "reliable_floor_db": -5.0,
       "points": [
         {
           "snr_db": null,
@@ -75,15 +75,15 @@
         },
         {
           "snr_db": 0.0,
-          "accuracy": 0.9922,
-          "f1": 0.9921,
+          "accuracy": 1.0,
+          "f1": 1.0,
           "n": 128,
           "acc_std": null
         },
         {
           "snr_db": -5.0,
-          "accuracy": 0.5,
-          "f1": 0.0,
+          "accuracy": 1.0,
+          "f1": 1.0,
           "n": 128,
           "acc_std": null
         }

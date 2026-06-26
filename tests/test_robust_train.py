@@ -16,11 +16,28 @@ import torch
 
 from model.data import synthetic_dataset
 from model.robust_train import (
+    DEFAULT_AUG_SNRS,
     RobustTrainResult,
     compare_robustness,
     noise_augmented_dataset,
 )
 from model.train import train
+
+
+def test_default_recipe_includes_sub_10db_snrs() -> None:
+    # The production training recipe is the augmentation pool every shipped model
+    # is trained on (build_production_model -> noise_augmented_dataset). The
+    # recipe-parameterized cross-init envelope (model/recipe_envelope.py) showed
+    # that training down to -5 dB moves the *conservative cross-init envelope*
+    # from 10 dB to 0 dB at no clean-accuracy cost (5 inits, both hold clean acc
+    # 1.000), so the recipe must reach below 10 dB to earn that 0 dB envelope.
+    assert None in DEFAULT_AUG_SNRS          # still trains on clean windows
+    assert 0.0 in DEFAULT_AUG_SNRS           # ...and on 0 dB noise
+    assert -5.0 in DEFAULT_AUG_SNRS          # ...and on -5 dB noise (the deep end)
+    # ordered clean -> noisiest, no duplicates
+    noisy = [s for s in DEFAULT_AUG_SNRS if s is not None]
+    assert noisy == sorted(noisy, reverse=True)
+    assert len(set(DEFAULT_AUG_SNRS)) == len(DEFAULT_AUG_SNRS)
 
 
 def test_augmented_dataset_shape_determinism_and_noise() -> None:
