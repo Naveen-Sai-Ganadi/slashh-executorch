@@ -11,8 +11,8 @@ The floors above are measured for *this* trained artifact. Because a net this sm
 
 | SNR | accuracy | f1 |
 |---|---|---|
-| clean | 1.000 | 1.000 |
-| 20 dB | 1.000 | 1.000 |
-| 10 dB | 0.953 | 0.955 |
-| 0 dB | 0.823 | 0.785 |
-| -5 dB | 0.500 | 0.000 |
+| clean | 1.000 ± 0.000 | 1.000 |
+| 20 dB | 1.000 ± 0.000 | 1.000 |
+| 10 dB | 0.935 ± 0.019 | 0.940 |
+| 0 dB | 0.842 ± 0.015 | 0.812 |
+| -5 dB | 0.500 ± 0.000 | 0.000 |

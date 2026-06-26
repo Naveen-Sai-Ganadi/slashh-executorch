@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -58,6 +59,7 @@ def train_production(
     lr: float = 1e-3,
     seed: int = 0,
     eval_n_per_class: int = 96,
+    eval_seeds: Sequence[int] | None = None,
     snr_levels: list[float | None] = (None, 20.0, 10.0, 0.0, -5.0),
     threshold: float = 0.8,
 ) -> tuple[StressNet, dict]:
@@ -65,6 +67,8 @@ def train_production(
 
     Returns the trained model and a meta dict carrying clean accuracy, the
     architecture, and the full robustness curve (so callers don't re-run it).
+    With ``eval_seeds`` the robustness curve is averaged over several eval seeds
+    (mean ± std); ``None`` uses the single seed ``seed + 1``.
     """
     # Seed before constructing the net so weight init is reproducible and
     # independent of any prior global-RNG use (e.g. test ordering).
@@ -77,7 +81,7 @@ def train_production(
     )
     curve = robustness_curve(
         model, snr_levels=snr_levels, n_per_class=eval_n_per_class,
-        seed=seed + 1, threshold=threshold,
+        seed=seed + 1, eval_seeds=eval_seeds, threshold=threshold,
     )
     meta = {
         **meta,
@@ -175,7 +179,10 @@ def to_markdown(out: ProductionResult) -> str:
     rows = []
     for p in r.points:
         snr = "clean" if p.snr_db is None else f"{p.snr_db:g} dB"
-        rows.append(f"| {snr} | {p.accuracy:.3f} | {p.f1:.3f} |")
+        acc = f"{p.accuracy:.3f}"
+        if p.acc_std is not None:
+            acc += f" ± {p.acc_std:.3f}"
+        rows.append(f"| {snr} | {acc} | {p.f1:.3f} |")
     return header + "\n".join(rows) + "\n"
 
 
@@ -184,6 +191,7 @@ def build_production(
     epochs: int = 12,
     n_per_class: int = 96,
     seed: int = 0,
+    n_eval_seeds: int = 5,
     snr_levels: list[float | None] = (None, 20.0, 10.0, 0.0, -5.0),
     threshold: float = 0.8,
     quantize: bool = True,
@@ -196,10 +204,18 @@ def build_production(
     also writes the exported ``.pte`` there (overwriting the shipped artifact).
     With ``quantize`` (default), also produces the INT8 variant and records its
     size and its score agreement with the eager model.
+
+    The shipped robustness record is averaged over ``n_eval_seeds`` eval seeds
+    (mean ± std per SNR), so the floors it advertises carry a spread rather than
+    resting on a single lucky draw. Set ``n_eval_seeds=1`` for the fast
+    single-seed path (no std).
     """
+    eval_seeds = (
+        tuple(seed + 1 + i for i in range(n_eval_seeds)) if n_eval_seeds > 1 else None
+    )
     model, meta = train_production(
         epochs=epochs, n_per_class=n_per_class, seed=seed,
-        snr_levels=snr_levels, threshold=threshold,
+        eval_seeds=eval_seeds, snr_levels=snr_levels, threshold=threshold,
     )
     pte = export_to_pte(model=model)
     int8_bytes = int8_diff = None
@@ -235,7 +251,8 @@ def _rebuild_curve(d: dict) -> RobustnessResult:
 
     points = [
         RobustnessPoint(
-            snr_db=p["snr_db"], accuracy=p["accuracy"], f1=p["f1"], n=p["n"]
+            snr_db=p["snr_db"], accuracy=p["accuracy"], f1=p["f1"], n=p["n"],
+            acc_std=p.get("acc_std"),
         )
         for p in d["points"]
     ]
