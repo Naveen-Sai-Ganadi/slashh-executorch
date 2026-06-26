@@ -86,6 +86,19 @@ def test_index_summarizes_init_envelope(tmp_path: Path) -> None:
     assert "10 dB" in md
 
 
+def test_index_summarizes_detector_robustness(tmp_path: Path) -> None:
+    _write(tmp_path / "detector_robustness.json", {
+        "window_count": 8,
+        "detect_target": 0.8,
+        "fa_tolerance": 0.2,
+        "detection_floor_db": 10.0,
+        "points": [],
+    })
+    md = build_index(tmp_path)
+    assert "detector" in md.lower()
+    assert "10 dB" in md
+
+
 def test_missing_artifacts_are_skipped_not_fatal(tmp_path: Path) -> None:
     # only one artifact present; others absent
     _write(tmp_path / "benchmark.json", {

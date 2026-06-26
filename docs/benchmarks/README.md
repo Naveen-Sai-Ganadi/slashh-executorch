@@ -34,6 +34,10 @@ First failure under noise leans **misses stress (false negatives — detector go
 
 Across 5 independent inits, the conservative envelope is reliable down to **10 dB** (holds regardless of training seed). _(`init_envelope.json` · [details](init_envelope.md))_
 
+### End-to-end detector robustness
+
+End-to-end detector (8-window traces): latches stress reliably down to **10 dB** (detect target met, false alarms in tolerance). _(`detector_robustness.json` · [details](detector_robustness.md))_
+
 ### Noise-augmented training
 
 Clean-trained floor 10 dB → augmented floor **none (holds at all tested SNRs)**. _(`robust_train.json` · [details](robust_train.md))_
