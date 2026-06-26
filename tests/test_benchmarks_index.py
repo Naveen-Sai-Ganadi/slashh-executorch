@@ -63,6 +63,17 @@ def test_index_summarizes_noise_colors(tmp_path: Path) -> None:
     assert "holds across colors" in md
 
 
+def test_index_summarizes_noise_failure_mode(tmp_path: Path) -> None:
+    _write(tmp_path / "noise_failure_mode.json", {
+        "threshold": 0.8,
+        "dominant_failure": "misses_stress",
+        "points": [],
+    })
+    md = build_index(tmp_path)
+    assert "failure mode" in md.lower()
+    assert "misses stress" in md
+
+
 def test_missing_artifacts_are_skipped_not_fatal(tmp_path: Path) -> None:
     # only one artifact present; others absent
     _write(tmp_path / "benchmark.json", {
