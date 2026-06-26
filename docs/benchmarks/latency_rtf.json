@@ -1,0 +1,89 @@
+{
+  "window_seconds": 3.0,
+  "hop_seconds": 1.0,
+  "real_time_all": true,
+  "fastest": "pte-fp32",
+  "results": [
+    {
+      "backend": "eager",
+      "stages": [
+        {
+          "name": "feature_extraction",
+          "mean_ms": 0.36333789976197295,
+          "p50_ms": 0.3500419988995418,
+          "p95_ms": 0.46041699533816427,
+          "min_ms": 0.31650000892113894
+        },
+        {
+          "name": "inference",
+          "mean_ms": 0.5333266699744854,
+          "p50_ms": 0.5028750019846484,
+          "p95_ms": 0.6718329968862236,
+          "min_ms": 0.4609159950632602
+        }
+      ],
+      "total_mean_ms": 0.8966645697364584,
+      "total_p95_ms": 1.1790000135079026,
+      "window_seconds": 3.0,
+      "hop_seconds": 1.0,
+      "rtf_window": 0.00029888818991215276,
+      "rtf_hop": 0.0008966645697364583,
+      "real_time": true,
+      "iters": 100
+    },
+    {
+      "backend": "pte-fp32",
+      "stages": [
+        {
+          "name": "feature_extraction",
+          "mean_ms": 0.34841794869862497,
+          "p50_ms": 0.3479169972706586,
+          "p95_ms": 0.3745419962797314,
+          "min_ms": 0.30899999546818435
+        },
+        {
+          "name": "inference",
+          "mean_ms": 0.23917535130749457,
+          "p50_ms": 0.23983301070984453,
+          "p95_ms": 0.2604589972179383,
+          "min_ms": 0.2023750130319968
+        }
+      ],
+      "total_mean_ms": 0.5875933000061195,
+      "total_p95_ms": 0.626958004431799,
+      "window_seconds": 3.0,
+      "hop_seconds": 1.0,
+      "rtf_window": 0.00019586443333537317,
+      "rtf_hop": 0.0005875933000061195,
+      "real_time": true,
+      "iters": 100
+    },
+    {
+      "backend": "pte-int8",
+      "stages": [
+        {
+          "name": "feature_extraction",
+          "mean_ms": 0.3532707996782847,
+          "p50_ms": 0.349833004293032,
+          "p95_ms": 0.3929999948013574,
+          "min_ms": 0.3016250120708719
+        },
+        {
+          "name": "inference",
+          "mean_ms": 0.2777154100476764,
+          "p50_ms": 0.2753750013653189,
+          "p95_ms": 0.32129199826158583,
+          "min_ms": 0.2367089909967035
+        }
+      ],
+      "total_mean_ms": 0.6309862097259611,
+      "total_p95_ms": 0.7142919930629432,
+      "window_seconds": 3.0,
+      "hop_seconds": 1.0,
+      "rtf_window": 0.00021032873657532035,
+      "rtf_hop": 0.000630986209725961,
+      "real_time": true,
+      "iters": 100
+    }
+  ]
+}
