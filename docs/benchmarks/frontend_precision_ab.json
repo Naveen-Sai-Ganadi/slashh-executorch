@@ -1,0 +1,46 @@
+{
+  "tol": 0.001,
+  "worst_abs_diff": 1.1920928955078125e-07,
+  "total_flips": 0,
+  "total_n": 960,
+  "flip_rate": 0.0,
+  "precision_robust": true,
+  "verdict": "**Front-end is precision-robust**: float32 matches float64 to within 1.19e-07 with **zero** decision flips across 960 windows. The on-device single-precision log-mel front-end loses nothing to numerics \u2014 no need for a higher-precision path.",
+  "points": [
+    {
+      "snr_db": null,
+      "max_abs_diff": 1.1920928955078125e-07,
+      "n_flips": 0,
+      "n": 192,
+      "flip_rate": 0.0
+    },
+    {
+      "snr_db": 20.0,
+      "max_abs_diff": 1.1920928955078125e-07,
+      "n_flips": 0,
+      "n": 192,
+      "flip_rate": 0.0
+    },
+    {
+      "snr_db": 10.0,
+      "max_abs_diff": 1.1920928955078125e-07,
+      "n_flips": 0,
+      "n": 192,
+      "flip_rate": 0.0
+    },
+    {
+      "snr_db": 0.0,
+      "max_abs_diff": 1.1920928955078125e-07,
+      "n_flips": 0,
+      "n": 192,
+      "flip_rate": 0.0
+    },
+    {
+      "snr_db": -5.0,
+      "max_abs_diff": 5.960464477539063e-08,
+      "n_flips": 0,
+      "n": 192,
+      "flip_rate": 0.0
+    }
+  ]
+}

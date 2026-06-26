@@ -58,6 +58,10 @@ fp32 vs INT8 .pte footprint for the 1549-param net: fp32 13,188B -> INT8 12,548B
 
 INT8 weight granularity A/B (per-channel vs per-tensor): per-channel reliable to -5 dB, per-tensor to -5 dB; per-tensor +23.5% on size, max |Δacc| 0.000; per-channel worth its cost: False. _(`int8_granularity_ab.json` · [details](int8_granularity_ab.md))_
 
+### Front-end float32 vs float64 parity (A/B)
+
+Front-end float32 vs float64 parity: worst |Δscore| 1.19e-07, 0/960 decisions flip; precision-robust: True. _(`frontend_precision_ab.json` · [details](frontend_precision_ab.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_
