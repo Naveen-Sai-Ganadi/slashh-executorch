@@ -46,6 +46,10 @@ fp32->INT8 confidence-calibration drift over 640 windows: ECE fp32 0.2395 -> INT
 
 Per-SNR calibration across 5 noise levels: ECE grows with noise: True; the confidence read-out is trustworthy at the -5 dB floor: True. _(`calibration_snr.json` · [details](calibration_snr.md))_
 
+### SNR-aware vs global temperature (A/B)
+
+global vs unconstrained-oracle SNR-aware temperature over 5 noise levels: pooled ECE 0.1017 -> 0.0042 (recovers +0.0974), floor +0.2256 at -5 dB; oracle relies on degenerate sub-floor T: True; worth a deployable SNR estimator: False. _(`snr_aware_temperature_ab.json` · [details](snr_aware_temperature_ab.md))_
+
 ### Front-end throughput (loop vs batched)
 
 Batched log-mel front-end (`extract_batch`) is **3.16×** faster than the per-sample loop building 128 windows (parity holds) — host throughput for dataset/A-B builds; device extractor unchanged. _(`feature_batching.json` · [details](feature_batching.md))_
