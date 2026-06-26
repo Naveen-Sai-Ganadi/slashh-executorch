@@ -39,9 +39,18 @@ def _input_spec() -> dict:
 
 
 def _calibration_batch(n: int) -> torch.Tensor:
-    """Small calibration set for INT8 — real run should use held-out features."""
-    from .data import synthetic_dataset
+    """Calibration set for INT8. Prefers REAL RAVDESS features (quantization
+    calibrates on whatever you feed it — real data => faithful ranges); falls
+    back to the synthetic proxy if the dataset isn't on disk."""
+    import os
 
+    if os.path.isdir("data") and any(
+        p.startswith("Actor_") for p in os.listdir("data")
+    ):
+        from .data import ravdess_dataset
+        x, _, _ = ravdess_dataset("data")
+        return x[:n]
+    from .data import synthetic_dataset
     x, _ = synthetic_dataset(max(1, n // 2), seed=4242)
     return x[:n]
 
@@ -61,40 +70,80 @@ def describe(weights: str | None, device: str, device_os: str, quantize: bool) -
 
 def submit(weights: str | None, device: str, device_os: str, quantize: bool,
            calib_n: int) -> None:
+    import statistics
+    from collections import Counter
+
     import qai_hub as hub
 
     model = build_model(weights)
     example = torch.randn(*MODEL_INPUT_SHAPE)
     traced = torch.jit.trace(model, example)
-
     target = hub.Device(device, os=device_os)
 
-    print(f"submitting compile job → {device} (os {device_os}) …")
-    compile_job = hub.submit_compile_job(
-        model=traced,
-        device=target,
-        input_specs={"logmel": tuple(MODEL_INPUT_SHAPE)},
-    )
-    compiled = compile_job.get_target_model()
-    print(f"  compile job: {compile_job.job_id}")
-
     if quantize:
+        # Correct INT8 flow: you CANNOT quantize an already-compiled QNN/TFLite
+        # binary. Compile to ONNX -> quantize the ONNX -> compile to QNN.
+        print(f"1/4 compile traced -> ONNX  ({device}, os {device_os}) …")
+        onnx_job = hub.submit_compile_job(
+            model=traced,
+            device=target,
+            input_specs={"logmel": tuple(MODEL_INPUT_SHAPE)},
+            options="--target_runtime onnx",
+        )
+        onnx_model = onnx_job.get_target_model()
+        print(f"    {onnx_job.url}")
+
         calib = _calibration_batch(calib_n)
-        print(f"submitting quantize job (INT8, {calib.shape[0]} calib samples) …")
+        print(f"2/4 quantize INT8 ({calib.shape[0]} real calib samples) …")
         quantize_job = hub.submit_quantize_job(
-            model=compiled,
-            calibration_data={"logmel": [calib[i:i + 1].numpy() for i in range(calib.shape[0])]},
+            model=onnx_model,
+            calibration_data={
+                "logmel": [calib[i:i + 1].numpy() for i in range(calib.shape[0])]
+            },
             weights_dtype=hub.QuantizeDtype.INT8,
             activations_dtype=hub.QuantizeDtype.INT8,
         )
-        compiled = quantize_job.get_target_model()
-        print(f"  quantize job: {quantize_job.job_id}")
+        q_model = quantize_job.get_target_model()
+        print(f"    {quantize_job.url}")
 
-    print("submitting profile job …")
+        print("3/4 compile quantized -> QNN context binary (Hexagon NPU) …")
+        qnn_job = hub.submit_compile_job(
+            model=q_model,
+            device=target,
+            options="--target_runtime qnn_context_binary",
+        )
+        compiled = qnn_job.get_target_model()
+        print(f"    {qnn_job.url}")
+    else:
+        print(f"1/2 compile traced -> QNN context binary  ({device}, os {device_os}) …")
+        qnn_job = hub.submit_compile_job(
+            model=traced,
+            device=target,
+            input_specs={"logmel": tuple(MODEL_INPUT_SHAPE)},
+            options="--target_runtime qnn_context_binary",
+        )
+        compiled = qnn_job.get_target_model()
+        print(f"    {qnn_job.url}")
+
+    step = "4/4" if quantize else "2/2"
+    print(f"{step} profile on real device …")
     profile_job = hub.submit_profile_job(model=compiled, device=target)
-    print(f"  profile job: {profile_job.job_id}")
-    print("\nView results in the AI Hub Workbench. Record latency/throughput in")
-    print("docs/benchmarks (plan §9) once the jobs finish.")
+    print(f"    {profile_job.url}")
+
+    # Wait + summarize the 40% evidence directly.
+    profile_job.wait()
+    res = profile_job.download_profile()
+    ex = res["execution_summary"]
+    layers = res.get("execution_detail", [])
+    cu = Counter(l.get("compute_unit", "?") for l in layers)
+    times = ex["all_inference_times"][1:] or ex["all_inference_times"]
+    print("\n=== ON-DEVICE PROFILE (40% evidence) ===")
+    print(f"  device           : {device}")
+    print(f"  compute units    : {dict(cu)}  ({len(layers)} layers)")
+    print(f"  median inference : {statistics.median(times)/1000:.3f} ms")
+    print(f"  min inference    : {min(times)/1000:.3f} ms")
+    print(f"  peak memory      : {ex['estimated_inference_peak_memory']/1e6:.1f} MB")
+    print("\nRecord these in docs/benchmarks/benchmark.md (plan §9).")
 
 
 def main() -> None:

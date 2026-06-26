@@ -62,32 +62,81 @@ def synthetic_dataset(
     return x[perm], y[perm]
 
 
+def _load_wave(wav_path: str | Path) -> torch.Tensor:
+    """Load a wav as a mono, 16 kHz, single-window float waveform.
+
+    Uses soundfile, not torchaudio.load: torchaudio 2.11 routes load() through
+    torchcodec, which isn't installed — soundfile is the working path here.
+    """
+    import soundfile as sf
+
+    data, sr = sf.read(str(wav_path), dtype="float32")     # [T] or [T, ch]
+    wave = torch.from_numpy(data)
+    if wave.dim() == 2:
+        wave = wave.mean(1)                                # mono
+    import torchaudio
+    if sr != SAMPLE_RATE:
+        wave = torchaudio.functional.resample(wave, sr, SAMPLE_RATE)
+    if wave.numel() >= WINDOW_SAMPLES:
+        start = (wave.numel() - WINDOW_SAMPLES) // 2
+        wave = wave[start:start + WINDOW_SAMPLES]
+    else:
+        wave = torch.nn.functional.pad(wave, (0, WINDOW_SAMPLES - wave.numel()))
+    return wave
+
+
 def folder_dataset(root: str | Path) -> tuple[torch.Tensor, torch.Tensor]:
     """Load <root>/calm/*.wav and <root>/stressed/*.wav into features+labels."""
-    import torchaudio
-
     root = Path(root)
     feats, labels = [], []
     for label, sub in ((0.0, "calm"), (1.0, "stressed")):
         for wav_path in sorted((root / sub).glob("*.wav")):
-            wave, sr = torchaudio.load(wav_path)
-            wave = wave.mean(0)                          # mono
-            if sr != SAMPLE_RATE:
-                wave = torchaudio.functional.resample(wave, sr, SAMPLE_RATE)
-            # center-crop / pad to one window
-            if wave.numel() >= WINDOW_SAMPLES:
-                start = (wave.numel() - WINDOW_SAMPLES) // 2
-                wave = wave[start:start + WINDOW_SAMPLES]
-            else:
-                wave = torch.nn.functional.pad(
-                    wave, (0, WINDOW_SAMPLES - wave.numel())
-                )
-            feats.append(extract(wave))
+            feats.append(extract(_load_wave(wav_path)))
             labels.append(label)
     if not feats:
-        raise FileNotFoundError(
-            f"no .wav under {root}/calm or {root}/stressed"
-        )
+        raise FileNotFoundError(f"no .wav under {root}/calm or {root}/stressed")
     x = torch.cat(feats, dim=0)
     y = torch.tensor(labels, dtype=torch.float32).unsqueeze(1)
     return x, y
+
+
+# RAVDESS emotion code (filename field[2]) -> arousal class, per plan §13:
+# "high-arousal (angry/fearful) -> stressed, calm/neutral -> calm".
+RAVDESS_STRESSED = {"05", "06"}          # angry, fearful
+RAVDESS_CALM = {"01", "02"}             # neutral, calm
+# happy/sad/disgust/surprised (03/04/07/08) intentionally excluded — they are
+# not cleanly "stress vs calm" and would blur a stress classifier.
+
+
+def ravdess_dataset(
+    root: str | Path,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Load RAVDESS Actor_*/ *.wav directly into (features, labels, actor_ids).
+
+    Returns actor ids so callers can build a SPEAKER-INDEPENDENT split (no actor
+    appears in both train and val) — the honest way to report accuracy.
+    RAVDESS filename: ``03-01-06-01-02-01-12.wav`` -> field[2]=emotion, field[6]=actor.
+    """
+    root = Path(root)
+    wavs = sorted(root.rglob("*.wav"))
+    feats, labels, actors = [], [], []
+    for wav_path in wavs:
+        parts = wav_path.stem.split("-")
+        if len(parts) != 7:
+            continue
+        emotion, actor = parts[2], int(parts[6])
+        if emotion in RAVDESS_STRESSED:
+            label = 1.0
+        elif emotion in RAVDESS_CALM:
+            label = 0.0
+        else:
+            continue
+        feats.append(extract(_load_wave(wav_path)))
+        labels.append(label)
+        actors.append(actor)
+    if not feats:
+        raise FileNotFoundError(f"no RAVDESS Actor_*/ *.wav under {root}")
+    x = torch.cat(feats, dim=0)
+    y = torch.tensor(labels, dtype=torch.float32).unsqueeze(1)
+    a = torch.tensor(actors, dtype=torch.long)
+    return x, y, a
