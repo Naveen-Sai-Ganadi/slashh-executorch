@@ -170,6 +170,24 @@ def _summarize_calibration_envelope(d: dict) -> str:
     )
 
 
+def _summarize_int8_calibration_drift(d: dict) -> str:
+    fp32 = d.get("fp32", {})
+    int8 = d.get("int8", {})
+    drift = d.get("ece_drift")
+    transfers = d.get("temperature_transfers")
+    f_ece, q_ece = fp32.get("ece"), int8.get("ece")
+    span = (
+        f"fp32 {f_ece:.4f} -> INT8 {q_ece:.4f} (drift {drift:+.4f})"
+        if all(isinstance(v, (int, float)) for v in (f_ece, q_ece, drift))
+        else "?"
+    )
+    return (
+        f"fp32->INT8 confidence-calibration drift over {d.get('n', '?')} windows: "
+        f"ECE {span}; shipped fp32 temperature transfers to the deployed INT8 "
+        f"model: {transfers}."
+    )
+
+
 def _summarize_feature_batching(d: dict) -> str:
     sp = d.get("speedup")
     n = d.get("n")
@@ -313,6 +331,7 @@ _ARTIFACTS = [
     ("latency_rtf.json", "End-to-end latency & Real-Time Factor", _summarize_latency_rtf),
     ("calibration.json", "Score calibration (reliability & ECE)", _summarize_calibration),
     ("calibration_envelope.json", "Cross-init calibration-temperature envelope", _summarize_calibration_envelope),
+    ("int8_calibration_drift.json", "fp32 -> INT8 calibration drift", _summarize_int8_calibration_drift),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),
     ("noise_failure_mode.json", "Failure mode under noise", _summarize_noise_failure_mode),
