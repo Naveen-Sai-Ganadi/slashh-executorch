@@ -11,7 +11,10 @@
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 
-: "${ANDROID_NDK_VERSION:=r26d}"
+# NDK r27+ makes 16 KB ELF alignment the default — required for the S25 Ultra
+# (Android 15, 16 KB pages), else libexecutorch.so / libqnn_executorch_backend.so
+# won't load on-device.
+: "${ANDROID_NDK_VERSION:=r27c}"
 : "${ET_VERSION:=v1.2.0}"
 WORK="${WORK:-$HOME/et-qnn-build}"
 mkdir -p "$WORK" && cd "$WORK"
@@ -50,7 +53,15 @@ fi
 cd executorch
 ./install_requirements.sh || pip install -r requirements-dev.txt || true
 
-# 4) Build the AAR with the QNN backend
+# 4) Build the AAR with the QNN backend.
+# The S25 Ultra uses 16 KB pages; NDK r27 does NOT align to 16 KB by default and
+# executorch's build script ignores CMAKE_ARGS, so inject the linker flag right
+# into its cmake invocation (idempotent), and clean cmake-out so it takes effect.
+if ! grep -q "max-page-size=16384" scripts/build_android_library.sh; then
+  sed -i 's#cmake \. -DCMAKE_INSTALL_PREFIX#cmake . -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-z,max-page-size=16384" -DCMAKE_INSTALL_PREFIX#g' \
+    scripts/build_android_library.sh
+fi
+rm -rf cmake-out-android-* cmake-out-android-so 2>/dev/null || true
 export EXECUTORCH_BUILD_QNN=ON
 export ANDROID_ABIS=arm64-v8a
 bash scripts/build_android_library.sh

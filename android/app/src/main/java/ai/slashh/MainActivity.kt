@@ -15,6 +15,7 @@ import ai.slashh.relief.ReliefType
 import ai.slashh.relief.SoundsView
 import ai.slashh.relief.TicTacToeView
 import ai.slashh.ui.BreathOverlayView
+import ai.slashh.ui.CalibrationView
 import ai.slashh.ui.CalmCue
 import ai.slashh.ui.Meter
 import ai.slashh.ui.StressMeterView
@@ -56,6 +57,7 @@ class MainActivity : AppCompatActivity() {
     private var cueDriven = false
     private var onboarding: OnboardingView? = null
     private var authView: AuthView? = null
+    private var calibrationView: CalibrationView? = null
 
     private val askMic = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -83,6 +85,9 @@ class MainActivity : AppCompatActivity() {
 
         classifier = loadClassifier()
         pipeline = StressPipeline(classifier!!)
+        // apply any per-user calibrated thresholds
+        prefs.enterThreshold?.let { pipeline.enterThreshold = it }
+        prefs.releaseThreshold?.let { pipeline.releaseThreshold = it }
 
         ReliefNotifier.ensureChannel(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -91,6 +96,7 @@ class MainActivity : AppCompatActivity() {
         ) askNotif.launch(Manifest.permission.POST_NOTIFICATIONS)
 
         meter.onSimulate = { fireRelief(cueDriven = false) }
+        meter.onCalibrate = { showCalibration() }
         gateAuth()
         handleIntent(intent)
     }
@@ -140,17 +146,49 @@ class MainActivity : AppCompatActivity() {
         capture = AudioCapture { window ->
             val now = System.currentTimeMillis()
             val state = pipeline.onWindow(window)
-            val model = Meter.from(state)
-            val show = calmCue.onState(state.stressed, now)
-            runOnUiThread {
-                meter.render(model)
-                when {
-                    calmCue.justTriggered -> fireRelief(cueDriven = true)
-                    !show && cueDriven -> hideCurrent()
+            val cal = calibrationView
+            if (cal != null) {
+                // calibrating: feed voiced scores, pause the meter/relief loop
+                val r = state.rawScore
+                if (state.voiced && r != null && cal.isCollecting()) {
+                    runOnUiThread { cal.feedScore(r) }
+                }
+            } else {
+                val model = Meter.from(state)
+                val show = calmCue.onState(state.stressed, now)
+                runOnUiThread {
+                    meter.render(model)
+                    when {
+                        calmCue.justTriggered -> fireRelief(cueDriven = true)
+                        !show && cueDriven -> hideCurrent()
+                    }
                 }
             }
             Log.d("Slashh", "voiced=${state.voiced} raw=${state.rawScore} level=${state.level} stressed=${state.stressed}")
         }.also { it.start() }
+    }
+
+    /** Show the on-device calibration flow; on finish, persist + apply thresholds. */
+    private fun showCalibration() {
+        if (calibrationView != null) return
+        hideCurrent()
+        val view = CalibrationView(
+            this,
+            onDone = { enter, release ->
+                prefs.saveThresholds(enter, release)
+                pipeline.enterThreshold = enter
+                pipeline.releaseThreshold = release
+                pipeline.reset()
+                calibrationView?.let { root.removeView(it) }
+                calibrationView = null
+            },
+            onCancel = {
+                calibrationView?.let { root.removeView(it) }
+                calibrationView = null
+            },
+        )
+        calibrationView = view
+        root.addView(view)
     }
 
     /** Pick a relief from the user's preferences, show it in-app + notify.
