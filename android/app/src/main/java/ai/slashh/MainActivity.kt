@@ -39,6 +39,12 @@ class MainActivity : AppCompatActivity() {
     private var activeReliefType: String? = null
     private var calibrationOpen = false
 
+    // Background-monitor mirror: the StressMonitorService owns the mic and scores
+    // on the NPU out-of-process; we poll its live reading onto the web gauge.
+    private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var mirroring = false
+    private var mirrorStressed = false
+
     // State properties for JS sync
     private var stressScore: Float = 5f
     private var inferenceLatency: Long = 12
@@ -62,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         sendStateToWeb()
-        if (granted) startListening()
+        if (granted) { if (calibrationOpen) startListening() else startMonitor() }
     }
 
     private val askNotif = registerForActivityResult(
@@ -150,13 +156,20 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
         ) {
-            startListening()
+            if (calibrationOpen) startListening()   // in-app capture for calibration
+            else startMonitor()                      // always-on background NPU monitor + mirror
+        } else {
+            // Ask up front so the always-on monitor can auto-start once granted.
+            askMic.launch(Manifest.permission.RECORD_AUDIO)
         }
         sendStateToWeb()
     }
 
     override fun onPause() {
         super.onPause()
+        // Stop the UI mirror, but KEEP the background monitor running — the whole
+        // point is that on-device monitoring continues with the app closed.
+        stopMirror()
         capture?.stop()
         capture = null
         pipeline.reset()
@@ -234,6 +247,49 @@ class MainActivity : AppCompatActivity() {
         sendStateToWeb()
     }
 
+    /** Auto-start the always-on background NPU monitor: a foreground service owns
+     *  the mic and scores WavLM on the Hexagon NPU out-of-process via the shell
+     *  helper (CPU StressNet if the helper isn't live). The app only MIRRORS its
+     *  live reading onto the gauge — it never captures the mic in parallel. */
+    private fun startMonitor() {
+        capture?.stop(); capture = null      // never hold the mic alongside the service
+        StressMonitorService.start(this)
+        startMirror()
+    }
+
+    private fun startMirror() {
+        if (mirroring) return
+        mirroring = true
+        mirrorStressed = false
+        mainHandler.post(mirrorTick)
+    }
+
+    private fun stopMirror() {
+        mirroring = false
+        mainHandler.removeCallbacks(mirrorTick)
+    }
+
+    /** Poll the service's latest NPU reading (~400 ms) and reflect it on the gauge. */
+    private val mirrorTick = object : Runnable {
+        override fun run() {
+            if (!mirroring) return
+            StressMonitorService.lastState?.let { st ->
+                stressScore = ((st.level ?: st.rawScore ?: 0f) * 100f).coerceIn(0f, 100f)
+                st.rawScore?.let { lastOutputStr = "%.2f".format(it) }
+                backendType = StressMonitorService.backend
+                modelStatus = "loaded"
+                fastRpcStatus = if (StressMonitorService.backend.contains("NPU")) "ok" else "checking"
+                // Open the in-app relief overlay on sustained stress while visible;
+                // the service itself raises the (background) notification.
+                if (st.stressed && !mirrorStressed && !reliefOpen) fireRelief(cueDriven = true, notify = false)
+                else if (!st.stressed && mirrorStressed && cueDriven) dismissRelief()
+                mirrorStressed = st.stressed
+                sendStateToWeb()
+            }
+            mainHandler.postDelayed(this, 400)
+        }
+    }
+
     fun toggleListening() {
         if (capture != null) stopListening() else startListening()
     }
@@ -279,6 +335,12 @@ class MainActivity : AppCompatActivity() {
         stressedScores.clear()
         stressedEnergy.clear()
         calibrationOpen = true
+        // Calibration needs the in-app mic (model rawScore + energy), so hand the
+        // mic back from the background monitor for the duration of the flow. Brief
+        // delay so the service releases the mic before in-app capture opens.
+        stopMirror()
+        StressMonitorService.stop(this)
+        mainHandler.postDelayed({ if (calibrationOpen) startListening() }, 300)
         sendStateToWeb()
     }
 
@@ -289,6 +351,8 @@ class MainActivity : AppCompatActivity() {
         stressedScores.clear()
         stressedEnergy.clear()
         calibrationOpen = false
+        stopListening()
+        startMonitor()      // resume the always-on background monitor
         sendStateToWeb()
     }
 
@@ -299,6 +363,8 @@ class MainActivity : AppCompatActivity() {
         pipeline.stressAnchor = stressAnchor.toFloat()
         pipeline.reset()
         calibrationOpen = false
+        stopListening()
+        startMonitor()      // resume the always-on background monitor
         sendStateToWeb()
     }
 
@@ -308,19 +374,20 @@ class MainActivity : AppCompatActivity() {
         sendStateToWeb()
     }
 
-    private fun fireRelief(cueDriven: Boolean) {
+    private fun fireRelief(cueDriven: Boolean, notify: Boolean = true) {
         val enabled = prefs.enabled()
         if (enabled.isEmpty()) return
         val (type, idx) = ReliefSelector.next(enabled, prefs.lastIndex)
         prefs.lastIndex = idx
-        
+
         reliefOpen = true
         activeReliefType = type.key
         this.cueDriven = cueDriven
-        
-        // Cooldown notification to avoid spamming
+
+        // Cooldown notification to avoid spamming. Skipped (notify=false) when the
+        // background monitor already owns the notification path.
         val now = System.currentTimeMillis()
-        if (prefs.notify && (now - lastNotificationTime > 30000L)) {
+        if (notify && prefs.notify && (now - lastNotificationTime > 30000L)) {
             ReliefNotifier.notify(this, type)
             lastNotificationTime = now
         }
@@ -336,7 +403,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun sendStateToWeb() {
-        val isListening = (capture != null)
+        val isListening = (capture != null) || StressMonitorService.running
         val micPermission = if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) "granted" else "denied"
         val notifPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) "granted" else "denied"

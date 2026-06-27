@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Local notifications only (relief nudges). Still NO INTERNET permission. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Always-on background stress monitor: a foreground service keeps the mic
+         pipeline alive while the app UI is closed. Still NO INTERNET permission. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
 
     <application
@@ -26,5 +30,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Always-on background stress monitor. foregroundServiceType=microphone
+             is required on Android 14+ to hold the mic from a foreground service. -->
+        <service
+            android:name=".StressMonitorService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
     </application>
 </manifest>

@@ -39,6 +39,13 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    // If in-app QNN libs are ever bundled, the Hexagon skel must hit disk for the
+    // fastrpc DSP loader to open it (it can't read it from inside base.apk).
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 dependencies {
