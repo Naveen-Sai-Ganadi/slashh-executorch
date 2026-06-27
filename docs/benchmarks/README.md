@@ -90,6 +90,10 @@ Clipping / saturation robustness over 6 levels: reliable down to clip_ratio 0.25
 
 Reverberation robustness over 5 RT60 levels: reliable up to RT60 1s; reverb-tolerant: True. _(`reverb_robustness.json` · [details](reverb_robustness.md))_
 
+### Combined multi-distortion field robustness
+
+Combined multi-distortion field robustness over 5 profiles (gain->reverb->noise->clip): **graceful** — every profile clears the bar (worst 88%); max compounding gap 0.069. _(`combined_distortion.json` · [details](combined_distortion.md))_
+
 ### Operating-point / ROC sweep
 
 Operating-point / ROC sweep over 9 thresholds: AUC 1.000, accuracy-optimal threshold 0.6; default 0.5 well placed: True. _(`operating_point.json` · [details](operating_point.md))_

@@ -350,6 +350,28 @@ def _summarize_reverb_robustness(d: dict) -> str:
     )
 
 
+def _summarize_combined_distortion(d: dict) -> str:
+    graceful = d.get("graceful")
+    gap = d.get("max_compounding_gap")
+    worst = d.get("worst_accuracy")
+    n = d.get("n_points", "?")
+    worst_txt = f"{worst:.0%}" if isinstance(worst, (int, float)) else "?"
+    gap_txt = f"{gap:.3f}" if isinstance(gap, (int, float)) else "—"
+    if graceful:
+        return (
+            f"Combined multi-distortion field robustness over {n} profiles "
+            f"(gain->reverb->noise->clip): **graceful** — every profile clears the "
+            f"bar (worst {worst_txt}); max compounding gap {gap_txt}."
+        )
+    return (
+        f"Combined multi-distortion field robustness over {n} profiles "
+        f"(gain->reverb->noise->clip): **compounding degradation** — simultaneous "
+        f"distortion drops accuracy to {worst_txt} below single-axis predictions "
+        f"(max compounding gap {gap_txt}); single-axis robustness overstates field "
+        "robustness."
+    )
+
+
 def _summarize_wavlm_int8(d: dict) -> str:
     mb = d.get("int8_pte_mb")
     comp = d.get("compression_x")
@@ -544,6 +566,7 @@ _ARTIFACTS = [
     ("gain_robustness.json", "Input-gain (level) robustness", _summarize_gain_robustness),
     ("clipping_robustness.json", "Clipping / saturation robustness", _summarize_clipping_robustness),
     ("reverb_robustness.json", "Reverberation robustness", _summarize_reverb_robustness),
+    ("combined_distortion.json", "Combined multi-distortion field robustness", _summarize_combined_distortion),
     ("operating_point.json", "Operating-point / ROC sweep", _summarize_operating_point),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),

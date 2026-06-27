@@ -1,0 +1,81 @@
+{
+  "accuracy_bar": 0.8,
+  "n_points": 5,
+  "clean_accuracy": 1.0,
+  "worst_accuracy": 0.881944,
+  "graceful": true,
+  "max_compounding_gap": 0.069444,
+  "reliable_profiles": [
+    "clean",
+    "quiet",
+    "typical",
+    "harsh",
+    "worst_case"
+  ],
+  "anomalous_profiles": [
+    "worst_case"
+  ],
+  "verdict": "**Graceful composition**: robustness holds under simultaneous distortion \u2014 every field profile clears the 80% bar (worst 88%). Single-axis robustness is not overstated, so no combined-distortion augmentation is required. Caveat: worst_case scored ABOVE the matched single-axis baseline (gap -0.156) \u2014 stacking more distortion cannot genuinely raise accuracy, so the synthetic eval under-stresses that combination; read the verdict as bounded by synthetic-eval limits, not proof of field robustness.",
+  "points": [
+    {
+      "name": "clean",
+      "gain_db": 0.0,
+      "rt60_s": 0.0,
+      "snr_db": null,
+      "clip_ratio": 1.0,
+      "accuracy": 1.0,
+      "acc_std": 0.0,
+      "n": 576,
+      "matched_single_axis_acc": null,
+      "compounding_gap": null
+    },
+    {
+      "name": "quiet",
+      "gain_db": -3.0,
+      "rt60_s": 0.15,
+      "snr_db": 20.0,
+      "clip_ratio": 0.9,
+      "accuracy": 0.998264,
+      "acc_std": 0.003007,
+      "n": 576,
+      "matched_single_axis_acc": 1.0,
+      "compounding_gap": 0.001736
+    },
+    {
+      "name": "typical",
+      "gain_db": -6.0,
+      "rt60_s": 0.3,
+      "snr_db": 10.0,
+      "clip_ratio": 0.6,
+      "accuracy": 0.987847,
+      "acc_std": 0.013107,
+      "n": 576,
+      "matched_single_axis_acc": 1.0,
+      "compounding_gap": 0.012153
+    },
+    {
+      "name": "harsh",
+      "gain_db": -12.0,
+      "rt60_s": 0.6,
+      "snr_db": 0.0,
+      "clip_ratio": 0.35,
+      "accuracy": 0.881944,
+      "acc_std": 0.021049,
+      "n": 576,
+      "matched_single_axis_acc": 0.951389,
+      "compounding_gap": 0.069444
+    },
+    {
+      "name": "worst_case",
+      "gain_db": -12.0,
+      "rt60_s": 1.0,
+      "snr_db": -5.0,
+      "clip_ratio": 0.25,
+      "accuracy": 1.0,
+      "acc_std": 0.0,
+      "n": 576,
+      "matched_single_axis_acc": 0.84375,
+      "compounding_gap": -0.15625
+    }
+  ]
+}
