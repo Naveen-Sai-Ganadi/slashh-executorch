@@ -17,10 +17,24 @@ export function SettingsScreen() {
   } = useSlashh();
   const [techOpen, setTechOpen] = useState(false);
 
+  const handleBack = () => {
+    // Collapse technical status if open before navigating back
+    if (techOpen) {
+      setTechOpen(false);
+    } else {
+      try {
+        setView("dashboard");
+      } catch (e) {
+        console.error("Error navigating back:", e);
+        setView("dashboard");
+      }
+    }
+  };
+
   return (
     <div className="flex min-h-full flex-col px-5 pb-10 pt-5">
       <header className="flex items-center gap-3">
-        <button onClick={() => setView("dashboard")} className="grid h-10 w-10 place-items-center rounded-full bg-card text-muted-foreground shadow-[var(--shadow-card)] transition active:scale-95">
+        <button onClick={handleBack} className="grid h-10 w-10 place-items-center rounded-full bg-card text-muted-foreground shadow-[var(--shadow-card)] transition active:scale-95">
           <ChevronLeft className="h-5 w-5" />
         </button>
         <h1 className="font-display text-xl font-bold tracking-tight">Settings</h1>
