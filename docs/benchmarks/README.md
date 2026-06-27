@@ -58,6 +58,10 @@ fp32 vs INT8 .pte footprint for the 1549-param net: fp32 13,188B -> INT8 12,548B
 
 INT8 weight granularity A/B (per-channel vs per-tensor): per-channel reliable to -5 dB, per-tensor to -5 dB; per-tensor +23.5% on size, max |Δacc| 0.000; per-channel worth its cost: False. _(`int8_granularity_ab.json` · [details](int8_granularity_ab.md))_
 
+### WavLM teacher INT8 (w8a8) size optimization
+
+WavLM teacher INT8 (w8a8, XNNPACK/CPU): 317.2 MB (3.98× smaller), decision-agree 66/96 vs fp32, balanced acc fp32 0.792 -> INT8 0.562 — **negative result: accuracy collapses to ~chance, not deployable; the deployable path stays the QNN/HTP NPU artifact (FP16-on-HTP)**. _(`wavlm_int8.json` · [details](wavlm_int8.md))_
+
 ### Front-end float32 vs float64 parity (A/B)
 
 Front-end float32 vs float64 parity: worst |Δscore| 1.19e-07, 0/960 decisions flip; precision-robust: True. _(`frontend_precision_ab.json` · [details](frontend_precision_ab.md))_

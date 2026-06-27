@@ -1,0 +1,21 @@
+{
+  "model": "wavlm_broad",
+  "task": "wavlm_int8",
+  "backend": "xnnpack_cpu",
+  "variant": "relpos_excl",
+  "dtype": "w8a8_per_tensor",
+  "fp32_params": 315584449,
+  "fp32_pte_mb": 1262.3,
+  "int8_pte_mb": 317.2,
+  "compression_x": 3.98,
+  "n_eval": 96,
+  "calib_n": 16,
+  "eval_seconds": 1011.4,
+  "n": 96,
+  "decision_agree": 66,
+  "decision_agree_rate": 0.6875,
+  "max_abs_delta": 10.050054550170898,
+  "mean_abs_delta": 2.684131383895874,
+  "fp32_accuracy": 0.7917,
+  "int8_accuracy": 0.5625
+}

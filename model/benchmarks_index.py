@@ -350,6 +350,31 @@ def _summarize_reverb_robustness(d: dict) -> str:
     )
 
 
+def _summarize_wavlm_int8(d: dict) -> str:
+    mb = d.get("int8_pte_mb")
+    comp = d.get("compression_x")
+    agree, n = d.get("decision_agree"), d.get("n")
+    fa, ia = d.get("fp32_accuracy"), d.get("int8_accuracy")
+    mb_txt = f"{mb:g} MB" if isinstance(mb, (int, float)) else "?"
+    comp_txt = f"{comp:g}×" if isinstance(comp, (int, float)) else "?"
+    agree_txt = f"{agree}/{n}" if agree is not None and n is not None else "?"
+    acc_txt, verdict = "", ""
+    if isinstance(fa, (int, float)) and isinstance(ia, (int, float)):
+        acc_txt = f", balanced acc fp32 {fa:.3f} -> INT8 {ia:.3f}"
+        if ia <= 0.56 or (fa - ia) >= 0.15:  # near 0.5 chance, or large drop
+            verdict = (" — **negative result: accuracy collapses to ~chance, "
+                       "not deployable; the deployable path stays the QNN/HTP "
+                       "NPU artifact (FP16-on-HTP)**")
+        elif (fa - ia) <= 0.05:
+            verdict = " — viable size win"
+        else:
+            verdict = " — marginal (size win vs accuracy cost)"
+    return (
+        f"WavLM teacher INT8 (w8a8, XNNPACK/CPU): {mb_txt} ({comp_txt} smaller), "
+        f"decision-agree {agree_txt} vs fp32{acc_txt}{verdict}."
+    )
+
+
 def _summarize_operating_point(d: dict) -> str:
     auc = d.get("auc")
     bt = d.get("best_accuracy_threshold")
@@ -511,6 +536,7 @@ _ARTIFACTS = [
     ("snr_aware_temperature_ab.json", "SNR-aware vs global temperature (A/B)", _summarize_snr_aware_temperature_ab),
     ("pte_footprint.json", "fp32 vs INT8 .pte footprint (A/B)", _summarize_pte_footprint),
     ("int8_granularity_ab.json", "Per-channel vs per-tensor INT8 (A/B)", _summarize_int8_granularity),
+    ("wavlm_int8.json", "WavLM teacher INT8 (w8a8) size optimization", _summarize_wavlm_int8),
     ("frontend_precision_ab.json", "Front-end float32 vs float64 parity (A/B)", _summarize_frontend_precision),
     ("base_rate_precision.json", "Base-rate (prior-shift) alarm precision (A/B)", _summarize_base_rate_precision),
     ("detection_latency.json", "Detector onset/offset latency (time-to-alarm)", _summarize_detection_latency),
