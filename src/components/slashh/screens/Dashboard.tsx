@@ -9,7 +9,22 @@ export function Dashboard() {
   const {
     listening, band, settings, toggleListening, simulateStress, resetSession,
     setView, setReliefOpen, setCalibrationOpen, micPermissionState, requestMicPermission,
+    backendType,
   } = useSlashh();
+  
+  // Map backend type to user-friendly label
+  const getBackendLabel = () => {
+    if (backendType?.includes("NPU") || backendType?.includes("QNN")) {
+      return "Snapdragon NPU";
+    } else if (backendType?.includes("CPU") || backendType?.includes("XNNPACK")) {
+      return "CPU fallback";
+    } else if (backendType?.includes("Demo")) {
+      return "Demo mode";
+    } else if (backendType?.includes("Unavailable")) {
+      return "Unavailable";
+    }
+    return backendType || "Local mode";
+  };
   
   // Show permission denied state if mic permission is denied
   if (micPermissionState === "denied") {
@@ -66,7 +81,7 @@ export function Dashboard() {
       {/* status chips */}
       <div className="mt-4 flex items-center justify-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/60 px-3 py-1.5 text-[12px] font-medium text-accent-foreground">
-          <Lock className="h-3 w-3" /> Local mode
+          <Lock className="h-3 w-3" /> {getBackendLabel()}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-[12px] font-medium text-secondary-foreground">
           <Wifi className="h-3 w-3" /> Network: Offline
