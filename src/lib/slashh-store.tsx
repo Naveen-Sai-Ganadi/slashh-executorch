@@ -94,6 +94,12 @@ interface SlashhState {
   calibration: Calibration;
   reliefOpen: boolean;
   activeReliefType: string | null;
+  reliefActive: boolean;
+  reliefSessionId: string;
+  reliefStartedAt: number;
+  reliefSource: "auto" | "manual";
+  reliefCompleted: boolean;
+  reliefDismissedByUser: boolean;
   calibrationOpen: boolean;
   vadActive: boolean;
   latency: number;
@@ -166,6 +172,12 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   const [calibration, setCalibration] = useState<Calibration>(DEFAULT_CALIB);
   const [reliefOpen, setReliefOpen] = useState(false);
   const [activeReliefType, setActiveReliefType] = useState<string | null>(null);
+  const [reliefActive, setReliefActive] = useState(false);
+  const [reliefSessionId, setReliefSessionId] = useState("");
+  const [reliefStartedAt, setReliefStartedAt] = useState(0);
+  const [reliefSource, setReliefSource] = useState<"auto" | "manual">("manual");
+  const [reliefCompleted, setReliefCompleted] = useState(false);
+  const [reliefDismissedByUser, setReliefDismissedByUser] = useState(false);
   const [calibrationOpen, setCalibrationOpen] = useState(false);
   const [latency, setLatency] = useState(12);
   const [lastOutput, setLastOutput] = useState("0.31");
@@ -187,11 +199,13 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   const demoPhase = useRef(0);
   const elevatedTicks = useRef(0);
   const dismissedAt = useRef(0);
+  const reliefActiveRef = useRef(false);
 
   useEffect(() => { listeningRef.current = listening; }, [listening]);
   useEffect(() => { demoRef.current = settings.demoMode; }, [settings.demoMode]);
   useEffect(() => { sensRef.current = settings.sensitivity; }, [settings.sensitivity]);
   useEffect(() => { stressRef.current = stress; }, [stress]);
+  useEffect(() => { reliefActiveRef.current = reliefActive; }, [reliefActive]);
 
   const band = bandFor(listening, stress);
   const vadActive = listening && stress > 12;
@@ -254,6 +268,14 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Auto-skip login when testing: go directly to app or onboarding
+  useEffect(() => {
+    const onboarded = window.AndroidBridge?.isOnboarded
+      ? !!window.AndroidBridge.isOnboarded()
+      : localStorage.getItem(LS_ONBOARDED) === "1";
+    setStage(onboarded ? "app" : "onboarding");
+  }, []);
+
   // master simulation tick (only runs if there is no Android bridge)
   useEffect(() => {
     if (window.AndroidBridge) return;
@@ -288,10 +310,11 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
         setLastOutput((0.2 + (next / 100) * 0.7).toFixed(2));
       }
 
-      // auto relief simulation
+      // auto relief simulation - only trigger if relief is not already active
       if (next > 78) elevatedTicks.current += 1;
       else if (next < 60) elevatedTicks.current = 0;
       if (
+        !reliefActiveRef.current &&
         elevatedTicks.current > 28 &&
         Date.now() - dismissedAt.current > 25000
       ) {
@@ -299,6 +322,12 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
           if (!open) {
             elevatedTicks.current = 0;
             setActiveReliefType("breath");
+            // Mark relief as active and user hasn't dismissed it yet
+            setReliefActive(true);
+            setReliefSessionId(Math.random().toString(36).substr(2, 9));
+            setReliefStartedAt(Date.now());
+            setReliefSource("auto");
+            setReliefDismissedByUser(false);
           }
           return true;
         });
@@ -420,7 +449,12 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   };
 
   const closeRelief = (b: boolean) => {
-    if (!b) dismissedAt.current = Date.now();
+    if (!b) {
+      dismissedAt.current = Date.now();
+      // Mark relief as dismissed by user when closing
+      setReliefDismissedByUser(true);
+      setReliefActive(false);
+    }
     setReliefOpen(b);
     if (!b) {
       setActiveReliefType(null);
@@ -433,6 +467,12 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   const startRelief = (type: string) => {
     setReliefOpen(true);
     setActiveReliefType(type);
+    // Track relief session
+    setReliefActive(true);
+    setReliefSessionId(Math.random().toString(36).substr(2, 9));
+    setReliefStartedAt(Date.now());
+    setReliefSource("manual");
+    setReliefDismissedByUser(false);
     if (window.AndroidBridge) {
       window.AndroidBridge.startRelief(type);
     }
@@ -513,7 +553,9 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   const value = useMemo<SlashhState>(
     () => ({
       stage, view, hasPasscode, listening, stress, band, settings, calibration,
-      reliefOpen, activeReliefType, calibrationOpen, vadActive, latency, lastOutput,
+      reliefOpen, activeReliefType, reliefActive, reliefSessionId, reliefStartedAt,
+      reliefSource, reliefCompleted, reliefDismissedByUser,
+      calibrationOpen, vadActive, latency, lastOutput,
       backendType, fastRpcStatus, modelStatus, micPermissionState, notificationPermissionState,
       backendState,
       setStage, setView, setHasPasscode, toggleListening, setListening,
@@ -525,7 +567,9 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
     }),
     [
       stage, view, hasPasscode, listening, stress, band, settings, calibration,
-      reliefOpen, activeReliefType, calibrationOpen, vadActive, latency, lastOutput,
+      reliefOpen, activeReliefType, reliefActive, reliefSessionId, reliefStartedAt,
+      reliefSource, reliefCompleted, reliefDismissedByUser,
+      calibrationOpen, vadActive, latency, lastOutput,
       backendType, fastRpcStatus, modelStatus, micPermissionState, notificationPermissionState,
       backendState,
     ]

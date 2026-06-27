@@ -13,7 +13,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * bridge owns SHA-256 hashing). No network anywhere in this path.
  */
 export function AuthScreen() {
-  const { authHasAccount, signup, login } = useSlashh();
+  const { authHasAccount, signup, login, setStage } = useSlashh();
   const [mode, setMode] = useState<"signup" | "login">(authHasAccount() ? "login" : "signup");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -118,6 +118,19 @@ export function AuthScreen() {
         >
           {isSignup ? "Create account" : "Log in"}
           <ArrowRight className="ml-1 h-5 w-5" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          className="mt-2 h-11 w-full rounded-2xl text-muted-foreground"
+          onClick={() => {
+            const onboarded = window.AndroidBridge?.isOnboarded
+              ? !!window.AndroidBridge.isOnboarded()
+              : localStorage.getItem("slashh_onboarded") === "1";
+            setStage(onboarded ? "app" : "onboarding");
+          }}
+        >
+          Continue without account
         </Button>
 
         <button

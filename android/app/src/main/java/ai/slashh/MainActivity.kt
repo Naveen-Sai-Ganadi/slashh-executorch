@@ -490,7 +490,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun loadClassifier(): StressClassifier? {
         val featLen = AudioConfig.N_MELS * AudioConfig.N_FRAMES
-        for (name in listOf("stress_model_qnn.pte", "stress_model.pte")) {
+        for (name in listOf("stress_model.pte")) {
             try {
                 val c = ExecuTorchStressClassifier(copyAsset(name))
                 // Validate it can actually RUN — a QNN .pte loads fine but its
