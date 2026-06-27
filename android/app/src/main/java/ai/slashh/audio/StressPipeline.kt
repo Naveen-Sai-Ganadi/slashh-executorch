@@ -22,6 +22,12 @@ class StressPipeline(
     private var stressed = false
     private var voicedSeen = false
 
+    // Enter/exit thresholds — default to the shared spec, but can be overridden
+    // by per-user calibration (Calibration + Prefs). Hysteresis: enter high,
+    // leave low, so the latch doesn't flicker.
+    var enterThreshold: Float = AudioConfig.STRESS_THRESHOLD
+    var releaseThreshold: Float = AudioConfig.RELEASE_THRESHOLD
+
     data class StressState(
         val voiced: Boolean,
         /** raw model score for this window, or null if gated/silent */
@@ -49,10 +55,10 @@ class StressPipeline(
 
         ema = if (ema.isNaN()) raw else AudioConfig.EMA_ALPHA * raw + (1 - AudioConfig.EMA_ALPHA) * ema
 
-        // hysteresis: separate enter/exit thresholds
+        // hysteresis: separate enter/exit thresholds (calibratable per user)
         stressed = when {
-            ema >= AudioConfig.STRESS_THRESHOLD -> true
-            ema < AudioConfig.RELEASE_THRESHOLD -> false
+            ema >= enterThreshold -> true
+            ema < releaseThreshold -> false
             else -> stressed
         }
 

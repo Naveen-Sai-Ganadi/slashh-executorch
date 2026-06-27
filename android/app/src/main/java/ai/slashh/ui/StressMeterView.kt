@@ -76,12 +76,19 @@ class StressMeterView @JvmOverloads constructor(
     private val simText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFFF6B74D.toInt(); textAlign = Paint.Align.CENTER; isFakeBoldText = true
     }
+    private val calibBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF16242A.toInt() }
+    private val calibText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFF5FC8D8.toInt(); textAlign = Paint.Align.CENTER; isFakeBoldText = true
+    }
     private val oval = RectF()
     private val badgeRect = RectF()
     private val simRect = RectF()
+    private val calibRect = RectF()
 
     /** Tap handler for the demo "Simulate stress" pill. */
     var onSimulate: (() -> Unit)? = null
+    /** Tap handler for the "Calibrate to my voice" pill. */
+    var onCalibrate: (() -> Unit)? = null
 
     init { isClickable = true }
 
@@ -174,6 +181,18 @@ class StressMeterView @JvmOverloads constructor(
         val fm = badgeText.fontMetrics
         canvas.drawText(bt, w / 2f, by + bh / 2f - (fm.ascent + fm.descent) / 2f, badgeText)
 
+        // ---- calibrate pill --------------------------------------------------
+        calibText.textSize = w * 0.04f
+        val ct = "🎚  Calibrate to my voice"
+        val clw = calibText.measureText(ct) + w * 0.11f
+        val clh = h * 0.052f
+        val clx = (w - clw) / 2f
+        val cly = h * 0.745f
+        calibRect.set(clx, cly, clx + clw, cly + clh)
+        canvas.drawRoundRect(calibRect, clh / 2f, clh / 2f, calibBg)
+        val cfm = calibText.fontMetrics
+        canvas.drawText(ct, w / 2f, cly + clh / 2f - (cfm.ascent + cfm.descent) / 2f, calibText)
+
         // ---- demo: simulate-stress pill ------------------------------------
         simText.textSize = w * 0.04f
         val st = "⚡  Simulate stress"
@@ -181,7 +200,7 @@ class StressMeterView @JvmOverloads constructor(
         val sw = stw + w * 0.11f
         val sh = h * 0.052f
         val sx = (w - sw) / 2f
-        val sy = h * 0.78f
+        val sy = h * 0.815f
         simRect.set(sx, sy, sx + sw, sy + sh)
         canvas.drawRoundRect(simRect, sh / 2f, sh / 2f, simBg)
         val sfm = simText.fontMetrics
@@ -192,9 +211,9 @@ class StressMeterView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
-        if (event.action == android.view.MotionEvent.ACTION_UP && simRect.contains(event.x, event.y)) {
-            onSimulate?.invoke()
-            return true
+        if (event.action == android.view.MotionEvent.ACTION_UP) {
+            if (calibRect.contains(event.x, event.y)) { onCalibrate?.invoke(); return true }
+            if (simRect.contains(event.x, event.y)) { onSimulate?.invoke(); return true }
         }
         return super.onTouchEvent(event)
     }
