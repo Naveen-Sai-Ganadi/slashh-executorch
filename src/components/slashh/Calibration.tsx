@@ -56,9 +56,23 @@ export function Calibration() {
 
   const s = STEPS[step];
   
+  // Guard: ensure we don't go out of bounds
+  if (!s) {
+    setCalibrationOpen(false);
+    return null;
+  }
+  
   const next = () => {
     if (step < 2) {
       setStep(step + 1);
+    }
+  };
+
+  const handleClose = () => {
+    try {
+      setCalibrationOpen(false);
+    } catch (e) {
+      console.error("Error closing calibration:", e);
     }
   };
 
@@ -66,7 +80,7 @@ export function Calibration() {
     <div className="absolute inset-0 z-40 flex flex-col bg-background/95 backdrop-blur-xl">
       <header className="flex items-center justify-between px-6 pt-6">
         <span className="font-display text-[15px] font-semibold text-muted-foreground">Calibrate to my voice</span>
-        <button onClick={() => setCalibrationOpen(false)} className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground shadow-[var(--shadow-card)]">
+        <button onClick={handleClose} className="grid h-9 w-9 place-items-center rounded-full bg-card text-muted-foreground shadow-[var(--shadow-card)]">
           <X className="h-4.5 w-4.5" />
         </button>
       </header>
@@ -140,7 +154,10 @@ export function Calibration() {
         ) : (
           <Button
             className="h-14 w-full rounded-2xl text-[15px] font-semibold shadow-[var(--shadow-soft)]"
-            onClick={() => { saveCalibration({ signalType, calmAnchor, stressAnchor }); setCalibrationOpen(false); }}
+            onClick={() => { 
+              saveCalibration({ signalType, calmAnchor, stressAnchor }); 
+              handleClose(); 
+            }}
           >
             Use these settings <Check className="ml-1 h-5 w-5" />
           </Button>

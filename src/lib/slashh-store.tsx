@@ -483,13 +483,23 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   };
 
   const setCalibrationOpenWithBridge = (b: boolean) => {
-    setCalibrationOpen(b);
-    if (window.AndroidBridge) {
-      if (b) {
-        window.AndroidBridge.startCalibration();
-      } else {
-        window.AndroidBridge.cancelCalibration();
+    try {
+      setCalibrationOpen(b);
+      if (window.AndroidBridge) {
+        try {
+          if (b) {
+            window.AndroidBridge.startCalibration?.();
+          } else {
+            window.AndroidBridge.cancelCalibration?.();
+          }
+        } catch (e) {
+          console.error("Bridge calibration call failed:", e);
+          // Ensure state is still updated even if bridge call fails
+          setCalibrationOpen(b);
+        }
       }
+    } catch (e) {
+      console.error("Calibration state update failed:", e);
     }
   };
 
