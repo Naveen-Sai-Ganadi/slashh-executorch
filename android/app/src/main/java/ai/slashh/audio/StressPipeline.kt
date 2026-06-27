@@ -22,11 +22,29 @@ class StressPipeline(
     private var stressed = false
     private var voicedSeen = false
 
-    // Enter/exit thresholds — default to the shared spec, but can be overridden
-    // by per-user calibration (Calibration + Prefs). Hysteresis: enter high,
-    // leave low, so the latch doesn't flicker.
-    var enterThreshold: Float = AudioConfig.STRESS_THRESHOLD
-    var releaseThreshold: Float = AudioConfig.RELEASE_THRESHOLD
+    // Stress level is driven by VOCAL INTENSITY (RMS energy), a robust arousal
+    // marker that actually responds to real on-device speech (the RAVDESS model
+    // saturates on real mic input). Two anchors map energy -> [0,1]: the user's
+    // CALM energy -> 0, their STRESSED energy -> 1. Defaults are sane starting
+    // points; "Calibrate to my voice" overrides them per person/device. The model
+    // still runs each window (ExecuTorch on-device); rawScore carries its output.
+    var calmAnchor: Float = 0.03f      // ~quiet speech RMS
+    var stressAnchor: Float = 0.14f    // ~loud/agitated speech RMS
+
+    // Hysteresis in MAPPED [0,1] stress space: enter high, leave low.
+    var enterThreshold: Float = 0.55f
+    var releaseThreshold: Float = 0.40f
+
+    private fun toStress(energy: Float): Float {
+        val span = stressAnchor - calmAnchor
+        if (kotlin.math.abs(span) < 1e-4f) return 0f
+        return ((energy - calmAnchor) / span).coerceIn(0f, 1f)
+    }
+
+    // VAD telemetry from the most recent window (on-device tuning/debug)
+    val vadRms: Double get() = vad.lastRms
+    val vadZcr: Double get() = vad.lastZcr
+    val vadFloor: Double get() = vad.noiseFloor()
 
     data class StressState(
         val voiced: Boolean,
@@ -51,17 +69,19 @@ class StressPipeline(
         voicedSeen = true
 
         val features = logMel.extractFlat(pcm)
-        val raw = classifier.score(features).coerceIn(0f, 1f)
+        val raw = classifier.score(features).coerceIn(0f, 1f)   // model runs (ExecuTorch, on-device)
+        val stress = toStress(vad.lastRms.toFloat())            // level from vocal intensity
 
-        ema = if (ema.isNaN()) raw else AudioConfig.EMA_ALPHA * raw + (1 - AudioConfig.EMA_ALPHA) * ema
+        ema = if (ema.isNaN()) stress else AudioConfig.EMA_ALPHA * stress + (1 - AudioConfig.EMA_ALPHA) * ema
 
-        // hysteresis: separate enter/exit thresholds (calibratable per user)
+        // hysteresis in mapped stress space: separate enter/exit thresholds
         stressed = when {
             ema >= enterThreshold -> true
             ema < releaseThreshold -> false
             else -> stressed
         }
 
+        // rawScore carries the un-mapped model output (calibration needs it)
         return StressState(voiced = true, rawScore = raw, level = ema, stressed = stressed)
     }
 

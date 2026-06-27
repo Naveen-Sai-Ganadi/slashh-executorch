@@ -16,7 +16,7 @@ import android.view.View
  */
 class CalibrationView(
     context: Context,
-    private val onDone: (enter: Float, release: Float) -> Unit,
+    private val onDone: (calmAnchor: Float, stressAnchor: Float) -> Unit,
     private val onCancel: () -> Unit,
 ) : View(context) {
 
@@ -123,10 +123,10 @@ class CalibrationView(
         canvas.drawText(if (ok) "Calibrated ✓" else "Almost — try again", w / 2f, h * 0.22f, title)
 
         sub.textSize = w * 0.05f
-        canvas.drawText("calm avg   %.2f".format(res.calmAvg), w / 2f, h * 0.36f, sub)
-        canvas.drawText("stressed avg   %.2f".format(res.stressAvg), w / 2f, h * 0.42f, sub)
+        canvas.drawText("calm reads   %.2f".format(res.calmAnchor), w / 2f, h * 0.36f, sub)
+        canvas.drawText("stressed reads   %.2f".format(res.stressAnchor), w / 2f, h * 0.42f, sub)
         sub.color = 0xFF7FD1A6.toInt()
-        canvas.drawText("threshold set to   %.2f".format(res.enter), w / 2f, h * 0.49f, sub)
+        canvas.drawText("tuned to your voice ✓", w / 2f, h * 0.49f, sub)
         sub.color = 0xFF9AA3AF.toInt()
         if (!ok) {
             sub.textSize = w * 0.042f
@@ -162,7 +162,7 @@ class CalibrationView(
                 calm.clear(); stressed.clear(); phase = Phase.CALM; invalidate()
             }
             Phase.RESULT -> {
-                if (primaryRect.contains(x, y)) result?.let { onDone(it.enter, it.release) }
+                if (primaryRect.contains(x, y)) result?.let { onDone(it.calmAnchor, it.stressAnchor) }
                 else if (secondaryRect.contains(x, y)) {
                     calm.clear(); stressed.clear(); result = null; phase = Phase.CALM; invalidate()
                 }

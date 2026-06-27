@@ -61,12 +61,12 @@ class Prefs(context: Context) {
         get() = sp.getBoolean(KEY_NOTIFY, true)
         set(v) = sp.edit().putBoolean(KEY_NOTIFY, v).apply()
 
-    // ---- Per-user calibrated thresholds (null until calibrated) ---------------
-    val enterThreshold: Float? get() = sp.getFloat(KEY_ENTER, -1f).takeIf { it >= 0f }
-    val releaseThreshold: Float? get() = sp.getFloat(KEY_RELEASE, -1f).takeIf { it >= 0f }
+    // ---- Per-user calibration anchors (null until calibrated) -----------------
+    val calmAnchor: Float? get() = sp.getFloat(KEY_CALM, Float.NaN).takeIf { !it.isNaN() }
+    val stressAnchor: Float? get() = sp.getFloat(KEY_STRESS, Float.NaN).takeIf { !it.isNaN() }
 
-    fun saveThresholds(enter: Float, release: Float) {
-        sp.edit().putFloat(KEY_ENTER, enter).putFloat(KEY_RELEASE, release).apply()
+    fun saveAnchors(calm: Float, stress: Float) {
+        sp.edit().putFloat(KEY_CALM, calm).putFloat(KEY_STRESS, stress).apply()
     }
 
     private companion object {
@@ -77,7 +77,7 @@ class Prefs(context: Context) {
         const val KEY_NAME = "acct_name"
         const val KEY_EMAIL = "acct_email"
         const val KEY_PWHASH = "acct_pwhash"
-        const val KEY_ENTER = "thr_enter"
-        const val KEY_RELEASE = "thr_release"
+        const val KEY_CALM = "anchor_calm"
+        const val KEY_STRESS = "anchor_stress"
     }
 }

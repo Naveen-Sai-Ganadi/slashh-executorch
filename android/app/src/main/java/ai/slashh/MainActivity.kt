@@ -85,9 +85,9 @@ class MainActivity : AppCompatActivity() {
 
         classifier = loadClassifier()
         pipeline = StressPipeline(classifier!!)
-        // apply any per-user calibrated thresholds
-        prefs.enterThreshold?.let { pipeline.enterThreshold = it }
-        prefs.releaseThreshold?.let { pipeline.releaseThreshold = it }
+        // apply any per-user calibration anchors (raw->stress mapping)
+        prefs.calmAnchor?.let { pipeline.calmAnchor = it }
+        prefs.stressAnchor?.let { pipeline.stressAnchor = it }
 
         ReliefNotifier.ensureChannel(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -148,10 +148,10 @@ class MainActivity : AppCompatActivity() {
             val state = pipeline.onWindow(window)
             val cal = calibrationView
             if (cal != null) {
-                // calibrating: feed voiced scores, pause the meter/relief loop
-                val r = state.rawScore
-                if (state.voiced && r != null && cal.isCollecting()) {
-                    runOnUiThread { cal.feedScore(r) }
+                // calibrating: feed voiced vocal-intensity (energy) samples
+                if (state.voiced && cal.isCollecting()) {
+                    val energy = pipeline.vadRms.toFloat()
+                    runOnUiThread { cal.feedScore(energy) }
                 }
             } else {
                 val model = Meter.from(state)
@@ -164,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-            Log.d("Slashh", "voiced=${state.voiced} raw=${state.rawScore} level=${state.level} stressed=${state.stressed}")
+            Log.i("SlashhVAD", "voiced=${state.voiced} rms=%.5f zcr=%.3f floor=%.5f raw=${state.rawScore} ema=${state.level}".format(pipeline.vadRms, pipeline.vadZcr, pipeline.vadFloor))
         }.also { it.start() }
     }
 
@@ -174,10 +174,10 @@ class MainActivity : AppCompatActivity() {
         hideCurrent()
         val view = CalibrationView(
             this,
-            onDone = { enter, release ->
-                prefs.saveThresholds(enter, release)
-                pipeline.enterThreshold = enter
-                pipeline.releaseThreshold = release
+            onDone = { calmAnchor, stressAnchor ->
+                prefs.saveAnchors(calmAnchor, stressAnchor)
+                pipeline.calmAnchor = calmAnchor
+                pipeline.stressAnchor = stressAnchor
                 pipeline.reset()
                 calibrationView?.let { root.removeView(it) }
                 calibrationView = null
@@ -244,16 +244,21 @@ class MainActivity : AppCompatActivity() {
      * back to CPU. See docs/NPU-ON-DEVICE.md.
      */
     private fun loadClassifier(): ExecuTorchStressClassifier {
-        val candidates = listOf("stress_model_qnn.pte", "stress_model.pte")
-        val present = runCatching { assets.list("")?.toSet() ?: emptySet() }.getOrDefault(emptySet())
-        for (name in candidates) {
-            if (name !in present) continue
+        // Try each asset directly (copyAsset opens it). Don't gate on
+        // assets.list("") — it's unreliable on some OEM builds (e.g. this S25),
+        // which made the app crash there even though the .pte ships in the APK.
+        val featLen = ai.slashh.audio.AudioConfig.N_MELS * ai.slashh.audio.AudioConfig.N_FRAMES
+        for (name in listOf("stress_model_qnn.pte", "stress_model.pte")) {
             try {
                 val c = ExecuTorchStressClassifier(copyAsset(name))
+                // Validate it can actually RUN — a QNN .pte loads fine but its
+                // first forward() fails where CDSP/NPU access is blocked (retail
+                // S25). Only then is it safe to keep; otherwise fall back to CPU.
+                c.score(FloatArray(featLen))
                 Log.i("Slashh", "model loaded: $name (${if (name.contains("qnn")) "NPU/QNN" else "CPU/XNNPACK"})")
                 return c
             } catch (e: Throwable) {
-                Log.w("Slashh", "could not load $name (${e.message}); trying next")
+                Log.w("Slashh", "could not load/run $name (${e.message}); trying next")
             }
         }
         error("no loadable stress model in assets")

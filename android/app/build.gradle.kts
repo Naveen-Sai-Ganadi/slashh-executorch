@@ -53,6 +53,11 @@ dependencies {
     val qnnAar = file("libs/executorch-qnn.aar")
     if (qnnAar.exists()) {
         implementation(files(qnnAar))
+        // A local files() AAR has no POM, so ExecuTorch's transitive native-loader
+        // deps aren't pulled — declare them explicitly or NativeLoader is missing
+        // and Module fails to load on-device (crash). Versions per the Maven POM.
+        implementation("com.facebook.fbjni:fbjni:0.7.0")
+        implementation("com.facebook.soloader:nativeloader:0.10.5")
     } else {
         implementation("org.pytorch:executorch-android:1.2.0")
     }
