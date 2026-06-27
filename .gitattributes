@@ -1,0 +1,5 @@
+assets/teacher_wavlm_broad_qnn.pte filter=lfs diff=lfs merge=lfs -text
+assets/forward_2.bin filter=lfs diff=lfs merge=lfs -text
+assets/teacher_wavlm_broad_npu_int8_qnn.bin filter=lfs diff=lfs merge=lfs -text
+assets/teacher_wavlm_broad_int8_relpos_excl.pte filter=lfs diff=lfs merge=lfs -text
+assets/teacher_wavlm_broad_int8_pt.pte filter=lfs diff=lfs merge=lfs -text
