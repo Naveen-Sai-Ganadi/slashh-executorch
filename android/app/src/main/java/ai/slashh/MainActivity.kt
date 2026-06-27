@@ -2,7 +2,9 @@ package ai.slashh
 
 import ai.slashh.audio.AudioCapture
 import ai.slashh.audio.ExecuTorchStressClassifier
+import ai.slashh.audio.StressClassifier
 import ai.slashh.audio.StressPipeline
+import ai.slashh.audio.WavLmStressClassifier
 import ai.slashh.relief.AuthView
 import ai.slashh.relief.ColorToyView
 import ai.slashh.relief.JokesView
@@ -24,6 +26,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.system.Os
 import android.util.Log
 import android.widget.FrameLayout
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,6 +50,7 @@ class MainActivity : AppCompatActivity() {
     private val calmCue = CalmCue()
     private var capture: AudioCapture? = null
     private var classifier: ExecuTorchStressClassifier? = null
+    private var wavlm: WavLmStressClassifier? = null
     private lateinit var pipeline: StressPipeline
 
     private val reliefs = LinkedHashMap<ReliefType, ReliefScreen>()
@@ -59,6 +63,40 @@ class MainActivity : AppCompatActivity() {
     private var authView: AuthView? = null
     private var calibrationView: CalibrationView? = null
 
+    // While the background monitor owns the mic, the in-app capture loop is stopped,
+    // so the gauge has nothing to draw and falls back to its idle "Listening…" dash.
+    // This poller mirrors the service's latest NPU reading onto the meter (~4 Hz)
+    // while the app is in the foreground, so an open app shows the live level/label
+    // instead of a dash. It runs only between onResume/onPause and only while the
+    // monitor is running; the service still owns scoring + notifications.
+    private val uiHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val monitorMeterTick = object : Runnable {
+        override fun run() {
+            if (StressMonitorService.running) {
+                // The monitor owns the mic — make sure we're not also capturing
+                // in-app (two concurrent mic streams from one app is unreliable).
+                capture?.let { it.stop(); capture = null }
+                val state = StressMonitorService.lastState
+                meter.render(if (state != null) Meter.from(state) else Meter.monitoring())
+            }
+            // Keep ticking while the activity is resumed; do NOT self-terminate on a
+            // transient !running. StressMonitorService.start() is async — the
+            // foreground service's onStartCommand flips `running` true a few ms AFTER
+            // we post this poller, so the first tick right after tapping Start can
+            // still observe running=false. Killing the poller there left the gauge
+            // frozen on its idle dash even though the monitor was scoring. The poller
+            // is stopped explicitly in onPause.
+            uiHandler.postDelayed(this, 250L)
+        }
+    }
+    private fun startMonitorMeter() {
+        uiHandler.removeCallbacks(monitorMeterTick)
+        uiHandler.post(monitorMeterTick)
+    }
+    private fun stopMonitorMeter() {
+        uiHandler.removeCallbacks(monitorMeterTick)
+    }
+
     private val askMic = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted -> if (granted) startListening() else meter.render(Meter.needMic()) }
@@ -69,6 +107,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        configureQnnSkelSearchPath()
         prefs = Prefs(this)
         meter = StressMeterView(this)
         root = FrameLayout(this).apply { addView(meter) }
@@ -83,8 +122,7 @@ class MainActivity : AppCompatActivity() {
         reliefs.values.forEach { root.addView(it as android.view.View) }
         setContentView(root)
 
-        classifier = loadClassifier()
-        pipeline = StressPipeline(classifier!!)
+        pipeline = buildPipeline()
         // apply any per-user calibrated thresholds
         prefs.enterThreshold?.let { pipeline.enterThreshold = it }
         prefs.releaseThreshold?.let { pipeline.releaseThreshold = it }
@@ -97,11 +135,38 @@ class MainActivity : AppCompatActivity() {
 
         meter.onSimulate = { fireRelief(cueDriven = false) }
         meter.onCalibrate = { showCalibration() }
+        meter.onToggleMonitor = { toggleMonitor() }
+        meter.monitorActive = StressMonitorService.running
         gateAuth()
         handleIntent(intent)
     }
 
     private fun <T : android.view.View> T.gone(): T { visibility = android.view.View.GONE; return this }
+
+    /**
+     * Point the fastrpc DSP loader at our extracted native libs so it can load the
+     * Hexagon skel (`libQnnHtpV79Skel.so`) onto the cDSP.
+     *
+     * The QNN HTP backend creates its device by loading that skel via the CPU-side
+     * fastrpc shim (`libcdsprpc.so`), which locates the skel by searching
+     * `ADSP_LIBRARY_PATH`. Android's default value lists only system DSP dirs
+     * (`/vendor/lib/rfsa/adsp`, …) — never an app's `nativeLibraryDir`. With legacy
+     * packaging the skel *is* extracted to our lib dir, but it's off the search
+     * path, so QNN aborts at `QnnDevice_create` with
+     * `QnnDsp <E> Failed to load skel, error: 4000`. Prepending our lib dir
+     * (entries are `;`-separated per the QNN/fastrpc convention, not `:`) lets the
+     * retail-device cDSP find and load it. Must run before the first `Module.load`.
+     */
+    private fun configureQnnSkelSearchPath() {
+        val libDir = applicationInfo.nativeLibraryDir
+        val path = "$libDir;/vendor/lib/rfsa/adsp;/vendor/dsp/cdsp;/vendor/lib64/rfsa/adsp;/dsp"
+        try {
+            Os.setenv("ADSP_LIBRARY_PATH", path, true)
+            Log.i("Slashh", "ADSP_LIBRARY_PATH=$path")
+        } catch (e: Throwable) {
+            Log.w("Slashh", "could not set ADSP_LIBRARY_PATH: ${e.message}")
+        }
+    }
 
     /** Local login/signup gate, then onboarding on first run. */
     private fun gateAuth() {
@@ -127,13 +192,50 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        meter.monitorActive = StressMonitorService.running
+        // Always arm the mirror poller while resumed. It renders the service's live
+        // NPU reading when the monitor is running and no-ops otherwise (leaving the
+        // in-app capture loop to own the gauge). Arming it unconditionally makes the
+        // gauge self-heal regardless of the order in which "app foreground" and
+        // "monitor running" become true — e.g. a START_STICKY service restart that
+        // flips `running` true a moment AFTER onResume would otherwise never get a
+        // poller, leaving the gauge stuck on its idle dash.
+        startMonitorMeter()
+        // When the background monitor owns the mic, don't also capture in-app (two
+        // concurrent MIC streams from one app is unreliable). The service does the
+        // scoring + notifying; the poller above just mirrors it onto the gauge.
+        if (StressMonitorService.running) return
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
         ) startListening() else askMic.launch(Manifest.permission.RECORD_AUDIO)
     }
 
+    /** Start/stop the always-on background stress monitor (foreground service). */
+    private fun toggleMonitor() {
+        if (StressMonitorService.running) {
+            StressMonitorService.stop(this)
+            meter.monitorActive = false
+            stopMonitorMeter()
+            // resume the in-app meter loop now that the mic is free
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED
+            ) startListening()
+            return
+        }
+        // need the mic before we can hand it to the service
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) { askMic.launch(Manifest.permission.RECORD_AUDIO); return }
+        // free the in-app mic, then start the service to own it
+        capture?.stop(); capture = null; pipeline.reset(); calmCue.reset()
+        StressMonitorService.start(this)
+        meter.monitorActive = true
+        startMonitorMeter()
+    }
+
     override fun onPause() {
         super.onPause()
+        stopMonitorMeter()
         capture?.stop()
         capture = null
         pipeline.reset()
@@ -143,28 +245,37 @@ class MainActivity : AppCompatActivity() {
 
     private fun startListening() {
         if (capture != null) return
+        if (StressMonitorService.running) return   // service owns the mic
         capture = AudioCapture { window ->
-            val now = System.currentTimeMillis()
-            val state = pipeline.onWindow(window)
-            val cal = calibrationView
-            if (cal != null) {
-                // calibrating: feed voiced scores, pause the meter/relief loop
-                val r = state.rawScore
-                if (state.voiced && r != null && cal.isCollecting()) {
-                    runOnUiThread { cal.feedScore(r) }
-                }
-            } else {
-                val model = Meter.from(state)
-                val show = calmCue.onState(state.stressed, now)
-                runOnUiThread {
-                    meter.render(model)
-                    when {
-                        calmCue.justTriggered -> fireRelief(cueDriven = true)
-                        !show && cueDriven -> hideCurrent()
+            // Scoring runs on the capture thread; a scorer failure (e.g. an
+            // ExecuTorch delegate error on this device) must degrade to "no
+            // reading" rather than throwing on the audio thread and crashing the
+            // whole app. The background monitor's worker uses the same guard.
+            try {
+                val now = System.currentTimeMillis()
+                val state = pipeline.onWindow(window)
+                val cal = calibrationView
+                if (cal != null) {
+                    // calibrating: feed voiced scores, pause the meter/relief loop
+                    val r = state.rawScore
+                    if (state.voiced && r != null && cal.isCollecting()) {
+                        runOnUiThread { cal.feedScore(r) }
+                    }
+                } else {
+                    val model = Meter.from(state)
+                    val show = calmCue.onState(state.stressed, now)
+                    runOnUiThread {
+                        meter.render(model)
+                        when {
+                            calmCue.justTriggered -> fireRelief(cueDriven = true)
+                            !show && cueDriven -> hideCurrent()
+                        }
                     }
                 }
+                Log.d("Slashh", "voiced=${state.voiced} raw=${state.rawScore} level=${state.level} stressed=${state.stressed}")
+            } catch (e: Throwable) {
+                Log.w("Slashh", "in-app scoring error (degrading to no reading): ${e.message}")
             }
-            Log.d("Slashh", "voiced=${state.voiced} raw=${state.rawScore} level=${state.level} stressed=${state.stressed}")
         }.also { it.start() }
     }
 
@@ -234,6 +345,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * Build the scoring pipeline, preferring the **WavLM teacher** when present.
+     *
+     * The WavLM QNN `.pte` is hundreds of MB — too large to bundle in the APK — so
+     * it ships out-of-band in the app's external files dir:
+     * `adb push … /sdcard/Android/data/ai.slashh/files/teacher_wavlm_broad_qnn.pte`.
+     * When that file exists we feed raw 16 kHz windows straight to the on-NPU graph
+     * (it normalizes + extracts features + pools + scores in-graph) via
+     * [WavLmStressClassifier], and the host-side log-mel + StressNet path is
+     * skipped (the [StressClassifier] arg is an unused placeholder). If the WavLM
+     * `.pte` is absent or fails to load, we fall back to the bundled StressNet
+     * ([loadClassifier], QNN if `stress_model_qnn.pte` is present else CPU).
+     */
+    private fun buildPipeline(): StressPipeline {
+        val wavlmFile = File(getExternalFilesDir(null), "teacher_wavlm_broad_qnn.pte")
+        if (wavlmFile.exists()) {
+            try {
+                val w = WavLmStressClassifier(wavlmFile.absolutePath)
+                wavlm = w
+                Log.i("Slashh", "scorer: WavLM teacher (raw waveform, QNN) <- ${wavlmFile.name}")
+                return StressPipeline(StressClassifier { 0f }, rawScorer = w)
+            } catch (e: Throwable) {
+                Log.w("Slashh", "WavLM .pte present but failed to load (${e.message}); using StressNet")
+            }
+        }
+        val c = loadClassifier()
+        classifier = c
+        Log.i("Slashh", "scorer: StressNet (log-mel features)")
+        return StressPipeline(c)
+    }
+
+    /**
      * Load the stress model, preferring the NPU build if present.
      *
      * Tries `stress_model_qnn.pte` (a QNN/Hexagon-delegated program) first, then
@@ -271,5 +413,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         classifier?.close()
+        wavlm?.close()
     }
 }

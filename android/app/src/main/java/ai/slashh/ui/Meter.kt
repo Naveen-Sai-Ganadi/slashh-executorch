@@ -44,6 +44,16 @@ object Meter {
         stressed = false,
     )
 
+    /** Shown while the background monitor owns the mic (in-app meter is paused). */
+    fun monitoring(): MeterModel = MeterModel(
+        hasReading = false,
+        percent = 0,
+        band = StressBand.IDLE,
+        label = "Monitoring in background",
+        argb = COLOR_CALM,
+        stressed = false,
+    )
+
     /** Build the display model for one pipeline state. */
     fun from(state: StressPipeline.StressState): MeterModel {
         val level = state.level

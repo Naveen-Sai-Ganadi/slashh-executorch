@@ -38,6 +38,19 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    // The QNN HTP path needs the native libs on the *filesystem*, not zipped inside
+    // the APK. The Hexagon skel (libQnnHtpV79Skel.so) is loaded onto the cDSP by the
+    // fastrpc DSP loader, which can only open a real file path — it cannot read the
+    // skel from `base.apk!/lib/...`. With the modern default (extractNativeLibs=false)
+    // the skel never hits disk, so QNN fails with "Failed to load skel, error: 4000"
+    // and the delegate init aborts. Legacy packaging extracts every .so to the app's
+    // nativeLibraryDir (which fastrpc auto-adds to the DSP search path), letting the
+    // skel load onto the Hexagon NPU.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 dependencies {
@@ -53,6 +66,12 @@ dependencies {
     val qnnAar = file("libs/executorch-qnn.aar")
     if (qnnAar.exists()) {
         implementation(files(qnnAar))
+        // A local AAR (files(...)) carries NO transitive Maven deps, so the two
+        // runtime libs the published executorch-android:1.2.0 POM declares must be
+        // added by hand — without them org.pytorch.executorch.Module.<clinit>
+        // throws NoClassDefFoundError (NativeLoader) and the app crashes on launch.
+        implementation("com.facebook.fbjni:fbjni:0.7.0")
+        implementation("com.facebook.soloader:nativeloader:0.10.5")
     } else {
         implementation("org.pytorch:executorch-android:1.2.0")
     }

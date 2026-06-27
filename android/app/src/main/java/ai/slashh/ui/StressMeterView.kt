@@ -80,15 +80,25 @@ class StressMeterView @JvmOverloads constructor(
     private val calibText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFF5FC8D8.toInt(); textAlign = Paint.Align.CENTER; isFakeBoldText = true
     }
+    private val monBg = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val monText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER; isFakeBoldText = true
+    }
     private val oval = RectF()
     private val badgeRect = RectF()
     private val simRect = RectF()
     private val calibRect = RectF()
+    private val monRect = RectF()
 
     /** Tap handler for the demo "Simulate stress" pill. */
     var onSimulate: (() -> Unit)? = null
     /** Tap handler for the "Calibrate to my voice" pill. */
     var onCalibrate: (() -> Unit)? = null
+    /** Tap handler for the background-monitor toggle pill. */
+    var onToggleMonitor: (() -> Unit)? = null
+    /** Whether the background monitor service is currently running (for the pill). */
+    var monitorActive: Boolean = false
+        set(v) { field = v; invalidate() }
 
     init { isClickable = true }
 
@@ -181,6 +191,26 @@ class StressMeterView @JvmOverloads constructor(
         val fm = badgeText.fontMetrics
         canvas.drawText(bt, w / 2f, by + bh / 2f - (fm.ascent + fm.descent) / 2f, badgeText)
 
+        // ---- background-monitor toggle pill ---------------------------------
+        monText.textSize = w * 0.04f
+        if (monitorActive) {
+            monBg.color = 0xFF12281C.toInt()
+            monText.color = 0xFF6FE0A0.toInt()
+        } else {
+            monBg.color = 0xFF20242C.toInt()
+            monText.color = 0xFFB7BDC7.toInt()
+        }
+        val mt = if (monitorActive) "● Background monitor ON — tap to stop"
+                 else "○  Start background monitor"
+        val mlw = monText.measureText(mt) + w * 0.11f
+        val mlh = h * 0.052f
+        val mlx = (w - mlw) / 2f
+        val mly = h * 0.675f
+        monRect.set(mlx, mly, mlx + mlw, mly + mlh)
+        canvas.drawRoundRect(monRect, mlh / 2f, mlh / 2f, monBg)
+        val mfm = monText.fontMetrics
+        canvas.drawText(mt, w / 2f, mly + mlh / 2f - (mfm.ascent + mfm.descent) / 2f, monText)
+
         // ---- calibrate pill --------------------------------------------------
         calibText.textSize = w * 0.04f
         val ct = "🎚  Calibrate to my voice"
@@ -212,6 +242,7 @@ class StressMeterView @JvmOverloads constructor(
 
     override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
         if (event.action == android.view.MotionEvent.ACTION_UP) {
+            if (monRect.contains(event.x, event.y)) { onToggleMonitor?.invoke(); return true }
             if (calibRect.contains(event.x, event.y)) { onCalibrate?.invoke(); return true }
             if (simRect.contains(event.x, event.y)) { onSimulate?.invoke(); return true }
         }

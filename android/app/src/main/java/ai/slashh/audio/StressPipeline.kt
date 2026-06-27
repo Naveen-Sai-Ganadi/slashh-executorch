@@ -17,6 +17,10 @@ class StressPipeline(
     private val classifier: StressClassifier,
     private val vad: Vad = Vad(),
     private val logMel: LogMel = LogMel(),
+    /** When set, voiced windows are scored directly from raw pcm (e.g. the WavLM
+     *  teacher, which normalizes + extracts features in-graph) and the host-side
+     *  log-mel + [classifier] path is skipped. Null = the StressNet feature path. */
+    private val rawScorer: RawWaveScorer? = null,
 ) {
     private var ema: Float = Float.NaN     // NaN until the first voiced window
     private var stressed = false
@@ -50,8 +54,8 @@ class StressPipeline(
         }
         voicedSeen = true
 
-        val features = logMel.extractFlat(pcm)
-        val raw = classifier.score(features).coerceIn(0f, 1f)
+        val raw = (rawScorer?.scoreWindow(pcm)
+            ?: classifier.score(logMel.extractFlat(pcm))).coerceIn(0f, 1f)
 
         ema = if (ema.isNaN()) raw else AudioConfig.EMA_ALPHA * raw + (1 - AudioConfig.EMA_ALPHA) * ema
 
