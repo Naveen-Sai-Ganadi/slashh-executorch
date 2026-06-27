@@ -341,8 +341,14 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   };
 
   const simulateStress = () => {
-    simBoost.current += 45;
-    if (!listeningRef.current) setListening(true);
+    if (window.AndroidBridge) {
+      // Native demo trigger: spikes stress and fires a (rotating) relief so the
+      // Simulate button actually demos relief methods on-device.
+      window.AndroidBridge.setDemoMode(true);
+    } else {
+      simBoost.current += 45;
+      if (!listeningRef.current) setListening(true);
+    }
   };
 
   const resetSession = () => {
