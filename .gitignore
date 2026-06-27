@@ -17,3 +17,25 @@ client.ini
 
 # Local datasets (real audio is downloaded, not vendored)
 data/
+datasets/
+
+# Large / generated model artifacts — built on demand, never vendored.
+# The tiny reference StressNet (assets/stress_model.pt[e]) stays tracked; the
+# big teacher graphs, NPU context binaries and ONNX/TorchScript exports do not.
+assets/*.onnx
+assets/*.ts.pt
+assets/*.bin
+assets/teacher_*.pte
+assets/stressnet_*.pte
+
+# Vendored heavy toolchains / SDKs (QAIRT, ~GBs)
+.qairt/
+
+# Experiment tracking
+wandb/
+
+# Android build / IDE artifacts (the app source tree is tracked; these are not)
+android/.gradle/
+android/.idea/
+android/app/build/
+android/local.properties
