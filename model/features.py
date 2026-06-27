@@ -77,4 +77,8 @@ def extract(pcm: torch.Tensor) -> torch.Tensor:
         logmel = torch.nn.functional.pad(logmel, (0, N_FRAMES - frames))
     elif frames > N_FRAMES:
         logmel = logmel[..., :N_FRAMES]
+    # Per-window standardization: makes features amplitude/mic-invariant so the
+    # model keys on spectral SHAPE (tone), not absolute level — essential for
+    # real on-device mic input. MUST match LogMel.kt bit-for-bit (population std).
+    logmel = (logmel - logmel.mean()) / (logmel.std(unbiased=False) + 1e-5)
     return logmel.reshape(1, 1, N_MELS, N_FRAMES)

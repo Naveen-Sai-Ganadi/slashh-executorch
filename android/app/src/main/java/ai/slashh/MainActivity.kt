@@ -85,9 +85,12 @@ class MainActivity : AppCompatActivity() {
 
         classifier = loadClassifier()
         pipeline = StressPipeline(classifier!!)
-        // apply any per-user calibration anchors (raw->stress mapping)
-        prefs.calmAnchor?.let { pipeline.calmAnchor = it }
-        prefs.stressAnchor?.let { pipeline.stressAnchor = it }
+        // apply any per-user calibration (signal choice + anchors)
+        if (prefs.calibrated) {
+            pipeline.useModelSignal = prefs.useModel
+            prefs.calmAnchor?.let { pipeline.calmAnchor = it }
+            prefs.stressAnchor?.let { pipeline.stressAnchor = it }
+        }
 
         ReliefNotifier.ensureChannel(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -148,10 +151,11 @@ class MainActivity : AppCompatActivity() {
             val state = pipeline.onWindow(window)
             val cal = calibrationView
             if (cal != null) {
-                // calibrating: feed voiced vocal-intensity (energy) samples
-                if (state.voiced && cal.isCollecting()) {
+                // calibrating: feed both the model score and vocal energy
+                val r = state.rawScore
+                if (state.voiced && r != null && cal.isCollecting()) {
                     val energy = pipeline.vadRms.toFloat()
-                    runOnUiThread { cal.feedScore(energy) }
+                    runOnUiThread { cal.feedSample(r, energy) }
                 }
             } else {
                 val model = Meter.from(state)
@@ -174,8 +178,9 @@ class MainActivity : AppCompatActivity() {
         hideCurrent()
         val view = CalibrationView(
             this,
-            onDone = { calmAnchor, stressAnchor ->
-                prefs.saveAnchors(calmAnchor, stressAnchor)
+            onDone = { useModel, calmAnchor, stressAnchor ->
+                prefs.saveCalibration(useModel, calmAnchor, stressAnchor)
+                pipeline.useModelSignal = useModel
                 pipeline.calmAnchor = calmAnchor
                 pipeline.stressAnchor = stressAnchor
                 pipeline.reset()

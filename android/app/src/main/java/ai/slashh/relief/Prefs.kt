@@ -61,12 +61,17 @@ class Prefs(context: Context) {
         get() = sp.getBoolean(KEY_NOTIFY, true)
         set(v) = sp.edit().putBoolean(KEY_NOTIFY, v).apply()
 
-    // ---- Per-user calibration anchors (null until calibrated) -----------------
+    // ---- Per-user calibration (null until calibrated) -------------------------
+    val calibrated: Boolean get() = sp.contains(KEY_CALM)
+    val useModel: Boolean get() = sp.getBoolean(KEY_USE_MODEL, false)
     val calmAnchor: Float? get() = sp.getFloat(KEY_CALM, Float.NaN).takeIf { !it.isNaN() }
     val stressAnchor: Float? get() = sp.getFloat(KEY_STRESS, Float.NaN).takeIf { !it.isNaN() }
 
-    fun saveAnchors(calm: Float, stress: Float) {
-        sp.edit().putFloat(KEY_CALM, calm).putFloat(KEY_STRESS, stress).apply()
+    fun saveCalibration(useModel: Boolean, calm: Float, stress: Float) {
+        sp.edit()
+            .putBoolean(KEY_USE_MODEL, useModel)
+            .putFloat(KEY_CALM, calm).putFloat(KEY_STRESS, stress)
+            .apply()
     }
 
     private companion object {
@@ -79,5 +84,6 @@ class Prefs(context: Context) {
         const val KEY_PWHASH = "acct_pwhash"
         const val KEY_CALM = "anchor_calm"
         const val KEY_STRESS = "anchor_stress"
+        const val KEY_USE_MODEL = "use_model_signal"
     }
 }

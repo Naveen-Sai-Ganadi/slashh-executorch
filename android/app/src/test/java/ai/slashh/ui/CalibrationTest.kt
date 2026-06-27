@@ -6,27 +6,41 @@ import org.junit.Test
 
 class CalibrationTest {
 
-    @Test fun anchorsAreTheMeanScores() {
-        val r = Calibration.compute(listOf(0.90f, 0.94f), listOf(0.50f, 0.48f))
-        assertEquals(0.92f, r.calmAnchor, 1e-3f)
-        assertEquals(0.49f, r.stressAnchor, 1e-3f)
-    }
-
-    @Test fun invertedModelStillSeparable() {
-        // on-device the model is inverted: calm reads HIGH, stressed LOW
-        val r = Calibration.compute(listOf(0.95f, 0.97f), listOf(0.50f, 0.55f))
+    @Test fun picksModelWhenItClearlySeparates() {
+        val r = Calibration.compute(
+            calmRaw = listOf(0.20f, 0.25f), calmEnergy = listOf(0.05f, 0.06f),
+            stressRaw = listOf(0.85f, 0.90f), stressEnergy = listOf(0.07f, 0.08f),
+        )
+        assertTrue(r.useModel)
         assertTrue(r.separable)
-        assertTrue("calm anchor high", r.calmAnchor > r.stressAnchor)
+        assertEquals(0.225f, r.calmAnchor, 1e-2f)   // model raw means
     }
 
-    @Test fun normalDirectionAlsoSeparable() {
-        val r = Calibration.compute(listOf(0.10f, 0.15f), listOf(0.80f, 0.85f))
+    @Test fun fallsBackToEnergyWhenModelSaturates() {
+        // model reads ~0.96 for both (saturated) — energy must win
+        val r = Calibration.compute(
+            calmRaw = listOf(0.95f, 0.96f), calmEnergy = listOf(0.03f, 0.04f),
+            stressRaw = listOf(0.97f, 0.98f), stressEnergy = listOf(0.13f, 0.14f),
+        )
+        assertTrue(!r.useModel)
         assertTrue(r.separable)
-        assertTrue(r.stressAnchor > r.calmAnchor)
+        assertEquals(0.035f, r.calmAnchor, 1e-2f)   // energy means
     }
 
-    @Test fun tooCloseFlaggedNotSeparable() {
-        val r = Calibration.compute(listOf(0.50f, 0.55f), listOf(0.52f, 0.57f))
+    @Test fun invertedModelStillCountsAsSeparation() {
+        val r = Calibration.compute(
+            calmRaw = listOf(0.95f), calmEnergy = listOf(0.03f),
+            stressRaw = listOf(0.50f), stressEnergy = listOf(0.13f),
+        )
+        assertTrue(r.useModel)                       // |0.50-0.95| = 0.45 >= 0.25
+        assertTrue("inverted: calm anchor high", r.calmAnchor > r.stressAnchor)
+    }
+
+    @Test fun neitherSeparatesFlagged() {
+        val r = Calibration.compute(
+            calmRaw = listOf(0.95f), calmEnergy = listOf(0.05f),
+            stressRaw = listOf(0.97f), stressEnergy = listOf(0.06f),
+        )
         assertTrue(!r.separable)
     }
 }

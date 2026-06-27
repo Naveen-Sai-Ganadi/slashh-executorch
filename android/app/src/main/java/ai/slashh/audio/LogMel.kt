@@ -67,7 +67,22 @@ class LogMel {
                 out[m][i] = log10(acc + AudioConfig.LOG_EPS).toFloat()
             }
         }
+        standardize(out)   // per-window z-score — must match model/features.py
         return out
+    }
+
+    /** Per-window standardization (population std) over the whole [N_MELS,N_FRAMES]. */
+    private fun standardize(out: Array<FloatArray>) {
+        var sum = 0.0
+        var count = 0
+        for (row in out) for (v in row) { sum += v; count++ }
+        val mean = sum / count
+        var sq = 0.0
+        for (row in out) for (v in row) { val d = v - mean; sq += d * d }
+        val std = kotlin.math.sqrt(sq / count)
+        val inv = (1.0 / (std + 1e-5)).toFloat()
+        val mf = mean.toFloat()
+        for (row in out) for (i in row.indices) row[i] = (row[i] - mf) * inv
     }
 
     /** Row-major flatten into the model input layout `[1,1,N_MELS,N_FRAMES]`. */

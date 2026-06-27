@@ -22,23 +22,24 @@ class StressPipeline(
     private var stressed = false
     private var voicedSeen = false
 
-    // Stress level is driven by VOCAL INTENSITY (RMS energy), a robust arousal
-    // marker that actually responds to real on-device speech (the RAVDESS model
-    // saturates on real mic input). Two anchors map energy -> [0,1]: the user's
-    // CALM energy -> 0, their STRESSED energy -> 1. Defaults are sane starting
-    // points; "Calibrate to my voice" overrides them per person/device. The model
-    // still runs each window (ExecuTorch on-device); rawScore carries its output.
-    var calmAnchor: Float = 0.03f      // ~quiet speech RMS
-    var stressAnchor: Float = 0.14f    // ~loud/agitated speech RMS
+    // The stress level maps an input signal to [0,1] between two calibrated
+    // anchors (user's calm -> 0, stressed -> 1). The signal is EITHER the model's
+    // output (genuine ML stress, when the retrained model separates this voice)
+    // OR vocal intensity (RMS energy, the robust fallback). "Calibrate to my
+    // voice" measures both and picks whichever separates the demoer — set here.
+    // Defaults: energy with sane anchors, so it works before calibration.
+    var useModelSignal: Boolean = false
+    var calmAnchor: Float = 0.03f
+    var stressAnchor: Float = 0.14f
 
     // Hysteresis in MAPPED [0,1] stress space: enter high, leave low.
     var enterThreshold: Float = 0.55f
     var releaseThreshold: Float = 0.40f
 
-    private fun toStress(energy: Float): Float {
+    private fun toStress(signal: Float): Float {
         val span = stressAnchor - calmAnchor
         if (kotlin.math.abs(span) < 1e-4f) return 0f
-        return ((energy - calmAnchor) / span).coerceIn(0f, 1f)
+        return ((signal - calmAnchor) / span).coerceIn(0f, 1f)
     }
 
     // VAD telemetry from the most recent window (on-device tuning/debug)
@@ -70,7 +71,8 @@ class StressPipeline(
 
         val features = logMel.extractFlat(pcm)
         val raw = classifier.score(features).coerceIn(0f, 1f)   // model runs (ExecuTorch, on-device)
-        val stress = toStress(vad.lastRms.toFloat())            // level from vocal intensity
+        val signal = if (useModelSignal) raw else vad.lastRms.toFloat()
+        val stress = toStress(signal)
 
         ema = if (ema.isNaN()) stress else AudioConfig.EMA_ALPHA * stress + (1 - AudioConfig.EMA_ALPHA) * ema
 
