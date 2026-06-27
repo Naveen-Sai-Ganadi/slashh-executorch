@@ -340,6 +340,16 @@ def _summarize_clipping_robustness(d: dict) -> str:
     )
 
 
+def _summarize_reverb_robustness(d: dict) -> str:
+    ceiling = d.get("reliable_ceiling_s")
+    tol = d.get("reverb_tolerant")
+    ceiling_txt = f"RT60 {ceiling:g}s" if isinstance(ceiling, (int, float)) else "—"
+    return (
+        f"Reverberation robustness over {d.get('n_points', '?')} RT60 levels: "
+        f"reliable up to {ceiling_txt}; reverb-tolerant: {tol}."
+    )
+
+
 def _summarize_operating_point(d: dict) -> str:
     auc = d.get("auc")
     bt = d.get("best_accuracy_threshold")
@@ -507,6 +517,7 @@ _ARTIFACTS = [
     ("silence_hold.json", "Detector silence-hold / gap robustness", _summarize_silence_hold),
     ("gain_robustness.json", "Input-gain (level) robustness", _summarize_gain_robustness),
     ("clipping_robustness.json", "Clipping / saturation robustness", _summarize_clipping_robustness),
+    ("reverb_robustness.json", "Reverberation robustness", _summarize_reverb_robustness),
     ("operating_point.json", "Operating-point / ROC sweep", _summarize_operating_point),
     ("feature_batching.json", "Front-end throughput (loop vs batched)", _summarize_feature_batching),
     ("noise_colors.json", "Robustness across noise colors", _summarize_noise_colors),

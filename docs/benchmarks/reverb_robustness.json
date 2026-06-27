@@ -1,0 +1,42 @@
+{
+  "accuracy_bar": 0.8,
+  "n_points": 5,
+  "clean_accuracy": 1.0,
+  "worst_accuracy": 0.9791666865348816,
+  "worst_rt60_s": 0.6,
+  "reverb_tolerant": true,
+  "reliable_ceiling_s": 1.0,
+  "verdict": "**Reverb-tolerant**: detection clears the 80% bar across the entire RT60 sweep (worst 98% at RT60 0.6s). Room reflections and a decay tail from hands-free / across-the-room capture don't break detection, so no dereverberation is required.",
+  "points": [
+    {
+      "rt60_s": 0.0,
+      "accuracy": 1.0,
+      "tail_fraction": 0.0,
+      "n": 192
+    },
+    {
+      "rt60_s": 0.15,
+      "accuracy": 0.9947916865348816,
+      "tail_fraction": 0.951460205639402,
+      "n": 192
+    },
+    {
+      "rt60_s": 0.3,
+      "accuracy": 0.9947916865348816,
+      "tail_fraction": 0.9745136080309749,
+      "n": 192
+    },
+    {
+      "rt60_s": 0.6,
+      "accuracy": 0.9791666865348816,
+      "tail_fraction": 0.9872387122983733,
+      "n": 192
+    },
+    {
+      "rt60_s": 1.0,
+      "accuracy": 1.0,
+      "tail_fraction": 0.9934327245379487,
+      "n": 192
+    }
+  ]
+}

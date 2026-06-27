@@ -82,6 +82,10 @@ Input-gain (level) robustness over 9 levels: reliable band [-24, +36] dB; level-
 
 Clipping / saturation robustness over 6 levels: reliable down to clip_ratio 0.25; clip-tolerant: False. _(`clipping_robustness.json` · [details](clipping_robustness.md))_
 
+### Reverberation robustness
+
+Reverberation robustness over 5 RT60 levels: reliable up to RT60 1s; reverb-tolerant: True. _(`reverb_robustness.json` · [details](reverb_robustness.md))_
+
 ### Operating-point / ROC sweep
 
 Operating-point / ROC sweep over 9 thresholds: AUC 1.000, accuracy-optimal threshold 0.6; default 0.5 well placed: True. _(`operating_point.json` · [details](operating_point.md))_
