@@ -1,23 +1,26 @@
 package ai.slashh.audio
 
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.sin
 
-/** Pipeline logic: VAD gating, EMA smoothing, and hysteresis (M6 + M8). */
+/**
+ * Pipeline logic: VAD gating, and the energy-driven stress level + hysteresis.
+ * The level now tracks vocal intensity (RMS), not the classifier score (which
+ * saturates on real on-device speech), so tests vary the window amplitude.
+ */
 class StressPipelineTest {
 
-    // a loud, harmonic-rich window so the real VAD passes it (ZCR ~0.056, in band)
-    private fun voicedWindow(): FloatArray {
+    /** Voiced tone at a given amplitude — amplitude controls RMS → stress level. */
+    private fun voicedWindow(amp: Float = 0.3f): FloatArray {
         val n = AudioConfig.WINDOW_SAMPLES
         return FloatArray(n) {
             val t = it.toDouble() / AudioConfig.SAMPLE_RATE
-            0.3f * (sin(2 * Math.PI * 150 * t) +
-                    sin(2 * Math.PI * 300 * t) +
-                    sin(2 * Math.PI * 450 * t)).toFloat()
+            amp * (sin(2 * Math.PI * 150 * t) +
+                   sin(2 * Math.PI * 300 * t) +
+                   sin(2 * Math.PI * 450 * t)).toFloat()
         }
     }
 
@@ -34,39 +37,29 @@ class StressPipelineTest {
     }
 
     @Test
-    fun hysteresisLatchesAndReleasesAtSeparateThresholds() {
-        // score we control: high then low
-        var score = 0.95f
-        val pipe = StressPipeline(classifier = { score })
-
-        // drive several high windows → EMA climbs past STRESS_THRESHOLD
-        var s = pipe.onWindow(voicedWindow())
-        repeat(5) { s = pipe.onWindow(voicedWindow()) }
-        assertTrue("should latch stressed once EMA >= ${AudioConfig.STRESS_THRESHOLD}", s.stressed)
-
-        // a value BETWEEN release and stress thresholds must NOT clear the latch
-        score = 0.5f   // 0.45 < 0.5 < 0.6
-        repeat(6) { s = pipe.onWindow(voicedWindow()) }
-        assertTrue("stays stressed in the hysteresis band", s.stressed)
-
-        // drop below RELEASE_THRESHOLD → clears
-        score = 0.1f
-        repeat(6) { s = pipe.onWindow(voicedWindow()) }
-        assertFalse("clears once EMA < ${AudioConfig.RELEASE_THRESHOLD}", s.stressed)
+    fun loudVoiceReadsHighStress() {
+        val pipe = StressPipeline(classifier = { 0.5f })   // classifier irrelevant to level
+        val s = pipe.onWindow(voicedWindow(0.3f))          // loud/intense
+        assertTrue(s.voiced)
+        assertTrue("loud voice -> high stress", s.level!! > 0.7f)
     }
 
     @Test
-    fun firstVoicedScoreSeedsEmaExactly() {
-        val pipe = StressPipeline(classifier = { 0.42f })
-        val s = pipe.onWindow(voicedWindow())
-        assertTrue(s.voiced)
-        assertEquals(0.42f, s.level!!, 1e-6f)   // EMA seeds to the first raw score
+    fun hysteresisLatchesOnLoudReleasesOnQuiet() {
+        val pipe = StressPipeline(classifier = { 0.5f })
+        var s = pipe.onWindow(voicedWindow(0.3f))
+        repeat(4) { s = pipe.onWindow(voicedWindow(0.3f)) }
+        assertTrue("latches stressed while loud", s.stressed)
+
+        // quiet-but-voiced windows pull the EMA below the release threshold
+        repeat(8) { s = pipe.onWindow(voicedWindow(0.03f)) }
+        assertFalse("clears once quiet", s.stressed)
     }
 
     @Test
     fun resetClearsState() {
         val pipe = StressPipeline(classifier = { 0.95f })
-        repeat(6) { pipe.onWindow(voicedWindow()) }
+        repeat(6) { pipe.onWindow(voicedWindow(0.3f)) }
         pipe.reset()
         val s = pipe.onWindow(silentWindow())
         assertNull(s.level)

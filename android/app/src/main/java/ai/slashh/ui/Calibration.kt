@@ -1,45 +1,46 @@
 package ai.slashh.ui
 
-import kotlin.math.roundToInt
+import kotlin.math.abs
 
 /**
- * Per-user threshold calibration (M-calib). Given the model's scores while the
- * user spoke *calmly* vs *stressed*, pick an enter/exit threshold that separates
- * them for THIS voice on THIS device. Pure + android-free so it's unit-testable.
- *
- * Strategy: put the enter threshold between the top of the calm scores (80th pct)
- * and the bottom of the stressed scores (20th pct). If the two overlap (the model
- * couldn't separate this person's calm vs stressed), fall back to the midpoint of
- * the means and flag it as weak so the UI can advise a stronger contrast.
+ * Per-user calibration with auto-select. Records the model's score AND vocal
+ * intensity (energy) while the user speaks calmly vs stressed, then picks
+ * whichever signal actually separates THIS voice:
+ *  - the retrained model (genuine ML stress) if it clearly separates, else
+ *  - vocal intensity (energy), the robust fallback.
+ * Pure + android-free so it's unit-testable.
  */
 object Calibration {
 
     data class Result(
-        val enter: Float,
-        val release: Float,
-        val calmAvg: Float,
-        val stressAvg: Float,
-        /** false when calm/stressed overlap — calibration is weak, re-record louder */
-        val separable: Boolean,
+        val useModel: Boolean,
+        val calmAnchor: Float,    // chosen-signal value that maps to 0% stress
+        val stressAnchor: Float,  // chosen-signal value that maps to 100% stress
+        val separable: Boolean,   // false -> re-record with a bigger contrast
     )
 
-    fun compute(calm: List<Float>, stressed: List<Float>): Result {
-        require(calm.isNotEmpty() && stressed.isNotEmpty()) { "need calm and stressed samples" }
-        val calmHi = percentile(calm, 0.80f)
-        val strLo = percentile(stressed, 0.20f)
-        val calmAvg = calm.average().toFloat()
-        val strAvg = stressed.average().toFloat()
+    // The model clearly separates this voice if calm vs stressed means differ by
+    // this much (model output is 0..1). Below it, energy is more reliable.
+    private const val MODEL_SEPARATION = 0.25f
+    private const val MODEL_MIN = 0.15f
+    private const val ENERGY_MIN = 0.03f
 
-        val separable = strAvg > calmAvg && strLo > calmHi
-        val enterRaw = if (separable) (calmHi + strLo) / 2f else (calmAvg + strAvg) / 2f
-        val enter = enterRaw.coerceIn(0.15f, 0.90f)
-        val release = (enter - 0.12f).coerceIn(0.10f, enter - 0.03f)
-        return Result(enter, release, calmAvg, strAvg, separable)
-    }
+    fun compute(
+        calmRaw: List<Float>, calmEnergy: List<Float>,
+        stressRaw: List<Float>, stressEnergy: List<Float>,
+    ): Result {
+        require(calmRaw.isNotEmpty() && stressRaw.isNotEmpty()) { "need calm and stressed samples" }
+        val mCalm = calmRaw.average().toFloat()
+        val mStress = stressRaw.average().toFloat()
+        val eCalm = calmEnergy.average().toFloat()
+        val eStress = stressEnergy.average().toFloat()
 
-    private fun percentile(xs: List<Float>, p: Float): Float {
-        val s = xs.sorted()
-        val idx = (p * (s.size - 1)).roundToInt().coerceIn(0, s.size - 1)
-        return s[idx]
+        val modelSep = abs(mStress - mCalm)
+        val useModel = modelSep >= MODEL_SEPARATION
+        return if (useModel) {
+            Result(true, mCalm, mStress, modelSep >= MODEL_MIN)
+        } else {
+            Result(false, eCalm, eStress, abs(eStress - eCalm) >= ENERGY_MIN)
+        }
     }
 }

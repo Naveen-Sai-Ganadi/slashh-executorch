@@ -28,6 +28,10 @@ class Vad(
     // up), so it still tracks the real ambient level within a window or two.
     private var noiseFloorRms = 1e-3
 
+    // last-window telemetry (for on-device tuning / debug overlay)
+    var lastRms: Double = 0.0; private set
+    var lastZcr: Double = 0.0; private set
+
     /** Returns true if [window] (mono float PCM) looks like speech. */
     fun isVoiced(window: FloatArray): Boolean {
         if (window.isEmpty()) return false
@@ -43,6 +47,7 @@ class Vad(
         }
         val rms = sqrt(sumSq / window.size)
         val zcr = crossings.toDouble() / window.size
+        lastRms = rms; lastZcr = zcr
 
         // Compare against the floor, but never below an absolute minimum, so a
         // long silence can't drag the floor to ~0 and then admit faint hum.

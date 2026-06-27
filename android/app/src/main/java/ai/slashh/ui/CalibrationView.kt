@@ -16,30 +16,37 @@ import android.view.View
  */
 class CalibrationView(
     context: Context,
-    private val onDone: (enter: Float, release: Float) -> Unit,
+    private val onDone: (useModel: Boolean, calmAnchor: Float, stressAnchor: Float) -> Unit,
     private val onCancel: () -> Unit,
 ) : View(context) {
 
     private enum class Phase { INTRO, CALM, STRESSED, RESULT }
     private var phase = Phase.INTRO
-    private val calm = ArrayList<Float>()
-    private val stressed = ArrayList<Float>()
+    private val calmRaw = ArrayList<Float>(); private val calmEnergy = ArrayList<Float>()
+    private val stressRaw = ArrayList<Float>(); private val stressEnergy = ArrayList<Float>()
     private var result: Calibration.Result? = null
     private val target = 6     // ~6 voiced windows (~6 s) per step
 
     init { isClickable = true }
 
-    /** True while we should be collecting mic scores. */
+    private fun clearSamples() {
+        calmRaw.clear(); calmEnergy.clear(); stressRaw.clear(); stressEnergy.clear()
+    }
+
+    /** True while we should be collecting mic samples. */
     fun isCollecting() = phase == Phase.CALM || phase == Phase.STRESSED
 
-    /** MainActivity calls this with each voiced model score. */
-    fun feedScore(raw: Float) {
+    /** MainActivity feeds each voiced window's model score AND vocal energy. */
+    fun feedSample(raw: Float, energy: Float) {
         when (phase) {
-            Phase.CALM -> { calm.add(raw); if (calm.size >= target) phase = Phase.STRESSED }
+            Phase.CALM -> {
+                calmRaw.add(raw); calmEnergy.add(energy)
+                if (calmRaw.size >= target) phase = Phase.STRESSED
+            }
             Phase.STRESSED -> {
-                stressed.add(raw)
-                if (stressed.size >= target) {
-                    result = Calibration.compute(calm, stressed)
+                stressRaw.add(raw); stressEnergy.add(energy)
+                if (stressRaw.size >= target) {
+                    result = Calibration.compute(calmRaw, calmEnergy, stressRaw, stressEnergy)
                     phase = Phase.RESULT
                 }
             }
@@ -93,9 +100,9 @@ class CalibrationView(
                 primaryButton(canvas, w, h, "Start")
             }
             Phase.CALM -> step(canvas, w, h, "Step 1 of 2", "Speak normally  🗣",
-                "talk calmly for a few seconds", calm.size)
+                "talk calmly for a few seconds", calmRaw.size)
             Phase.STRESSED -> step(canvas, w, h, "Step 2 of 2", "Now sound stressed  😣",
-                "raise your voice — faster, tenser", stressed.size)
+                "raise your voice — faster, tenser", stressRaw.size)
             Phase.RESULT -> result(canvas, w, h)
         }
     }
@@ -123,10 +130,13 @@ class CalibrationView(
         canvas.drawText(if (ok) "Calibrated ✓" else "Almost — try again", w / 2f, h * 0.22f, title)
 
         sub.textSize = w * 0.05f
-        canvas.drawText("calm avg   %.2f".format(res.calmAvg), w / 2f, h * 0.36f, sub)
-        canvas.drawText("stressed avg   %.2f".format(res.stressAvg), w / 2f, h * 0.42f, sub)
+        val signal = if (res.useModel) "the on-device model 🧠" else "voice intensity 🔊"
+        canvas.drawText("calm %.2f   ·   stressed %.2f".format(res.calmAnchor, res.stressAnchor),
+            w / 2f, h * 0.37f, sub)
         sub.color = 0xFF7FD1A6.toInt()
-        canvas.drawText("threshold set to   %.2f".format(res.enter), w / 2f, h * 0.49f, sub)
+        canvas.drawText("tuned to your voice ✓", w / 2f, h * 0.44f, sub)
+        sub.textSize = w * 0.044f
+        canvas.drawText("using $signal", w / 2f, h * 0.50f, sub)
         sub.color = 0xFF9AA3AF.toInt()
         if (!ok) {
             sub.textSize = w * 0.042f
@@ -159,12 +169,12 @@ class CalibrationView(
         if (cancelRect.contains(x, y)) { onCancel(); return true }
         when (phase) {
             Phase.INTRO -> if (primaryRect.contains(x, y)) {
-                calm.clear(); stressed.clear(); phase = Phase.CALM; invalidate()
+                clearSamples(); phase = Phase.CALM; invalidate()
             }
             Phase.RESULT -> {
-                if (primaryRect.contains(x, y)) result?.let { onDone(it.enter, it.release) }
+                if (primaryRect.contains(x, y)) result?.let { onDone(it.useModel, it.calmAnchor, it.stressAnchor) }
                 else if (secondaryRect.contains(x, y)) {
-                    calm.clear(); stressed.clear(); result = null; phase = Phase.CALM; invalidate()
+                    clearSamples(); result = null; phase = Phase.CALM; invalidate()
                 }
             }
             else -> {}
