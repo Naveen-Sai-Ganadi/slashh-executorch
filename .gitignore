@@ -39,3 +39,21 @@ android/.gradle/
 android/.idea/
 android/app/build/
 android/local.properties
+
+# Web frontend (Vite/React/TanStack) — deps + intermediate build output.
+# NOTE: the built Vite bundle under android/app/src/main/assets/www/ IS tracked
+# (it ships in the APK); only node_modules and stray build dirs are ignored.
+# Deliberately NO blanket *.pte/*.pt/*.bin here — those model assets are tracked
+# (see .gitattributes for the LFS rules).
+node_modules/
+dist/
+dist-ssr/
+.output/
+.vinxi/
+.tanstack/
+.nitro/
+.wrangler/
+.dev.vars
+*.local
+*.log
+npm-debug.log*

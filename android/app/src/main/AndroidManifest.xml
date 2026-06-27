@@ -4,17 +4,22 @@
     <!-- Microphone only. NO INTERNET permission: the whole point is that audio
          and results never leave the device (plan §5, airplane-mode hardening). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Local notifications only (relief nudges). Still NO INTERNET permission. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
 
     <application
         android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
         android:label="Slashh"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.DayNight">
+        android:theme="@style/Theme.Slashh">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.Slashh"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
