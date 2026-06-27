@@ -1,0 +1,26 @@
+# One-time image with the minimal deps to wrap a QNN context binary into an
+# ExecuTorch .pte. Built once (layers cached forever) so reruns don't reinstall
+# under slow/OOM-prone x86 emulation. executorch is installed --no-deps to skip
+# coremltools/scikit-learn/pandas (other backends/tooling the wrap path never
+# imports); only torch + flatbuffers + torchao are needed for from_context_binary.
+FROM --platform=linux/amd64 python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    MALLOC_ARENA_MAX=2 \
+    PIP_NO_INPUT=1 \
+    PIP_PROGRESS_BAR=off
+
+# native runtime libs the QNN/executorch .so's link against
+RUN apt-get update -qq \
+ && apt-get install -y -qq libgomp1 libc++1 libc++abi1 >/dev/null 2>&1 \
+ && rm -rf /var/lib/apt/lists/*
+
+# stage 1: CPU torch (small wheel) — separate layer so it caches on retry
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-compile torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu
+
+# stage 2: executorch core WITHOUT its heavy optional deps, + the few the
+# QNN wrap path genuinely needs.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-compile --no-deps executorch==1.2.0 \
+ && pip install --no-compile flatbuffers torchao numpy pyyaml requests ruamel.yaml tabulate

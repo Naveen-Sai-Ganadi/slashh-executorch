@@ -1,0 +1,18 @@
+{
+  "backbone": "wavlm",
+  "mapping": "broad",
+  "tag": "wavlm_broad",
+  "merge_parity_max_abs": 0.0,
+  "merge_decision_agree": 1.0,
+  "input_shape": [
+    1,
+    48000
+  ],
+  "n_calib": 32,
+  "torchscript": "assets/teacher_wavlm_broad.ts.pt",
+  "torchscript_bytes": 1263151304,
+  "onnx": "assets/teacher_wavlm_broad.onnx",
+  "onnx_bytes": 1263403634,
+  "calib_path": "assets/teacher_wavlm_broad_calib.pt",
+  "est_int8_mb": 315.6
+}

@@ -1,0 +1,2 @@
+mounting HF cache: /Users/chinnu/.cache/huggingface (skips wavlm-large download)
+scratchpad/build_wavlm_qnn_pte.sh: line 27: SDK_ARGS[@]: unbound variable

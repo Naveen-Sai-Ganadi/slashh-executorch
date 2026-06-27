@@ -1,0 +1,206 @@
+using QAIRT SDK: .qairt/qairt/2.37.0.250724
+[env] QNN_SDK_ROOT=/qairt
+[env] libQnnHtp.so: -rwxrwxrwx 1 root root 80833504 Jul 25  2025 /qairt/lib/x86_64-linux-clang/libQnnHtp.so
+[run] wrap AI Hub ctx binary -> ExecuTorch .pte
+executorch ? at /usr/local/lib/python3.11/site-packages/executorch
+Failed to load /usr/local/lib/python3.11/site-packages/torchao/_C_mxfp8.cpython-310-x86_64-linux-gnu.so: Could not load this library: /usr/local/lib/python3.11/site-packages/torchao/_C_mxfp8.cpython-310-x86_64-linux-gnu.so
+Failed to load /usr/local/lib/python3.11/site-packages/torchao/_C_cutlass_90a.abi3.so: Could not load this library: /usr/local/lib/python3.11/site-packages/torchao/_C_cutlass_90a.abi3.so
+
+===== qualcomm.utils.utils.from_context_binary =====
+signature: (ctx_path: str | bytes, op_name: str, soc_model: executorch.backends.qualcomm.serialization.qc_schema.QcomChipset = <QcomChipset.SM8650: 57>, custom_info: Dict = None)
+--- source ---
+def from_context_binary(  # noqa: C901
+    ctx_path: str | bytes,
+    op_name: str,
+    soc_model: QcomChipset = QcomChipset.SM8650,
+    custom_info: Dict = None,
+):
+    from pathlib import Path
+
+    def implement_op(custom_op, op_name, outputs):
+        @torch.library.impl(
+            custom_op, str(op_name), dispatch_key="CompositeExplicitAutograd"
+        )
+        def op_impl(inputs: List[torch.Tensor]):
+            return tuple(
+                torch.zeros(tuple(v.shape), device="meta", dtype=v.dtype)
+                for v in outputs.values()
+            )
+
+    def build_graph(
+        inputs,
+        outputs,
+        qnn_in_order: Optional[List[int]] = None,
+        executorch_in_order: Optional[List[int]] = None,
+        executorch_out_order: Optional[List[int]] = None,
+    ):
+        # custom op declaration
+        inputs_str = "Tensor[] inputs"
+        func_proto = f"{op_name}({inputs_str}) -> Any"
+        custom_op = Library(OpContextLoader.namespace, "FRAGMENT")
+        custom_op.define(func_proto)
+        # custom op implementation
+        implement_op(custom_op, op_name, outputs)
+
+        # model architecture mimicking context binary
+        class Model(torch.nn.Module):
+            """
+            The args of forward() can be thought of as what executorch is accepting as input.
+            The getattr inside the forward() can be thought of as qnn context binary.
+            When we first pass in the input, we need to use the executorch's(nn.module) input order.
+            After we get into forward(), we then need to convert input order to qnn's input order.
+            Same as return, when qnn returns the value, we need to reorder them back to executorh's output order.
+            """
+
+            def __init__(self, qnn_in_order, executorch_out_order):
+                super().__init__()
+                self.qnn_in_order = qnn_in_order
+                self.executorch_out_order = executorch_out_order
+
+            def forward(self, *inputs):  # executorch
+                if self.qnn_in_order:
+                    inputs = tuple(inputs[i] for i in self.qnn_in_order)
+                ret = getattr(
+                    getattr(torch.ops, OpContextLoader.namespace), op_name
+                ).default(inputs)
+                return (
+                    [ret[idx] for idx in self.executorch_out_order]
+                    if self.executorch_out_order
+                    else ret
+                )
+
+        inputs = (
+            tuple(tuple(inputs.values())[i] for i in executorch_in_order)
+            if executorch_in_order
+            else tuple(inputs.values())
+        )
+
+        model = Model(qnn_in_order, executorch_out_order)
+        prog = torch.export.export(model, inputs, strict=True)
+        # bookkeeping for variables' life cycle
+        return {
+            "custom_op": custom_op,
+            "custom_module": model,
+            "exported_program": prog,
+        }
+
+    def build_tensor(tensors, dtype_map):
+        ret = OrderedDict()
+        for t in tensors:
+            dtype = t.GetDataType()
+            dtype_torch = dtype_map.get(dtype, None)
+            assert dtype_torch is not None, f"unknown qnn data type {dtype}"
+            ret[t.GetName()] = torch.zeros(tuple(t.GetDims()), dtype=dtype_torch)
+
+        return ret
+
+    def preprocess_binary(ctx_bin, compiler_specs):
+        qnn_mgr = PyQnnManagerAdaptor.QnnManager(
+            generate_qnn_executorch_option(compiler_specs),
+        )
+        return bytes(qnn_mgr.MakeBinaryInfo(ctx_bin))
+
+    # dummy compiler spec would be fine, since we're not compiling
+    backend_options = generate_htp_compiler_spec(use_fp16=False)
+    compiler_specs = generate_qnn_executorch_compiler_spec(
+        soc_model=soc_model,
+        backend_options=backend_options,
+        is_from_context_binary=True,
+    )
+
+    ctx_bin = (
+        ctx_path
+        if not isinstance(ctx_path, str)
+        else preprocess_binary(Path(f"{ctx_path}").read_bytes(), compiler_specs)
+    )
+
+    dtype_map = {}
+    for type_map in (QNN_QUANT_TYPE_MAP, QNN_TENSOR_TYPE_MAP):
+        for k, v in type_map.items():
+            dtype_map.setdefault(v, k)
+
+    qnn_in_order, executorch_in_order, executorch_out_order = None, None, None
+    if custom_info is not None:
+        # since some context binaries might fail to open on host
+        # if they are compiled with special flags:
+        # e.g. weight sharing
+        # use custom information here instead
+        inputs = build_tensor(custom_info["graph_inputs"], dtype_map)
+        outputs = build_tensor(custom_info["graph_outputs"], dtype_map)
+        qnn_in_order = custom_info.get("qnn_in_order", None)
+        executorch_in_order = custom_info.get("executorch_in_order", None)
+        executorch_out_order = custom_info.get("executorch_out_order", None)
+        graph_name = custom_info["graph_name"]
+    else:
+        # get context-binary io tensor info through qnn manager
+        qnn_mgr = PyQnnManagerAdaptor.QnnManager(
+            generate_qnn_executorch_option(compiler_specs),
+            ctx_bin,
+        )
+        assert qnn_mgr.Init().value == 0, "failed to load context binary"
+        # assume we only have one graph in current context
+        graph_name = qnn_mgr.GetGraphNames()[0]
+        qnn_mgr.AllocateTensor(graph_name)
+        inputs = build_tensor(qnn_mgr.GetGraphInputs(graph_name), dtype_map)
+        outputs = build_tensor(qnn_mgr.GetGraphOutputs(graph_name), dtype_map)
+        qnn_mgr.Destroy()
+    # generate graph specific for loading context
+    bundle_prog = build_graph(
+        inputs, outputs, qnn_in_order, executorch_in_order, executorch_out_order
+    )
+    bundle_prog.update({"inputs": inputs, "outputs": outputs})
+
+    # TODO: to_edge() decorator alters the function call behavior, which
+    # requires "self" when calling. To work around this issue,
+    # temporarily remove the first parameter name.
+    edge_prog_mgr = to_edge(
+        {graph_name: bundle_prog["exported_program"]},
+        # do not alter name for custom op
+        compile_config=EdgeCompileConfig(_use_edge_ops=False),
+    )
+
+    # update meta with context binary
+    for n in edge_prog_mgr._edge_programs[graph_name].graph.nodes:
+        if n.op == "call_function" and OpContextLoader.namespace in str(n.target):
+            n.meta[OpContextLoader.meta_ctx_bin] = ctx_bin
+            break
+
+    bundle_prog["edge_program_manager"] = edge_prog_mgr.to_backend(
+        QnnPartitioner(compiler_specs)
+    )
+    return bundle_prog
+
+executorch.examples.qualcomm.qaihub_scripts.utils.utils import failed: No module named 'executorch.examples.qualcomm'
+executorch.examples.qualcomm.utils import failed: No module named 'executorch.examples.qualcomm'
+
+ctx binary: assets/teacher_wavlm_broad_npu_int8_qnn.bin (326,230,016 bytes)
+
+[wrap] from_context_binary(...) ...
+[INFO] [Qnn ExecuTorch]: Creating new backend bundle.
+[INFO] [Qnn ExecuTorch]: create QNN Logger with log_level 1
+[INFO] [Qnn ExecuTorch]: Initialize Qnn backend parameters for Qnn executorch backend type 2
+[INFO] [Qnn ExecuTorch]: Caching: Caching is in RESTORE MODE.
+[ERROR] [Qnn ExecuTorch]:  <E> Using newer context binary on old SDK
+
+[ERROR] [Qnn ExecuTorch]:  <E> Fail to get context blob with err 5000
+
+[ERROR] [Qnn ExecuTorch]:  <E> Failed to get context blob meta info or shared blob meta info .etc.
+
+[ERROR] [Qnn ExecuTorch]:  <E> Failed to create context from binary with err 0x1388
+
+[ERROR] [Qnn ExecuTorch]: Can't create context from binary. Error 5000.
+E 00:00:07.062052 executorch:QnnManager.cpp:265] Fail to configure Qnn context
+E 00:00:07.062190 executorch:PyQnnManagerAdaptor.h:223] Fail to initailize context
+Traceback (most recent call last):
+  File "/work/scratchpad/wrap_wavlm_ctx_pte.py", line 128, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/work/scratchpad/wrap_wavlm_ctx_pte.py", line 87, in main
+    result = from_ctx(CTX, GRAPH, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/executorch/backends/qualcomm/utils/utils.py", line 900, in from_context_binary
+    assert qnn_mgr.Init().value == 0, "failed to load context binary"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: failed to load context binary
+[INFO] [Qnn ExecuTorch]: Destroy Qnn device
+[INFO] [Qnn ExecuTorch]: Destroy Qnn backend

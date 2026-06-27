@@ -1,0 +1,282 @@
+mounting HF cache: /Users/chinnu/.cache/huggingface (skips wavlm-large download)
+using pre-downloaded QAIRT SDK: .qairt/qairt/2.37.0.250724
+[deps] system
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/x86_64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 14.)
+debconf: falling back to frontend: Teletype
+debconf: unable to initialize frontend: Teletype
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Noninteractive
+[deps] pip executorch 1.2.0 + torch 2.11.0 + transformers + peft (emulated x86 — slow, cached after first run)
+[notice] A new release of pip is available: 24.0 -> 26.1.2
+[notice] To update, run: pip install --upgrade pip
+[run] export WavLM QNN .pte
+[1/5] rebuild + merge LoRA into WavLM (from HF cache) ...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 24823.18it/s]
+[calib] 1 real normalized waveforms (shape (32, 48000))
+      DeployTeacher ready, example (1, 48000) (3s)
+[WARNING 2026-06-27 10:20:31,921 backend_opinfo_adapter.py:63] The backend_opinfo module couldn't be imported, so the abstract implementation will be used instead. This might be because $QNN_SDK_ROOT/lib/python isn't included in your PYTHONPATH, or the `BackendOpInfo` API isn't available in your QNN SDK version. Note that the `BackendOpInfo` API is supported starting from QNN SDK 2.41 and above.
+[2/5] PT2E capture + QnnQuantizer (w8a8) ...
+/usr/local/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+No quant config is implemented for op, aten.std.dim
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten._weight_norm.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.to.dtype_layout
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.rand.default
+No quant config is implemented for op, aten.clone.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+No quant config is implemented for op, aten.dropout.default
+[calib] 8 real normalized waveforms (shape (32, 48000))
+[3/5] calibrate on 8 samples (slow under emulation) ...
+      calib 1/8 (14s)
+      calib 2/8 (15s)
+      calib 3/8 (17s)
+      calib 4/8 (18s)
+      calib 5/8 (19s)
+      calib 6/8 (21s)
+      calib 7/8 (22s)
+      calib 8/8 (23s)
+Traceback (most recent call last):
+  File "/work/scratchpad/export_wavlm_qnn_pte.py", line 83, in main
+    quantized_model = convert_pt2e(prepared)
+                      ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torchao/quantization/pt2e/quantize_pt2e.py", line 346, in convert_pt2e
+    model = _convert_to_reference_decomposed_fx(model)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torchao/quantization/pt2e/convert.py", line 1287, in _convert_to_reference_decomposed_fx
+    return _convert_fx(
+           ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torchao/quantization/pt2e/convert.py", line 1230, in _convert_fx
+    quantized = convert(
+                ^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torchao/quantization/pt2e/convert.py", line 1130, in convert
+    _replace_observer_with_quantize_dequantize_node_decomposed(
+  File "/usr/local/lib/python3.11/site-packages/torchao/quantization/pt2e/convert.py", line 206, in _replace_observer_with_quantize_dequantize_node_decomposed
+    scale, zero_point = activation_post_process.calculate_qparams()  # type: ignore[attr-defined, operator]
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torchao/quantization/pt2e/observer.py", line 586, in calculate_qparams
+    return self._calculate_qparams(self.min_val, self.max_val)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torchao/quantization/pt2e/observer.py", line 380, in _calculate_qparams
+    if not check_min_max_valid(min_val, max_val):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torchao/quantization/pt2e/utils.py", line 163, in check_min_max_valid
+    assert min_val <= max_val, f"min {min_val} should be less than max {max_val}"
+           ^^^^^^^^^^^^^^^^^^
+AssertionError: min nan should be less than max 0.6151856780052185
+[quant] quantizer flow unavailable (min nan should be less than max 0.6151856780052185); FP16 on HTP
+[4/5] lower to QNN (SM8750 / HTP V79) ...
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/variables/functions.py:2202: UserWarning: Dynamo detected a call to a `functools.lru_cache`-wrapped function at 'fsdp.py:29'. Dynamo ignores the cache wrapper and directly traces the wrapped function. Silent incorrectness is only a *potential* risk, not something we have observed. Enable TORCH_LOGS=+dynamo for a DEBUG stack trace.
+
+This call originates from:
+  File "/usr/local/lib/python3.11/site-packages/transformers/integrations/fsdp.py", line 29, in is_fsdp_managed_module
+    if not is_torch_available():
+
+  torch._dynamo.utils.warn_once(msg)
+Traceback (most recent call last):
+  File "/work/scratchpad/export_wavlm_qnn_pte.py", line 147, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/work/scratchpad/export_wavlm_qnn_pte.py", line 97, in main
+    edge = to_edge_transform_and_lower_to_qnn(quantized_model, example, compiler_specs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/executorch/backends/qualcomm/utils/utils.py", line 429, in to_edge_transform_and_lower_to_qnn
+    ep = torch.export.export(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/__init__.py", line 205, in export
+    raise e
+  File "/usr/local/lib/python3.11/site-packages/torch/export/__init__.py", line 171, in export
+    return _export(
+           ^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/_trace.py", line 1343, in wrapper
+    raise e
+  File "/usr/local/lib/python3.11/site-packages/torch/export/_trace.py", line 1309, in wrapper
+    ep = fn(*args, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/exported_program.py", line 124, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/_utils_internal.py", line 96, in wrapper_function
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/_trace.py", line 2508, in _export
+    ep = _export_for_training(
+         ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/_trace.py", line 1343, in wrapper
+    raise e
+  File "/usr/local/lib/python3.11/site-packages/torch/export/_trace.py", line 1309, in wrapper
+    ep = fn(*args, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/exported_program.py", line 124, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/_trace.py", line 2296, in _export_for_training
+    export_artifact = export_func(
+                      ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/_trace.py", line 1598, in _strict_export
+    gm_torch_level = _export_to_torch_ir(
+                     ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/export/_trace.py", line 916, in _export_to_torch_ir
+    gm_torch_level = dynamo_graph_capture(*args, **kwargs)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/_dynamo/functional_export.py", line 851, in inner
+    out = fullgraph_capture(
+          ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 1251, in fullgraph_capture
+    return _fullgraph_capture_frame(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 1318, in _fullgraph_capture_frame
+    raise e.with_traceback(None) from e.__cause__  # User compiler error
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch._dynamo.exc.Unsupported: Attempted to call function marked as skipped
+  Explanation: Dynamo developers have intentionally marked that the function `find_spec` in file `<frozen importlib.util>` should not be traced.
+  Hint: Avoid calling the function `find_spec`.
+  Hint: Apply `@torch._dynamo.dont_skip_tracing` to the function `find_spec` to force tracing into the function. More graph breaks may occur as a result of attempting to trace into the function.
+  Hint: Please file an issue to PyTorch.
+
+  Developer debug context: module: importlib.util, qualname: find_spec, skip reason: <missing reason>
+
+ For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0007.html
+
+from user code:
+   File "/usr/local/lib/python3.11/site-packages/torch/_dynamo/functional_export.py", line 221, in forward
+    res = self._export_root(*args, **kwargs)
+  File "/work/model/export_teacher.py", line 63, in forward
+    h = self.encoder(w).last_hidden_state.mean(dim=1)
+  File "/usr/local/lib/python3.11/site-packages/transformers/models/wavlm/modeling_wavlm.py", line 1074, in forward
+    encoder_outputs = self.encoder(
+  File "/usr/local/lib/python3.11/site-packages/transformers/models/wavlm/modeling_wavlm.py", line 485, in forward
+    synced_gpus = is_deepspeed_zero3_enabled() or is_fsdp_managed_module(self)
+  File "/usr/local/lib/python3.11/site-packages/transformers/integrations/fsdp.py", line 29, in is_fsdp_managed_module
+    if not is_torch_available():
+  File "/usr/local/lib/python3.11/site-packages/torch/_dynamo/polyfills/__init__.py", line 392, in getattr_and_trace
+    return fn(*args[2:], **kwargs)
+  File "/usr/local/lib/python3.11/site-packages/transformers/utils/import_utils.py", line 150, in is_torch_available
+    is_available, torch_version = _is_package_available("torch", return_version=True)
+  File "/usr/local/lib/python3.11/site-packages/transformers/utils/import_utils.py", line 52, in _is_package_available
+    spec = importlib.util.find_spec(pkg_name)
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+

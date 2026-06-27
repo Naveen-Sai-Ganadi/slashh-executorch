@@ -1,0 +1,12 @@
+profile job jglo88klg: waiting …
+status: code=SUCCESS success=True (699s wait)
+
+=== ON-DEVICE LATENCY (Samsung Galaxy S24, Hexagon) ===
+  estimated inference time: 7298.43 ms (7298426 us)
+  peak memory range: (3731456, 11530352)
+
+=== PER-LAYER COMPUTE-UNIT OFFLOAD (1302 layers) ===
+  NPU  : 1302 layers (100.0%)  time   0.0%
+
+full profile -> scratchpad/jglo88klg_profile/profile.json
+WAVLM_PROFILE_RESULTS_DONE

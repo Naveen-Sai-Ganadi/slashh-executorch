@@ -1,0 +1,9 @@
+W0626 19:00:08.743000 15714 .venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+[wavlm_broad] merged LoRA into backbone (5s)
+[wavlm_broad] merge parity max|Δ|=0.00e+00 decision-agree=1.0000
+`loss_type=None` was set in the config but it is unrecognized. Using the default loss: `ForCausalLMLoss`.
+[wavlm_broad] TorchScript -> assets/teacher_wavlm_broad.ts.pt (1263 MB)
+/Users/chinnu/slashh-executorch/slashh-executorch/model/export_teacher.py:132: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+  torch.onnx.export(
+[wavlm_broad] ONNX -> assets/teacher_wavlm_broad.onnx (1263 MB)
+[wavlm_broad] done (31s) ~INT8 315.6 MB · parity 0.0e+00

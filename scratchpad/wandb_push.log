@@ -1,0 +1,22 @@
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: naveenganadi (naveenganadi-revscale) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run y285qpdt
+wandb: Tracking run with wandb version 0.28.0
+wandb: Run data is saved locally in /Users/chinnu/slashh-executorch/slashh-executorch/wandb/run-20260627_014402-y285qpdt
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run treasured-music-2
+wandb: ⭐️ View project at https://wandb.ai/naveenganadi-revscale/slashh-stress
+wandb: 🚀 View run at https://wandb.ai/naveenganadi-revscale/slashh-stress/runs/y285qpdt
++ teacher_wavlm_broad_npu_int8_qnn.bin (326 MB)
++ profile.json
+
+logged artifact: None/slashh-stress/wavlm-npu-int8:v0
+colleague pulls: wandb.Api().artifact('None/slashh-stress/wavlm-npu-int8:latest').download()
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading summary, console lines 2-4
+wandb: 🚀 View run treasured-music-2 at: https://wandb.ai/naveenganadi-revscale/slashh-stress/runs/y285qpdt
+wandb: ⭐️ View project at: https://wandb.ai/naveenganadi-revscale/slashh-stress
+wandb: Synced 5 W&B file(s), 0 media file(s), 3 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260627_014402-y285qpdt/logs
+WANDB_PUSH_DONE

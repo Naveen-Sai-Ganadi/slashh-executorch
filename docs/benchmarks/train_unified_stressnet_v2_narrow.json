@@ -1,0 +1,16 @@
+{
+  "mapping": "narrow",
+  "n_train": 6050,
+  "n_val": 891,
+  "train_pos_frac": 0.6690909266471863,
+  "val_pos_frac": 0.6711559891700745,
+  "arch": "v2",
+  "pos_weight": 0.4945652173913043,
+  "epochs": 40,
+  "lr": 0.001,
+  "batch_size": 128,
+  "seed": 0,
+  "val_acc": 0.8092031478881836,
+  "val_bal_acc": 0.8291375041007996,
+  "epoch": 27
+}

@@ -1,0 +1,29 @@
+W0626 19:21:44.922000 26554 .venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+[wavlm_broad] merged (2s)
+[wavlm_broad] captured (4s)
+/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/torchao/quantization/pt2e/observer.py:1306: UserWarning: torch.inf detected in input tensor, ignoring input
+  warnings.warn("torch.inf detected in input tensor, ignoring input")
+Traceback (most recent call last):
+  File "/Users/chinnu/slashh-executorch/slashh-executorch/scratchpad/export_wavlm_int8.py", line 85, in <module>
+    main()
+  File "/Users/chinnu/slashh-executorch/slashh-executorch/scratchpad/export_wavlm_int8.py", line 57, in main
+    prepared(calib[i:i + 1])
+  File "/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/torch/fx/graph_module.py", line 949, in call_wrapped
+    return self._wrapped_call(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/torch/fx/graph_module.py", line 461, in __call__
+    raise e
+  File "/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/torch/fx/graph_module.py", line 447, in __call__
+    return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<eval_with_key>.238", line 885, in forward
+  File "/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/torch/_ops.py", line 865, in __call__
+    return self._op(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Tensor dtype mismatch! Expected: Long, Got: float

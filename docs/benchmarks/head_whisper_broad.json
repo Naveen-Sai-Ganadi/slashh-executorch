@@ -1,0 +1,12 @@
+{
+  "backbone": "whisper",
+  "mapping": "broad",
+  "emb_dim": 384,
+  "n_train": 13127,
+  "n_val": 1835,
+  "pos_weight": 0.4423689842224121,
+  "epochs": 80,
+  "val_acc": 0.7863759994506836,
+  "val_bal_acc": 0.8215268850326538,
+  "epoch": 48
+}

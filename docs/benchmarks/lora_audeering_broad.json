@@ -1,0 +1,22 @@
+{
+  "backbone": "audeering",
+  "mapping": "broad",
+  "method": "lora",
+  "lora_r": 8,
+  "lora_alpha": 16,
+  "targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "out_proj"
+  ],
+  "n_train": 13127,
+  "n_val": 1835,
+  "pos_weight": 0.4423689842224121,
+  "epochs": 5,
+  "trainable_params": 917761,
+  "total_params": 165201793,
+  "val_acc": 0.8005449771881104,
+  "val_bal_acc": 0.8421593606472015,
+  "epoch": 4
+}

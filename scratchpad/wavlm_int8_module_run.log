@@ -1,0 +1,43 @@
+W0627 05:47:20.930000 85607 .venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+[wavlm_broad] merged 316M params (2s)
+/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/torchao/quantization/pt2e/observer.py:1306: UserWarning: torch.inf detected in input tensor, ignoring input
+  warnings.warn("torch.inf detected in input tensor, ignoring input")
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/executorch/exir/tensor.py:83: FutureWarning: guard_size_oblivious will be removed. Consider using explicit unbacked handling     potentially utilizing guard_or_false, guard_or_true, or statically_known_true
+  return guard_size_oblivious(self.stride < other.stride)
+[wavlm_broad] INT8 .pte -> assets/teacher_wavlm_broad_int8_relpos_excl.pte (317 MB) (110s)
+[program.cpp:163] InternalConsistency verification requested but not available
+[cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+[cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+[wavlm_broad] eval n=96 decision-agree=66/96 fp32_acc=0.7917 int8_acc=0.5625 max|Δ|=10.050 (1011s)
+# WavLM teacher — INT8 (w8a8) size optimization
+
+LoRA-merged `microsoft/wavlm-large` + stress head (316M params), quantized to an INT8 ExecuTorch `.pte` for the **XNNPACK/CPU** runtime (variant `relpos_excl`: every Linear except the relative-position path). Distinct from the QNN/HTP *NPU* path (FP16-on-HTP), which is proven separately on the S25 Hexagon.
+
+- size: fp32 ≈ **1262 MB** → INT8 **317 MB** (4.0× smaller)
+- calibration: 16 train forwards (per-tensor symmetric w8a8)
+- eval: 96 held-out val speakers, paired (identical inputs)
+- decision agreement INT8↔fp32: **66/96** (69%)
+- |Δlogit|: max **10.050**, mean **2.684**
+- balanced-set accuracy: fp32 **0.792** vs INT8 **0.562** (Δ -0.229)
+
+The max |Δlogit| is **large** — per-tensor INT8 on a 317M-param transformer shifts raw logit *magnitudes* substantially, so the INT8 scores are not trustworthy as calibrated probabilities. What survives is the **binary decision** (sign of the logit): 66/96 agree (69%).
+
+wrote docs/benchmarks/wavlm_int8.json and wavlm_int8.md

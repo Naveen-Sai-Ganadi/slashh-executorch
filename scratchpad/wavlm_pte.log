@@ -1,0 +1,29 @@
+W0626 19:15:33.984000 23314 .venv/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+[wavlm_broad] merged (3s)
+[wavlm_broad] torch.export OK (4s)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/copyreg.py:105: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  return cls.__new__(cls, *args)
+/Users/chinnu/slashh-executorch/slashh-executorch/.venv/lib/python3.11/site-packages/executorch/exir/tensor.py:83: FutureWarning: guard_size_oblivious will be removed. Consider using explicit unbacked handling     potentially utilizing guard_or_false, guard_or_true, or statically_known_true
+  return guard_size_oblivious(self.stride < other.stride)
+[wavlm_broad] .pte -> assets/teacher_wavlm_broad.pte (1263 MB, 79s)
+[program.cpp:163] InternalConsistency verification requested but not available
+[cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+[cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+[wavlm_broad] ExecuTorch-runtime parity max|Δ|=7.87e-06 (eager=-1.5574 pte=-1.5574) (93s)
+OK_WAVLM_PTE

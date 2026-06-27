@@ -1,0 +1,17 @@
+{
+  "tag": "stressnet_v1_broad",
+  "arch": "v1",
+  "mapping": "broad",
+  "n_val": 512,
+  "n_calib": 256,
+  "val_bal_acc_eager": 0.7901948392391205,
+  "val_bal_acc_fp32_pte": 0.7901948392391205,
+  "val_bal_acc_int8_pte": 0.7810134589672089,
+  "max_abs_fp32_vs_eager": 1.7583370208740234e-06,
+  "max_abs_int8_vs_eager": 0.10918086767196655,
+  "agree_int8_vs_eager": 0.95703125,
+  "fp32_pte_bytes": 100228,
+  "int8_pte_bytes": 34564,
+  "torchscript": "assets/stressnet_v1_broad.ts.pt",
+  "onnx": "assets/stressnet_v1_broad.onnx"
+}
