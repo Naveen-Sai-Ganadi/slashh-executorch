@@ -1,4 +1,4 @@
-import { Settings as SettingsIcon, Play, Pause, Sparkles, RotateCcw, Wifi, Lock, HeartHandshake, SlidersHorizontal } from "lucide-react";
+import { Settings as SettingsIcon, Play, Pause, Sparkles, RotateCcw, Wifi, Lock, HeartHandshake, SlidersHorizontal, Mic } from "lucide-react";
 import { Logo } from "@/components/slashh/Logo";
 import { StressMeter } from "@/components/slashh/StressMeter";
 import { Waveform } from "@/components/slashh/Waveform";
@@ -8,8 +8,45 @@ import { Button } from "@/components/ui/button";
 export function Dashboard() {
   const {
     listening, band, settings, toggleListening, simulateStress, resetSession,
-    setView, setReliefOpen, setCalibrationOpen,
+    setView, setReliefOpen, setCalibrationOpen, micPermissionState, requestMicPermission,
   } = useSlashh();
+  
+  // Show permission denied state if mic permission is denied
+  if (micPermissionState === "denied") {
+    return (
+      <div className="flex min-h-full flex-col px-5 pb-8 pt-5">
+        <header className="flex items-center justify-between">
+          <Logo size={24} />
+          <button
+            onClick={() => setView("settings")}
+            aria-label="Settings"
+            className="grid h-10 w-10 place-items-center rounded-full bg-card text-muted-foreground shadow-[var(--shadow-card)] transition hover:text-foreground active:scale-95"
+          >
+            <SettingsIcon className="h-5 w-5" />
+          </button>
+        </header>
+
+        <div className="mt-12 flex flex-col items-center">
+          <div className="grid h-24 w-24 place-items-center rounded-full bg-accent/50">
+            <Mic className="h-12 w-12 text-accent-foreground" strokeWidth={1.5} />
+          </div>
+          <h2 className="mt-6 font-display text-2xl font-bold tracking-tight text-foreground">Microphone required</h2>
+          <p className="mt-3 text-center text-[14px] text-muted-foreground">
+            Slashh needs microphone access to listen to your voice and detect stress levels.
+          </p>
+          
+          <Button onClick={requestMicPermission} className="mt-8 h-12 w-full rounded-2xl text-[15px] font-semibold shadow-[var(--shadow-soft)]">
+            <Mic className="mr-2 h-5 w-5" /> Allow microphone access
+          </Button>
+
+          <p className="mt-8 text-center text-[12px] text-muted-foreground">
+            Your voice is processed locally on this device and never stored or sent to a server.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
   const meta = BAND_META[band];
 
   return (
@@ -66,6 +103,7 @@ export function Dashboard() {
       <div className="mt-6 space-y-3">
         <Button
           onClick={toggleListening}
+          disabled={micPermissionState !== "granted"}
           className="h-15 w-full rounded-2xl py-4 text-[16px] font-semibold shadow-[var(--shadow-soft)]"
         >
           {listening ? <><Pause className="mr-2 h-5 w-5" /> Pause</> : <><Play className="mr-2 h-5 w-5" /> Begin listening</>}
