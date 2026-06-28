@@ -66,8 +66,17 @@ case "${1:-start}" in
            > $RIG/whisper_watch.log 2>&1 < /dev/null & \
          sleep 2; echo '--- log ---'; tail -6 $RIG/whisper_watch.log; \
          pgrep -f '$DAEMON' >/dev/null && echo 'STATUS: RUNNING' || echo 'STATUS: FAILED'"
+    # FUSE cross-uid fix: the daemon (shell) writes whisper_out.txt mode 660; the app reads it.
+    # On the /sdcard FUSE mount a freshly-written cross-uid file can EACCES for the app. The app
+    # already retries the read, but this relay keeps the outputs world-readable so transcripts
+    # never get dropped. Tagged 'whisper_chmod_relay' so `stop` can find it.
+    echo "starting chmod relay (keeps shell-written transcripts app-readable)..."
+    sh_ "pkill -f whisper_chmod_relay 2>/dev/null; \
+         nohup sh -c ': whisper_chmod_relay; while :; do \
+           chmod 0666 $CH/whisper_out.txt $CH/whisper_out.ready $CH/whisper_err.ready 2>/dev/null; \
+           sleep 0.05; done' > /dev/null 2>&1 < /dev/null & echo 'relay: running'"
     ;;
-  stop)   sh_ "pkill -f '$DAEMON' && echo stopped || echo 'not running'";;
+  stop)   sh_ "pkill -f '$DAEMON'; pkill -f whisper_chmod_relay; echo stopped";;
   status) sh_ "pgrep -f '$DAEMON' >/dev/null && echo RUNNING || echo STOPPED; echo '--- log ---'; tail -10 $RIG/whisper_watch.log 2>/dev/null";;
   log)    sh_ "tail -40 $RIG/whisper_watch.log 2>/dev/null";;
   *) echo "usage: $0 [start|stop|status|log]"; exit 2;;

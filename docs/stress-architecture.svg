@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1580" height="1580" viewBox="0 0 1580 1580" font-family="Segoe UI, system-ui, -apple-system, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arrowP" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1580" height="1580" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="40" y="48" font-size="27" font-weight="700" fill="#0f172a">Slashh — On-device Voice Stress Detection</text>
+  <text x="40" y="76" font-size="14.5" fill="#475569">Audio model (WavLM) + Speech-to-text (Whisper) fused into one confident reading  ·  100% on-device · no INTERNET · no LLM</text>
+  <line x1="40" y1="92" x2="1080" y2="92" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- ===== Mic + capture ===== -->
+  <rect x="485" y="112" width="150" height="48" rx="24" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="560" y="142" font-size="15" font-weight="600" fill="#0c4a6e" text-anchor="middle">🎤 Microphone</text>
+
+  <rect x="375" y="184" width="370" height="58" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="560" y="208" font-size="14.5" font-weight="600" fill="#0c4a6e" text-anchor="middle">AudioCapture</text>
+  <text x="560" y="229" font-size="12.5" fill="#0c4a6e" text-anchor="middle">16 kHz mono · 3 s window (48000) · 1 s hop</text>
+
+  <!-- split arrows -->
+  <path d="M560,242 L560,262 L280,262 L280,282" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M560,242 L560,262 L840,262 L840,282" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <text x="280" y="278" font-size="13" font-weight="700" fill="#0d9488" text-anchor="middle">AUDIO SCORE</text>
+  <text x="840" y="278" font-size="13" font-weight="700" fill="#0d9488" text-anchor="middle">TEXT SCORE</text>
+
+  <!-- ===== NPU lane (dashed) ===== -->
+  <rect x="110" y="372" width="900" height="104" rx="14" fill="#f0fdfa" stroke="#0d9488" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="125" y="392" font-size="12.5" font-weight="700" fill="#0f766e">⬡ Snapdragon Hexagon NPU — out-of-process (shell-domain helper, file channel)</text>
+
+  <!-- ===== AUDIO column (cx=280) ===== -->
+  <rect x="125" y="288" width="310" height="50" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="280" y="308" font-size="13.5" font-weight="600" fill="#0c4a6e" text-anchor="middle">VAD gate</text>
+  <text x="280" y="327" font-size="11.5" fill="#0c4a6e" text-anchor="middle">RMS + ZCR · adaptive noise floor</text>
+  <path d="M280,338 L280,398" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="130" y="400" width="300" height="64" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="2.5"/>
+  <text x="280" y="421" font-size="14" font-weight="700" fill="#134e4a" text-anchor="middle">WavLM — audio stress model</text>
+  <text x="280" y="439" font-size="11.5" fill="#134e4a" text-anchor="middle">qnn-net-run · forward_2.bin (614 MB ctx)</text>
+  <text x="280" y="455" font-size="11.5" fill="#134e4a" text-anchor="middle">async · throttle 2 s · EMA α=0.5 → sigmoid</text>
+
+  <rect x="145" y="496" width="270" height="46" rx="10" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="280" y="515" font-size="12.5" font-weight="600" fill="#1e40af" text-anchor="middle">Energy (RMS) — fallback</text>
+  <text x="280" y="532" font-size="11" fill="#1e40af" text-anchor="middle">anchors: calm 0.03 → stress 0.14</text>
+
+  <path d="M280,464 L280,560" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M280,542 L280,560" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <rect x="160" y="562" width="240" height="44" rx="22" fill="#0d9488" stroke="#0f766e" stroke-width="2"/>
+  <text x="280" y="589" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">audio score ∈ [0,1]</text>
+
+  <!-- ===== TEXT column (cx=840) ===== -->
+  <rect x="685" y="288" width="310" height="50" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="840" y="308" font-size="13.5" font-weight="600" fill="#0c4a6e" text-anchor="middle">WhisperBuffer + Coordinator</text>
+  <text x="840" y="327" font-size="11.5" fill="#0c4a6e" text-anchor="middle">10 s rolling buffer · 4 s cadence</text>
+  <path d="M840,338 L840,398" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="690" y="400" width="300" height="64" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="2.5"/>
+  <text x="840" y="421" font-size="14" font-weight="700" fill="#134e4a" text-anchor="middle">Whisper-Tiny — speech→text (ASR)</text>
+  <text x="840" y="439" font-size="11.5" fill="#134e4a" text-anchor="middle">mel → encoder.bin → decoder loop → detok</text>
+  <text x="840" y="455" font-size="11.5" fill="#134e4a" text-anchor="middle">whisper_qnn --watch (resident)</text>
+
+  <rect x="710" y="492" width="260" height="38" rx="19" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="840" y="516" font-size="12" font-style="italic" fill="#334155" text-anchor="middle">“…I can't cope with this…”  transcript</text>
+  <path d="M840,464 L840,490" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="690" y="544" width="300" height="62" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="840" y="565" font-size="13.5" font-weight="600" fill="#0c4a6e" text-anchor="middle">Text stress classifier (Dreaddit-trained)</text>
+  <text x="840" y="583" font-size="11.5" fill="#0c4a6e" text-anchor="middle">tokenize → L2 bag-of-words (vocab 2000)</text>
+  <text x="840" y="599" font-size="11.5" fill="#0c4a6e" text-anchor="middle">→ Linear 2000→64→ReLU→1 → sigmoid</text>
+  <path d="M840,530 L840,542" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="720" y="624" width="240" height="44" rx="22" fill="#0d9488" stroke="#0f766e" stroke-width="2"/>
+  <text x="840" y="651" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">text score ∈ [0,1]</text>
+  <path d="M840,606 L840,622" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== FUSION ===== -->
+  <path d="M280,606 L280,710 L450,710" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowP)"/>
+  <path d="M840,668 L840,710 L670,710" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowP)"/>
+
+  <rect x="290" y="686" width="540" height="86" rx="14" fill="#ede9fe" stroke="#7c3aed" stroke-width="3"/>
+  <text x="560" y="713" font-size="16" font-weight="700" fill="#4c1d95" text-anchor="middle">FUSION — single perceptron  Linear(2,1) → sigmoid</text>
+  <text x="560" y="734" font-size="12.5" fill="#4c1d95" text-anchor="middle">inputs [ audio , text ] · symmetric (swap-augmented) — both weigh equally</text>
+  <text x="560" y="754" font-size="12.5" font-weight="600" fill="#4c1d95" text-anchor="middle">crosses 0.5 only when  audio + text ≥ 1.2  (both ≈ 0.6+)</text>
+
+  <rect x="440" y="794" width="240" height="44" rx="22" fill="#7c3aed" stroke="#5b21b6" stroke-width="2"/>
+  <text x="560" y="821" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">fused stress ∈ [0,1]</text>
+  <path d="M560,772 L560,792" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowP)"/>
+
+  <!-- ===== DECISION ===== -->
+  <rect x="290" y="862" width="540" height="68" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+  <text x="560" y="889" font-size="14.5" font-weight="700" fill="#78350f" text-anchor="middle">EMA smoothing (α = 0.4)  →  Hysteresis latch</text>
+  <text x="560" y="911" font-size="13" fill="#78350f" text-anchor="middle">enter “stressed” ≥ 0.62 · release &lt; 0.45</text>
+  <path d="M560,838 L560,860" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="350" y="962" width="420" height="56" rx="12" fill="#ffe4e6" stroke="#e11d48" stroke-width="2.5"/>
+  <text x="560" y="988" font-size="15" font-weight="700" fill="#881337" text-anchor="middle">STRESSED  →  Relief nudge</text>
+  <text x="560" y="1007" font-size="12" fill="#881337" text-anchor="middle">local heads-up notification + on-device relief overlay</text>
+  <path d="M560,930 L560,960" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- legend -->
+  <rect x="40" y="1042" width="16" height="16" rx="4" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+  <text x="62" y="1055" font-size="12.5" fill="#334155">NPU model</text>
+  <rect x="170" y="1042" width="16" height="16" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="192" y="1055" font-size="12.5" fill="#334155">on-device logic (CPU)</text>
+  <rect x="370" y="1042" width="16" height="16" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="392" y="1055" font-size="12.5" fill="#334155">fusion</text>
+  <rect x="470" y="1042" width="16" height="16" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="492" y="1055" font-size="12.5" fill="#334155">decision</text>
+  <rect x="585" y="1042" width="16" height="16" rx="4" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+  <text x="607" y="1055" font-size="12.5" fill="#334155">output / relief</text>
+
+  <!-- ===== Thresholds panel (bottom) ===== -->
+  <rect x="40" y="1090" width="1040" height="470" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="64" y="1126" font-size="18" font-weight="700" fill="#0f172a">Parameters &amp; thresholds</text>
+  <line x1="64" y1="1138" x2="1056" y2="1138" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- Column 1 -->
+  <text x="64" y="1172" font-size="14" font-weight="700" fill="#0284c7">Audio capture</text>
+  <text x="64" y="1194" font-size="12.5" fill="#334155">sample rate 16 kHz · mono</text>
+  <text x="64" y="1214" font-size="12.5" fill="#334155">window 3 s (48000) · hop 1 s (16000)</text>
+  <text x="64" y="1234" font-size="12.5" fill="#334155">log-mel: n_mels 64 · n_frames 301</text>
+
+  <text x="64" y="1272" font-size="14" font-weight="700" fill="#0284c7">VAD gate</text>
+  <text x="64" y="1294" font-size="12.5" fill="#334155">energy margin 6 dB · ZCR 0.02–0.35</text>
+  <text x="64" y="1314" font-size="12.5" fill="#334155">absolute floor 3e-4 RMS</text>
+  <text x="64" y="1334" font-size="12.5" fill="#334155">energy anchors: calm 0.03 → stress 0.14</text>
+
+  <!-- Column 2 -->
+  <text x="410" y="1172" font-size="14" font-weight="700" fill="#0d9488">WavLM audio model (NPU)</text>
+  <text x="410" y="1194" font-size="12.5" fill="#334155">forward 614 MB context · ~1–3 s / call</text>
+  <text x="410" y="1214" font-size="12.5" fill="#334155">throttle 2 s · EMA α=0.5 · freshness 30 s</text>
+  <text x="410" y="1234" font-size="12.5" fill="#334155">memory guard: engage only if ≥ 1500 MB free</text>
+
+  <text x="410" y="1272" font-size="14" font-weight="700" fill="#0d9488">Whisper ASR (NPU)</text>
+  <text x="410" y="1294" font-size="12.5" fill="#334155">buffer 10 s · cadence 4 s · min 3 s</text>
+  <text x="410" y="1314" font-size="12.5" fill="#334155">freshness 20 s · request timeout 8 s</text>
+
+  <text x="410" y="1352" font-size="14" font-weight="700" fill="#0284c7">Text classifier</text>
+  <text x="410" y="1374" font-size="12.5" fill="#334155">vocab 2000 · L2-normalized bag-of-words</text>
+  <text x="410" y="1394" font-size="12.5" fill="#334155">MLP 2000 → 64 → 1 (Dreaddit, 70.9% acc)</text>
+
+  <!-- Column 3 -->
+  <text x="756" y="1172" font-size="14" font-weight="700" fill="#7c3aed">Fusion perceptron</text>
+  <text x="756" y="1194" font-size="12.5" fill="#334155">Linear(2,1)+σ · symmetric</text>
+  <text x="756" y="1214" font-size="12.5" fill="#334155">boundary: audio + text ≥ 1.2</text>
+  <text x="756" y="1234" font-size="12.5" fill="#334155">fuse(.5,.5)=.14 · fuse(.6,.6)=.50</text>
+  <text x="756" y="1254" font-size="12.5" fill="#334155">fuse(.7,.7)=.86 · fuse(.8,.8)=.98</text>
+
+  <text x="756" y="1292" font-size="14" font-weight="700" fill="#d97706">Decision (latch)</text>
+  <text x="756" y="1314" font-size="12.5" fill="#334155">EMA α=0.4</text>
+  <text x="756" y="1334" font-size="12.5" fill="#334155">hysteresis: enter 0.62 · release 0.45</text>
+
+  <line x1="64" y1="1430" x2="1056" y2="1430" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="64" y="1460" font-size="13" fill="#334155"><tspan font-weight="700" fill="#0f172a">Audio leg of fusion</tspan> = WavLM score (NPU), or energy if WavLM stale.</text>
+  <text x="64" y="1484" font-size="13" fill="#334155"><tspan font-weight="700" fill="#0f172a">Live meter</tspan> = fused score when a fresh transcript exists, else the responsive energy signal.</text>
+  <text x="64" y="1508" font-size="13" fill="#334155">Both neural models run on the Hexagon NPU, out-of-process (SELinux), over a file channel.</text>
+  <text x="64" y="1534" font-size="13" font-weight="700" fill="#0f766e">100% on-device  ·  no network  ·  no recording  ·  no LLM.</text>
+</svg>
