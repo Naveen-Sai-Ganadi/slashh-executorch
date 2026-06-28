@@ -52,9 +52,15 @@ N_PAIRS = 20000
 SEED = 0
 
 # Decision-boundary calibration: after training, shift the perceptron bias so fused crosses 0.5
-# only when audio + text >= this sum (i.e. BOTH signals ~0.6+). Higher => more conservative
-# (fewer false "stressed" calls on ordinary speech). 1.2 = the tuned "moderate" setting.
-DECISION_BOUNDARY_SUM = 1.2
+# only when audio + text >= this sum. Higher => more conservative (fewer false "stressed" calls).
+# NOTE on the serve-time audio leg: the live WavLM(NPU) audio score is miscalibrated low — it
+# centres ~0.27 and effectively never exceeds ~0.55 in practice (the fusion was *trained* on
+# synthetic Beta audio whose "stressed" mean is ~0.70, a train/serve mismatch). At the old 1.2
+# the audio leg could never carry its half of the sum, so a genuinely high text-stress score
+# (~0.76) was crushed to ~0.18 whenever audio sat at its typical ~0.28. 0.9 lets a strong text
+# signal register on its own (text~0.76 + audio~0.28 -> fused~0.78) while keeping low/mid text
+# low; because audio tops out near 0.55 < 0.9, audio alone still cannot trip the gate.
+DECISION_BOUNDARY_SUM = 0.9
 
 # RAVDESS emotion code (3rd field of filename) -> stress label.
 # 05 angry + 06 fearful => stressed(1); 01 neutral + 02 calm => calm(0).

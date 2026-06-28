@@ -28,10 +28,11 @@ locally; the app declares **no `INTERNET` permission** and works in airplane mod
 5. [Part A — Build & install the app](#part-a--build--install-the-app)
 6. [Part B — Bring the two models onto the NPU](#part-b--bring-the-two-models-onto-the-npu)
 7. [Verify it's working](#verify-its-working)
-8. [Thresholds & tuning](#thresholds--tuning)
-9. [How this maps to the judging criteria](#how-this-maps-to-the-judging-criteria)
-10. [Repository layout](#repository-layout)
-11. [License](#license)
+8. [Troubleshooting & debugging](#troubleshooting--debugging)
+9. [Thresholds & tuning](#thresholds--tuning)
+10. [How this maps to the judging criteria](#how-this-maps-to-the-judging-criteria)
+11. [Repository layout](#repository-layout)
+12. [License](#license)
 
 ---
 
@@ -60,7 +61,7 @@ mic 16 kHz ─▶ AudioCapture (3 s window / 1 s hop)
   ─▶ audio score ∈ [0,1]
      └───────────┬────────────┘
                  ▼
-   FUSION  Linear(2,1)+sigmoid (symmetric)   fires when  audio + text ≥ 1.2
+   FUSION  Linear(2,1)+sigmoid (symmetric)   fires when  audio + text ≥ 0.9
                  ▼  fused stress ∈ [0,1]
    EMA (α=0.4) ─▶ hysteresis latch (enter 0.62 / release 0.45)
                  ▼
@@ -245,6 +246,183 @@ fused** percentages update as you speak. Say a clearly **anxious** sentence (*"I
 I can't cope"*) — text and audio both rise, the fused score climbs past the latch, and a relief
 nudge fires. Ordinary chatter stays calm.
 
+> **No NPU binaries? You can still run and see results.** Part A alone gives you a working app:
+> the meter moves on the **vocal-energy** signal and relief nudges fire. Text + audio fusion light
+> up once Part B's daemons are running. So the *minimum* path to "install → speak → see the meter
+> react → get a relief nudge" is just **Part A**.
+
+---
+
+## Troubleshooting & debugging
+
+If something doesn't work, you almost never have to guess — the app logs every stage to `logcat`
+under the tags `Slashh` (pipeline/monitor), `SlashhVAD` (per-window voice activity), and
+`SlashhWebView` (the WebView's JS console). Start with the diagnostics toolkit, then jump to the
+symptom that matches.
+
+### Diagnostics toolkit (copy/paste)
+
+```bash
+# Is the phone connected & authorized?
+$ADB devices -l                         # must list your device as "device" (not "unauthorized")
+
+# Is the app running & focused?
+$ADB shell ps -A | grep ai.slashh
+$ADB shell dumpsys window | grep mCurrentFocus
+
+# Live pipeline (speak into the phone while this runs):
+$ADB logcat -d | grep ' Slashh' | grep -E 'wavlm\[NPU\]|whisper\[|FUSE audio|monitor:'
+
+# The on-device file channel both NPU daemons talk through:
+$ADB shell run-as ai.slashh ls -la files/                       # cached .pte models (internal)
+$ADB shell ls -la /sdcard/Android/data/ai.slashh/files/         # npu_*/whisper_* handshake markers
+
+# The two NPU daemon logs:
+./tools/whisper/npu_helper_whisper.sh log                       # Whisper daemon
+$ADB shell "tail -20 /data/local/tmp/qnntest/npu_helper.log"    # WavLM daemon
+
+# What's actually on screen right now (saves a PNG you can open):
+$ADB exec-out screencap -p > /tmp/slashh_screen.png
+```
+
+### `adb: command not found` / device not listed
+
+- Use the full path: `export ADB="$HOME/Library/Android/sdk/platform-tools/adb"` (install
+  *platform-tools* via Android Studio's SDK Manager if missing).
+- Device shows as `unauthorized` → unlock the phone and accept the **"Allow USB debugging?"**
+  prompt. Still stuck? `$ADB kill-server && $ADB start-server`, replug the cable, re-accept.
+- Nothing at all → enable **Developer options → USB debugging** on the phone, and use a *data*
+  USB cable (not charge-only).
+
+### Build / install problems
+
+- **`npm run build` not run first** → the WebView shows a blank/old screen. The UI is bundled into
+  `android/app/src/main/assets/www/` by Vite, so always `npm run build` *before* `assembleDebug`.
+- **`JAVA_HOME` / Gradle errors** → point `JAVA_HOME` at the Android Studio JBR (see Prerequisites);
+  the build needs JDK 17+.
+- **`INSTALL_FAILED_UPDATE_INCOMPATIBLE` (signature mismatch)** → a differently-signed `ai.slashh`
+  is already installed. `$ADB uninstall ai.slashh` then install again (this wipes that app's local
+  data, including any cached models — see the "model update doesn't take effect" note below).
+
+### App opens but the meter is frozen at `0%` / says "resting"
+
+1. **Mic permission** — the most common cause. Grant it and relaunch:
+   ```bash
+   $ADB shell pm grant ai.slashh android.permission.RECORD_AUDIO
+   $ADB shell "am force-stop ai.slashh; am start -n ai.slashh/.MainActivity"
+   ```
+2. Confirm the foreground monitor is alive: `logcat … | grep 'SlashhVAD'` should print a
+   `voiced=… rms=…` line roughly every second. No lines → the service isn't capturing; re-grant the
+   mic and relaunch.
+3. Meter moves but stays *very* low even when you speak up → it's the **energy anchors**. Open
+   **Settings → Calibrate** and follow the calm/stressed prompts, or nudge **Settings → Stress
+   sensitivity**.
+
+### Transcript / `text` / `fused` is always `null` (no text fusion)
+
+This is usually **expected behaviour**, not a bug — work through it in order:
+
+1. **Is the Whisper daemon up?** `./tools/whisper/npu_helper_whisper.sh status` → expect
+   `RUNNING`. If not, `./tools/whisper/npu_helper_whisper.sh start`.
+2. **The 20-second freshness window.** A text score is only published while a transcript is fresh
+   (`freshnessMs = 20 s`, `TranscriptionCoordinator.kt`). Go quiet for >20 s and `text`/`fused`
+   correctly revert to `null` and the meter falls back to **audio-only**. Speak again and they
+   return. This is the designed "honest degradation."
+3. **The meaningful-speech gate.** On silence/noise Whisper emits placeholders — `[BLANK_AUDIO]`,
+   `(music)`, `[INAUDIBLE]` — which are stripped (`isMeaningful()`), so no text score is published.
+   Check the daemon log: `./tools/whisper/npu_helper_whisper.sh log` should show
+   `samples -> "real words"`, not only bracketed tokens. Speak clear sentences close to the mic.
+4. **Wrong channel/package.** The daemon must watch **`/sdcard/Android/data/ai.slashh/files`**. If
+   you see another package (e.g. `com.scamshield.app`) being polled, that's a stale/misconfigured
+   runner — restart via `npu_helper_whisper.sh` which points at the correct dir.
+5. **`fusion.pte` absent** → the log says `transcription ON but fusion.pte absent — meter stays
+   audio-only`. The app still shows the text % but won't fuse. Rebuild so the asset is bundled.
+
+### `fusion scorer unavailable` in the logs
+
+The fusion model failed its warm-up forward (`fuse(0.5, 0.5)`) at load — usually a missing or
+corrupt `.pte`. Check it's present and non-trivial:
+
+```bash
+$ADB shell run-as ai.slashh ls -la files/fusion.pte     # should be a couple of KB, not 0
+```
+
+Re-push it (see below) or `$ADB shell pm clear ai.slashh` and relaunch to force a fresh copy from
+the APK assets.
+
+### High text stress, but `fused` stays low
+
+The fusion is a symmetric perceptron with a **sum** decision boundary
+(`DECISION_BOUNDARY_SUM`, `model/fusion.py`): `fused` crosses 0.5 when `audio + text` clears it.
+The live WavLM audio leg sits low (~0.27, rarely > 0.5), so if the boundary is too high a strong
+text score gets crushed. It ships at **0.9**. To make it more (or less) responsive, change
+`DECISION_BOUNDARY_SUM` and re-export + redeploy:
+
+```bash
+# 1. edit DECISION_BOUNDARY_SUM in model/fusion.py, then re-export both artifacts:
+.venv/bin/python - <<'PY'
+import torch
+from model.fusion import load_fusion_model, export_to_pte, CHECKPOINT_PATH, PTE_PATH, DECISION_BOUNDARY_SUM
+m = load_fusion_model()                                   # keep the trained (seeded) weights
+with torch.no_grad():
+    m.net.bias.fill_(-(DECISION_BOUNDARY_SUM / 2.0) * float(m.net.weight.sum()))
+torch.save({"model": m.state_dict()}, CHECKPOINT_PATH)
+PTE_PATH.write_bytes(export_to_pte(m))
+print("re-exported fusion.pte at boundary", DECISION_BOUNDARY_SUM)
+PY
+
+# 2. hot-swap onto the device WITHOUT reinstalling (see the gotcha below), then relaunch:
+$ADB push android/app/src/main/assets/fusion.pte /data/local/tmp/fusion_new.pte
+$ADB shell "run-as ai.slashh sh -c 'cat /data/local/tmp/fusion_new.pte > files/fusion.pte'"
+$ADB shell "am force-stop ai.slashh; am start -n ai.slashh/.MainActivity"
+```
+
+On relaunch the service prints a self-check you can read back:
+`fusion check @ audio=0.30: +stressedText->0.95 +calmText->0.05` — a high text score should now
+produce a high fused value at low audio.
+
+### Updating a bundled model doesn't take effect
+
+**Gotcha:** the app copies each `.pte` from the APK assets into its private `files/` dir **once**
+and never overwrites it (`copyAssetToFiles` only copies when the file is absent or < 100 bytes).
+So a plain `install -r` with a new asset **won't** replace the cached model. Either:
+
+- **Hot-swap** the file in `files/` directly (the `run-as … cat > files/…` recipe above), or
+- `$ADB shell pm clear ai.slashh` to wipe the cache (then re-grant permissions), or
+- `$ADB uninstall ai.slashh` and reinstall fresh.
+
+### WavLM isn't running on the NPU (audio stays energy-only)
+
+`logcat … | grep 'monitor:'` tells you which branch the audio leg took:
+
+- `monitor: WavLM on NPU (probe OK …)` → good, you're on the NPU.
+- `monitor: skipping WavLM NPU — low memory (… MB free, need ~1500)` → the **memory guard**
+  tripped. WavLM reloads a 614 MB context per call; free RAM (close apps) or reboot, then restart
+  the daemon and the app.
+- Neither line / `wavlm[NPU]` never appears → the daemon isn't answering. Check it's alive
+  (`$ADB shell pgrep -f npu_helper.sh`) and read `/data/local/tmp/qnntest/npu_helper.log` — a
+  `FATAL: missing …` line means the rig is incomplete (see [`docs/npu-runtime.md`](docs/npu-runtime.md)).
+- The app probes for up to 30 s at launch; if you started the daemon *after* the app, just relaunch
+  the app.
+
+### Daemons disappear after a reboot
+
+Both NPU daemons live in the shell domain and **do not survive a reboot or USB unplug**. Re-run the
+two Part B start commands. Quick "are they both up?" check:
+
+```bash
+$ADB shell "ps -A -o ARGS | grep -q 'whisper_qnn --watch' && echo whisper:UP || echo whisper:DOWN"
+$ADB shell "pgrep -f npu_helper.sh >/dev/null && echo wavlm:UP || echo wavlm:DOWN"
+```
+
+### The relief nudge never fires
+
+Stress has to **sustain**, not spike: the latch enters at EMA `0.62` and the score is smoothed
+(`α = 0.4`), so a single loud word won't trip it. Raise **Settings → Stress sensitivity** (lowers
+the enter threshold), or use **Simulate** on the dashboard to force the relief overlay for a demo.
+
+---
+
 ## Thresholds & tuning
 
 Every constant lives in one of a few places (and is listed in the diagram and
@@ -257,7 +435,7 @@ Every constant lives in one of a few places (and is listed in the diagram and
 | WavLM cadence | throttle 2 s, EMA α=0.5, freshness 30 s | `WavLmCoordinator.kt` |
 | WavLM memory guard | engage only if ≥ 1500 MB free | `StressMonitorService.kt` |
 | Whisper cadence | 10 s buffer, 4 s, freshness 20 s, timeout 8 s | `TranscriptionCoordinator.kt` / `WhisperConfig.kt` |
-| Fusion decision boundary | `audio + text ≥ 1.2` (both ≈ 0.6+) | `model/fusion.py` (`DECISION_BOUNDARY_SUM`) |
+| Fusion decision boundary | `audio + text ≥ 0.9` (a strong text score alone can register, since the live WavLM audio leg sits ~0.27 and never carries half of 1.2) | `model/fusion.py` (`DECISION_BOUNDARY_SUM`) |
 | Stress latch | enter 0.62 / release 0.45 | `StressPipeline.kt`; in-app **Sensitivity** slider |
 
 The in-app **Settings → Stress sensitivity** slider adjusts the latch live. To re-tune the fusion's
