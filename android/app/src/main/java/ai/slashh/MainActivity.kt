@@ -250,11 +250,16 @@ class MainActivity : AppCompatActivity() {
     /** Auto-start the always-on background NPU monitor: a foreground service owns
      *  the mic and scores WavLM on the Hexagon NPU out-of-process via the shell
      *  helper (CPU StressNet if the helper isn't live). The app only MIRRORS its
-     *  live reading onto the gauge — it never captures the mic in parallel. */
+     *  live reading onto the gauge — it never captures the mic in parallel.
+     *  
+     *  TEMPORARILY DISABLED due to native crashes in ExecutorTorch/NPU library.
+     *  Using demo mode only until native crash is fixed. */
     private fun startMonitor() {
-        capture?.stop(); capture = null      // never hold the mic alongside the service
-        StressMonitorService.start(this)
-        startMirror()
+        Log.w("Slashh", "StressMonitorService temporarily disabled - using demo mode only")
+        backendType = "Demo mode"
+        // DISABLED: capture?.stop(); capture = null
+        // DISABLED: StressMonitorService.start(this)
+        // DISABLED: startMirror()
     }
 
     private fun startMirror() {
