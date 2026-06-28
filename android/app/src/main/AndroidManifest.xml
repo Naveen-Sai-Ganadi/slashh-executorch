@@ -4,6 +4,8 @@
     <!-- Microphone only. NO INTERNET permission: the whole point is that audio
          and results never leave the device (plan §5, airplane-mode hardening). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Network connectivity check. Still NO INTERNET permission. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Local notifications only (relief nudges). Still NO INTERNET permission. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Always-on background stress monitor: a foreground service keeps the mic

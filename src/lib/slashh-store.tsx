@@ -106,6 +106,7 @@ interface SlashhState {
   micPermissionState: string;
   notificationPermissionState: string;
   backendState: string;
+  isOnline: boolean;
   setStage: (s: Stage) => void;
   setView: (v: AppView) => void;
   setHasPasscode: (b: boolean) => void;
@@ -181,6 +182,18 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   const [micPermissionState, setMicPermissionState] = useState("checking");
   const [notificationPermissionState, setNotificationPermissionState] = useState("checking");
   const [backendState, setBackendState] = useState("IDLE");
+  const [isOnline, setIsOnline] = useState(() => typeof navigator !== "undefined" ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   // refs for the simulation loop (only used if running without bridge)
   const listeningRef = useRef(listening);
@@ -215,6 +228,7 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
         if (data.micPermissionState !== undefined) setMicPermissionState(data.micPermissionState);
         if (data.notificationPermissionState !== undefined) setNotificationPermissionState(data.notificationPermissionState);
         if (data.state !== undefined) setBackendState(data.state);
+        if (data.isOnline !== undefined) setIsOnline(data.isOnline);
         
         if (data.calibration !== undefined) {
           setCalibration((prev) => ({
@@ -541,7 +555,7 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
       stage, view, hasPasscode, listening, stress, band, settings, calibration,
       reliefOpen, activeReliefType, calibrationOpen, vadActive, latency, lastOutput,
       backendType, fastRpcStatus, modelStatus, micPermissionState, notificationPermissionState,
-      backendState,
+      backendState, isOnline,
       setStage, setView, setHasPasscode, toggleListening, setListening,
       simulateStress, resetSession, updateSettings, saveCalibration,
       resetCalibration, setReliefOpen: closeRelief, startRelief, stopRelief,
@@ -553,7 +567,7 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
       stage, view, hasPasscode, listening, stress, band, settings, calibration,
       reliefOpen, activeReliefType, calibrationOpen, vadActive, latency, lastOutput,
       backendType, fastRpcStatus, modelStatus, micPermissionState, notificationPermissionState,
-      backendState,
+      backendState, isOnline,
     ]
   );
 

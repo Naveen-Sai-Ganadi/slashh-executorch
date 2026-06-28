@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var mirroring = false
     private var mirrorStressed = false
+    private var networkCallback: android.net.ConnectivityManager.NetworkCallback? = null
 
     // State properties for JS sync
     private var stressScore: Float = 5f
@@ -153,6 +154,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val cm = getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
+            networkCallback = object : android.net.ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: android.net.Network) {
+                    runOnUiThread { sendStateToWeb() }
+                }
+                override fun onLost(network: android.net.Network) {
+                    runOnUiThread { sendStateToWeb() }
+                }
+            }
+            cm?.registerDefaultNetworkCallback(networkCallback!!)
+        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
         ) {
@@ -167,6 +180,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && networkCallback != null) {
+            val cm = getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
+            try {
+                cm?.unregisterNetworkCallback(networkCallback!!)
+            } catch (_: Exception) {}
+            networkCallback = null
+        }
         // Stop the UI mirror, but KEEP the background monitor running — the whole
         // point is that on-device monitoring continues with the app closed.
         stopMirror()
@@ -225,11 +245,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } else {
-                val show = calmCue.onState(state.stressed, now)
+                calmCue.onState(state.stressed, now)
                 runOnUiThread {
-                    when {
-                        calmCue.justTriggered -> fireRelief(cueDriven = true)
-                        !show && cueDriven -> dismissRelief()
+                    if (calmCue.justTriggered) {
+                        fireRelief(cueDriven = true)
                     }
                 }
             }
@@ -282,7 +301,6 @@ class MainActivity : AppCompatActivity() {
                 // Open the in-app relief overlay on sustained stress while visible;
                 // the service itself raises the (background) notification.
                 if (st.stressed && !mirrorStressed && !reliefOpen) fireRelief(cueDriven = true, notify = false)
-                else if (!st.stressed && mirrorStressed && cueDriven) dismissRelief()
                 mirrorStressed = st.stressed
                 sendStateToWeb()
             }
@@ -402,6 +420,21 @@ class MainActivity : AppCompatActivity() {
         sendStateToWeb()
     }
 
+    private fun isNetworkOnline(): Boolean {
+        val cm = getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager ?: return false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val capabilities = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
+            return capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) ||
+                    capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET)
+        } else {
+            @Suppress("DEPRECATION")
+            val activeNetworkInfo = cm.activeNetworkInfo
+            @Suppress("DEPRECATION")
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected
+        }
+    }
+
     fun sendStateToWeb() {
         val isListening = (capture != null) || StressMonitorService.running
         val micPermission = if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) "granted" else "denied"
@@ -442,6 +475,7 @@ class MainActivity : AppCompatActivity() {
                 "modelStatus": "$modelStatus",
                 "micPermissionState": "$micPermission",
                 "notificationPermissionState": "$notifPermission",
+                "isOnline": ${isNetworkOnline()},
                 "calibration": {
                     "done": $calDone,
                     "signalType": "$signalType",
