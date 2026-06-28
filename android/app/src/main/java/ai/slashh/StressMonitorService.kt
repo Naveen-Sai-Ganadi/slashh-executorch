@@ -7,6 +7,12 @@ import ai.slashh.audio.NpuHelperScorer
 import ai.slashh.audio.RawWaveScorer
 import ai.slashh.audio.StressClassifier
 import ai.slashh.audio.StressPipeline
+import ai.slashh.audio.WavLmCoordinator
+import ai.slashh.runtime.FusionScorer
+import ai.slashh.runtime.NpuWhisperTranscriber
+import ai.slashh.runtime.TextStressClassifier
+import ai.slashh.runtime.Transcriber
+import ai.slashh.runtime.TranscriptionCoordinator
 import ai.slashh.relief.Prefs
 import ai.slashh.relief.ReliefNotifier
 import ai.slashh.relief.ReliefSelector
@@ -56,6 +62,13 @@ class StressMonitorService : Service() {
     private val calmCue = CalmCue()
     private var cpuFallback: ExecuTorchStressClassifier? = null
 
+    // Whisper transcription + text-stress fusion (the second feature). Built best-effort on
+    // the worker thread; absent assets / a down helper degrade honestly to audio-only.
+    private var coordinator: TranscriptionCoordinator? = null
+    private var textClassifier: TextStressClassifier? = null
+    private var fusionScorer: FusionScorer? = null
+    private var wavlmCoordinator: WavLmCoordinator? = null
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -83,8 +96,13 @@ class StressMonitorService : Service() {
     }
 
     private fun startCaptureAndWorker() {
-        // Capture stays cheap: just publish the newest window.
-        capture = AudioCapture { window -> latest.set(window) }.also {
+        // Capture stays cheap: publish the newest window for scoring, and feed the same
+        // window to the Whisper accumulator (it keeps only the newest hop). Both are O(hop).
+        capture = AudioCapture { window ->
+            latest.set(window)
+            coordinator?.onWindow(window)
+            wavlmCoordinator?.onWindow(window)
+        }.also {
             try {
                 it.start()
             } catch (e: Throwable) {
@@ -111,6 +129,12 @@ class StressMonitorService : Service() {
             prefs.enterThreshold?.let { pipeline.enterThreshold = it }
             prefs.releaseThreshold?.let { pipeline.releaseThreshold = it }
 
+            // Bring up Whisper transcription + the text-stress / fusion models. Best-effort:
+            // if the assets or the whisper helper are missing, the meter stays audio-only.
+            try { attachTextFusion(pipeline) } catch (e: Throwable) {
+                Log.w("Slashh", "text/fusion attach failed (audio-only): ${e.message}", e)
+            }
+
             while (alive) {
                 val window = latest.getAndSet(null)
                 if (window == null) {
@@ -120,10 +144,17 @@ class StressMonitorService : Service() {
                 try {
                     val state = pipeline.onWindow(window)
                     lastState = state          // publish for the in-app meter to mirror
+                    coordinator?.let {
+                        lastTranscript = it.transcript
+                        whisperBackend = if (it.backend == Transcriber.Backend.QNN_NPU)
+                            "Snapdragon NPU (Whisper)" else "—"
+                    }
+                    lastTextScore = state.textScore
                     val now = System.currentTimeMillis()
                     calmCue.onState(state.stressed, now)
                     if (calmCue.justTriggered) fireStressNotification()
                     Log.d("Slashh", "monitor voiced=${state.voiced} raw=${state.rawScore} level=${state.level} stressed=${state.stressed}")
+                    Log.d("Slashh", "FUSE audio=${state.audioStress} text=${state.textScore} fused=${state.fused}")
                 } catch (e: Throwable) {
                     Log.w("Slashh", "monitor scoring error: ${e.message}", e)
                     // On native crash or scoring failure, sleep longer to avoid tight loop
@@ -161,24 +192,38 @@ class StressMonitorService : Service() {
      */
     private fun buildPipeline(): StressPipeline {
         val channelDir = getExternalFilesDir(null)
-        if (channelDir != null) {
-            val scorer = NpuHelperScorer(channelDir, fallback = cpuRawScorerOrNull())
-            if (scorer.probe()) {
-                Log.i("Slashh", "monitor scorer: WavLM via NPU helper (probe OK, channel ${channelDir.path})")
-                backend = "Snapdragon NPU (WavLM)"
-                return StressPipeline(StressClassifier { 0f }, rawScorer = scorer)
+        // WavLM on the Hexagon NPU reloads a 614 MB context per forward. If free memory is low,
+        // even the probe's single load can push the device past its limit and the
+        // lowmemorykiller reaps the app. Only engage WavLM when there's real headroom; otherwise
+        // run the responsive energy + text-fusion path (Whisper still runs — its contexts are
+        // small). This self-adapts: with memory free (e.g. after a reboot) WavLM engages.
+        val memMb = memAvailableKb() / 1024
+        val wavlmHasHeadroom = memMb >= 1_500
+        if (channelDir != null && !wavlmHasHeadroom) {
+            Log.w("Slashh", "monitor: skipping WavLM NPU — low memory (${memMb} MB free, need ~1500); energy + text fusion")
+        }
+        if (channelDir != null && wavlmHasHeadroom) {
+            // Score WavLM ASYNC via [WavLmCoordinator] (never blocking the meter) with a long
+            // per-window timeout and a probe of up to 30 s (the first request warms the cold
+            // context). fallback=null so a miss reads 0 and the energy signal carries the meter —
+            // NOT the in-app CPU StressNet, whose native forward SIGSEGVs here.
+            val scorer = NpuHelperScorer(channelDir, fallback = null, timeoutMs = 12_000L)
+            if (scorer.probe(30_000L)) {
+                Log.i("Slashh", "monitor: WavLM on NPU (probe OK, channel ${channelDir.path})")
+                backend = "Snapdragon NPU (WavLM) + text fusion"
+                val coord = WavLmCoordinator(scorer)
+                wavlmCoordinator = coord
+                coord.start()
+                // Energy drives the responsive meter; WavLM is polled async as the fusion's
+                // audio leg, so both NPU models (WavLM + Whisper) run without freezing the UI.
+                val pipe = StressPipeline(StressClassifier { 0f })
+                pipe.audioModelProvider = { coord.score() }
+                return pipe
             }
-            Log.w("Slashh", "monitor scorer: NPU helper did not answer probe; using CPU fallback")
+            Log.w("Slashh", "monitor: NPU WavLM did not answer probe; using energy signal")
         }
-        // NPU helper not live — fall back to the in-process CPU StressNet entirely.
-        val cpu = cpuRawScorerOrNull()
-        if (cpu != null) {
-            Log.i("Slashh", "monitor scorer: CPU StressNet (NPU helper unavailable)")
-            backend = "CPU (StressNet)"
-            return StressPipeline(StressClassifier { 0f }, rawScorer = cpu)
-        }
-        Log.w("Slashh", "monitor scorer: none loadable; monitor will report no stress")
-        backend = "no model"
+        // No NPU helper: energy-only audio (the verified-reliable signal), still feeds fusion.
+        backend = "On-device (energy + text fusion)"
         return StressPipeline(StressClassifier { 0f })
     }
 
@@ -215,6 +260,97 @@ class StressMonitorService : Service() {
             null
         }
     }
+
+    /**
+     * Bring up the second feature: Whisper transcription (out-of-process on the NPU) + the
+     * text-stress classifier, fused with the audio model's per-window score for a more
+     * confident reading. All best-effort — a missing asset or a down whisper helper leaves the
+     * meter audio-only (honest degradation, never a crash). Runs on the worker thread.
+     */
+    private fun attachTextFusion(pipeline: StressPipeline) {
+        val text = loadTextClassifierOrNull()
+        val fusion = loadFusionScorerOrNull()
+        textClassifier = text
+        fusionScorer = fusion
+
+        // Build the text scorer via ?.let so there's no smart-cast / if-branch-lambda ambiguity
+        // (an `if (x != null) { t -> ... }` branch miscompiles to a Unit-returning block).
+        val textScorerFn: ((String) -> Float?)? = text?.let { c -> { s: String -> c.score(s) } }
+        val coord = TranscriptionCoordinator(
+            transcriber = NpuWhisperTranscriber(this),
+            textScorer = textScorerFn,
+        )
+        coordinator = coord
+        coord.start()
+
+        // Always expose the text score to the UI; only FUSE when the fusion model is present.
+        pipeline.textScoreProvider = { coord.textScore() }
+        fusion?.let { f -> pipeline.fuse = { a, t -> f.fuse(a, t) } }
+        Log.i(
+            "Slashh",
+            if (fusion != null) "monitor: text+fusion ON (whisper coordinator + fusion.pte loaded)"
+            else "monitor: transcription ON but fusion.pte absent — meter stays audio-only",
+        )
+
+        // One-shot on-device sanity check: prove the text model discriminates and the fusion
+        // lifts a calm-energy reading when the words are stressed. Evidence in logcat only.
+        text?.let { c ->
+            val sStress = c.score("i am so stressed and overwhelmed i cannot cope with this")
+            val sCalm = c.score("the weather is calm and pleasant we relaxed in the garden")
+            Log.i("Slashh", "text-stress check: stressed-sentence->$sStress  calm-sentence->$sCalm")
+            val f = fusion
+            if (f != null && sStress != null && sCalm != null) {
+                Log.i(
+                    "Slashh",
+                    "fusion check @ audio=0.30: +stressedText->${f.fuse(0.30f, sStress)}  " +
+                        "+calmText->${f.fuse(0.30f, sCalm)}  (audio-only stays ~0.30)",
+                )
+            }
+        }
+    }
+
+    private fun loadTextClassifierOrNull(): TextStressClassifier? = try {
+        val pte = copyAssetToFiles("text_stress.pte")
+        val vocab = assets.open("text_stress_vocab.txt").bufferedReader(Charsets.UTF_8).useLines { seq ->
+            seq.map { it.trim() }.filter { it.isNotEmpty() }.toList()
+        }
+        if (pte == null || vocab.isEmpty()) null
+        else TextStressClassifier(pte, vocab).also {
+            it.score("everything is fine")     // warm + validate the native forward
+            Log.i("Slashh", "text classifier loaded (vocab=${vocab.size})")
+        }
+    } catch (e: Throwable) {
+        Log.w("Slashh", "text classifier unavailable: ${e.message}", e); null
+    }
+
+    private fun loadFusionScorerOrNull(): FusionScorer? = try {
+        val pte = copyAssetToFiles("fusion.pte")
+        if (pte == null) null else FusionScorer(pte).also {
+            it.fuse(0.5f, 0.5f)                // warm + validate the native forward
+            Log.i("Slashh", "fusion scorer loaded")
+        }
+    } catch (e: Throwable) {
+        Log.w("Slashh", "fusion scorer unavailable: ${e.message}", e); null
+    }
+
+    /** Copy an asset to filesDir (ExecuTorch Module loads from a real path). Null if absent. */
+    private fun copyAssetToFiles(name: String): String? = try {
+        val out = File(filesDir, name)
+        if (!out.exists() || out.length() < 100) {
+            assets.open(name).use { input -> out.outputStream().use { input.copyTo(it) } }
+        }
+        if (out.exists() && out.length() > 100) out.absolutePath else null
+    } catch (e: Throwable) {
+        Log.w("Slashh", "asset $name not copied: ${e.message}"); null
+    }
+
+    /** Free memory in kB from /proc/meminfo (MemAvailable), or 0 if unreadable. */
+    private fun memAvailableKb(): Long = try {
+        java.io.File("/proc/meminfo").useLines { lines ->
+            lines.firstOrNull { it.startsWith("MemAvailable") }
+                ?.split(Regex("\\s+"))?.getOrNull(1)?.toLongOrNull() ?: 0L
+        }
+    } catch (_: Throwable) { 0L }
 
     private fun startForegroundCompat() {
         val open = PendingIntent.getActivity(
@@ -262,6 +398,15 @@ class StressMonitorService : Service() {
         capture = null
         cpuFallback?.close()
         cpuFallback = null
+        coordinator?.stop()
+        coordinator = null
+        wavlmCoordinator?.stop()
+        wavlmCoordinator = null
+        runCatching { textClassifier?.close() }; textClassifier = null
+        runCatching { fusionScorer?.close() }; fusionScorer = null
+        lastTranscript = ""
+        lastTextScore = null
+        whisperBackend = "—"
         Log.i("Slashh", "StressMonitorService stopped")
         super.onDestroy()
     }
@@ -291,6 +436,21 @@ class StressMonitorService : Service() {
         /** Which scorer the monitor settled on (NPU/WavLM vs CPU), for the UI badge. */
         @Volatile
         var backend: String = "starting"
+            private set
+
+        /** Most recent Whisper transcript (the second feature), for the UI / honesty panel. */
+        @Volatile
+        var lastTranscript: String = ""
+            private set
+
+        /** Latest fused-in text-stress score in [0,1], or null when no fresh transcript. */
+        @Volatile
+        var lastTextScore: Float? = null
+            private set
+
+        /** Whisper backend badge ("Snapdragon NPU (Whisper)" when the helper is serving). */
+        @Volatile
+        var whisperBackend: String = "—"
             private set
 
         fun start(context: Context) {

@@ -57,3 +57,6 @@ dist-ssr/
 *.local
 *.log
 npm-debug.log*
+
+# Whisper Tiny QNN context binaries (~117MB) — staged to device, not vendored.
+tools/whisper/whisper_tiny_qnn/*.bin

@@ -55,6 +55,15 @@ class MainActivity : AppCompatActivity() {
     private var modelStatus: String = "loaded"
     private var loadedModelName: String = ""
 
+    // Whisper transcription + text-fusion mirror (the second feature). Populated from the
+    // monitor service's published readings so the web UI can show the live transcript + the
+    // text-stress contribution alongside the audio meter.
+    private var transcript: String = ""
+    private var textStress: Float? = null
+    private var audioScore: Float? = null
+    private var fusedScore: Float? = null
+    private var whisperBackend: String = "—"
+
     // Cooldown for notifications to avoid spamming
     private var lastNotificationTime: Long = 0L
 
@@ -298,6 +307,12 @@ class MainActivity : AppCompatActivity() {
                 backendType = StressMonitorService.backend
                 modelStatus = "loaded"
                 fastRpcStatus = if (StressMonitorService.backend.contains("NPU")) "ok" else "checking"
+                // Mirror the Whisper transcript + text-stress contribution (second feature).
+                transcript = StressMonitorService.lastTranscript
+                textStress = StressMonitorService.lastTextScore
+                whisperBackend = StressMonitorService.whisperBackend
+                audioScore = st.audioStress     // WavLM(NPU)-or-energy audio leg
+                fusedScore = st.fused           // audio+text fusion output (null = audio-only)
                 // Open the in-app relief overlay on sustained stress while visible;
                 // the service itself raises the (background) notification.
                 if (st.stressed && !mirrorStressed && !reliefOpen) fireRelief(cueDriven = true, notify = false)
@@ -435,6 +450,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Escape a string for safe single-line embedding in the hand-built state JSON. */
+    private fun jsonEscape(s: String): String =
+        s.replace("\\", "\\\\").replace("\"", "\\\"")
+            .replace("\n", " ").replace("\r", " ").replace("\t", " ")
+
     fun sendStateToWeb() {
         val isListening = (capture != null) || StressMonitorService.running
         val micPermission = if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) "granted" else "denied"
@@ -471,6 +491,11 @@ class MainActivity : AppCompatActivity() {
                 "latency": $inferenceLatency,
                 "lastOutput": "$lastOutputStr",
                 "backendType": "$backendType",
+                "transcript": "${jsonEscape(transcript)}",
+                "textStress": ${textStress?.let { (it * 100).toInt().toString() } ?: "null"},
+                "audioScore": ${audioScore?.let { (it * 100).toInt().toString() } ?: "null"},
+                "fused": ${fusedScore?.let { (it * 100).toInt().toString() } ?: "null"},
+                "whisperBackend": "${jsonEscape(whisperBackend)}",
                 "fastRpcStatus": "$fastRpcStatus",
                 "modelStatus": "$modelStatus",
                 "micPermissionState": "$micPermission",
@@ -524,7 +549,16 @@ class MainActivity : AppCompatActivity() {
      */
     private fun loadClassifier(): StressClassifier? {
         val featLen = AudioConfig.N_MELS * AudioConfig.N_FRAMES
-        for (name in listOf("stress_model_qnn.pte", "stress_model.pte")) {
+        // Only attempt the QNN/NPU .pte when the QNN backend native libs are actually
+        // bundled. On a CPU-only build (Maven executorch-android, no executorch-qnn.aar)
+        // running a QNN-delegated .pte SIGSEGVs in native code — which a try/catch CANNOT
+        // catch — and crashes the app at startup (the "native crash" that forced the
+        // monitor to be disabled). Skipping it here keeps the CPU build stable while the
+        // on-device NPU path runs out-of-process via the shell helper anyway.
+        val candidates = if (qnnRuntimeAvailable())
+            listOf("stress_model_qnn.pte", "stress_model.pte")
+        else listOf("stress_model.pte")
+        for (name in candidates) {
             try {
                 val c = ExecuTorchStressClassifier(copyAsset(name))
                 // Validate it can actually RUN — a QNN .pte loads fine but its
@@ -543,6 +577,13 @@ class MainActivity : AppCompatActivity() {
         }
         return null
     }
+
+    /** True only if a QNN ExecuTorch backend native lib is bundled, so loading a
+     *  QNN-delegated .pte won't SIGSEGV on a CPU-only runtime. */
+    private fun qnnRuntimeAvailable(): Boolean = try {
+        java.io.File(applicationInfo.nativeLibraryDir).listFiles()
+            ?.any { it.name.contains("qnn", ignoreCase = true) } == true
+    } catch (_: Throwable) { false }
 
     private fun copyAsset(name: String): String {
         val outFile = File(filesDir, name)

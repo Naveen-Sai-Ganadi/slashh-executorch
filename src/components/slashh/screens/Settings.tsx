@@ -15,6 +15,7 @@ export function SettingsScreen() {
     listening, vadActive, latency, lastOutput,
     backendType, fastRpcStatus, modelStatus, micPermissionState,
     runNpuProbe,
+    transcript, textStress, audioScore, fused, whisperBackend,
   } = useSlashh();
   const [techOpen, setTechOpen] = useState(true);  // auto-expanded for dev/testing
   const [probeStatus, setProbeStatus] = useState<"idle" | "running" | "done">("idle");
@@ -85,6 +86,31 @@ export function SettingsScreen() {
           </div>
         </Card>
 
+        {/* live transcription (active session) */}
+        <Card>
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-accent/70"><Mic className="h-5 w-5 text-primary" /></div>
+            <div className="flex-1">
+              <p className="text-[15px] font-semibold text-foreground">Live transcription</p>
+              <p className="text-[12.5px] text-muted-foreground">{whisperBackend && whisperBackend !== "—" ? whisperBackend : "Whisper · waiting for speech"}</p>
+            </div>
+            <span className="h-2 w-2 rounded-full" style={{ background: whisperBackend && whisperBackend !== "—" ? "var(--brand-mint)" : "var(--muted-foreground)" }} />
+          </div>
+          <div className="mt-3 min-h-[58px] rounded-2xl bg-secondary/50 px-4 py-3">
+            <p className="text-[13.5px] leading-relaxed text-foreground/90">
+              {transcript ? `“${transcript}”` : <span className="text-muted-foreground">Listening… speak to see the live transcript.</span>}
+            </p>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <Metric label="Text stress" value={textStress} />
+            <Metric label="Audio" value={audioScore} />
+            <Metric label="Fused" value={fused} />
+          </div>
+          <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground/80">
+            Whisper transcribes on the NPU; an on-device text classifier scores the words; fusion combines audio + text. Active session only — nothing is recorded or stored.
+          </p>
+        </Card>
+
         {/* privacy */}
         <Card>
           <div className="flex items-start gap-3">
@@ -145,6 +171,15 @@ export function SettingsScreen() {
           Slashh supports relaxation and reflection. It is not a medical device or diagnosis tool.
         </p>
       </div>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: number | null }) {
+  return (
+    <div className="rounded-xl bg-secondary/50 px-2 py-2 text-center">
+      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className="text-[15px] font-semibold text-foreground">{value == null ? "—" : `${value}%`}</p>
     </div>
   );
 }

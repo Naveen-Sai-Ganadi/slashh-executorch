@@ -1,0 +1,279 @@
+{
+  "vocab_size": 2000,
+  "text_cases": [
+    {
+      "text": "I am so overwhelmed and anxious, I can't sleep and everything feels like it's falling apart.",
+      "tokens": [
+        "i",
+        "am",
+        "so",
+        "overwhelmed",
+        "and",
+        "anxious",
+        "i",
+        "can",
+        "t",
+        "sleep",
+        "and",
+        "everything",
+        "feels",
+        "like",
+        "it",
+        "s",
+        "falling",
+        "apart"
+      ],
+      "nonzero": {
+        "0": 0.426401,
+        "2": 0.426401,
+        "7": 0.213201,
+        "17": 0.213201,
+        "20": 0.213201,
+        "27": 0.213201,
+        "30": 0.213201,
+        "31": 0.213201,
+        "58": 0.213201,
+        "167": 0.213201,
+        "297": 0.213201,
+        "326": 0.213201,
+        "337": 0.213201,
+        "802": 0.213201,
+        "1061": 0.213201,
+        "1388": 0.213201
+      },
+      "score": 0.924915
+    },
+    {
+      "text": "We had a relaxing afternoon in the garden and enjoyed a calm, peaceful walk together.",
+      "tokens": [
+        "we",
+        "had",
+        "a",
+        "relaxing",
+        "afternoon",
+        "in",
+        "the",
+        "garden",
+        "and",
+        "enjoyed",
+        "a",
+        "calm",
+        "peaceful",
+        "walk",
+        "together"
+      ],
+      "nonzero": {
+        "2": 0.288675,
+        "3": 0.288675,
+        "4": 0.57735,
+        "8": 0.288675,
+        "38": 0.288675,
+        "45": 0.288675,
+        "187": 0.288675,
+        "724": 0.288675,
+        "834": 0.288675
+      },
+      "score": 0.170956
+    },
+    {
+      "text": "",
+      "tokens": [],
+      "nonzero": {},
+      "score": 0.336176
+    },
+    {
+      "text": "zzzqqq xxyy",
+      "tokens": [
+        "zzzqqq",
+        "xxyy"
+      ],
+      "nonzero": {},
+      "score": 0.336176
+    },
+    {
+      "text": "Work was fine but I keep worrying about the deadline and feel a bit stressed lately.",
+      "tokens": [
+        "work",
+        "was",
+        "fine",
+        "but",
+        "i",
+        "keep",
+        "worrying",
+        "about",
+        "the",
+        "deadline",
+        "and",
+        "feel",
+        "a",
+        "bit",
+        "stressed",
+        "lately"
+      ],
+      "nonzero": {
+        "0": 0.267261,
+        "2": 0.267261,
+        "3": 0.267261,
+        "4": 0.267261,
+        "12": 0.267261,
+        "18": 0.267261,
+        "26": 0.267261,
+        "57": 0.267261,
+        "93": 0.267261,
+        "220": 0.267261,
+        "276": 0.267261,
+        "401": 0.267261,
+        "770": 0.267261,
+        "1682": 0.267261
+      },
+      "score": 0.734625
+    },
+    {
+      "text": "WHY?!! Everything... is BROKEN -- 1234 #@$ totally Overwhelmed!!!",
+      "tokens": [
+        "why",
+        "everything",
+        "is",
+        "broken",
+        "totally",
+        "overwhelmed"
+      ],
+      "nonzero": {
+        "16": 0.408248,
+        "167": 0.408248,
+        "174": 0.408248,
+        "709": 0.408248,
+        "906": 0.408248,
+        "1388": 0.408248
+      },
+      "score": 0.830131
+    }
+  ],
+  "fusion_cases": [
+    {
+      "audio": 0.0,
+      "text": 0.0,
+      "score": 8.6e-05
+    },
+    {
+      "audio": 0.0,
+      "text": 0.25,
+      "score": 0.000869
+    },
+    {
+      "audio": 0.0,
+      "text": 0.5,
+      "score": 0.008688
+    },
+    {
+      "audio": 0.0,
+      "text": 0.75,
+      "score": 0.081178
+    },
+    {
+      "audio": 0.0,
+      "text": 1.0,
+      "score": 0.471089
+    },
+    {
+      "audio": 0.25,
+      "text": 0.0,
+      "score": 0.000871
+    },
+    {
+      "audio": 0.25,
+      "text": 0.25,
+      "score": 0.008711
+    },
+    {
+      "audio": 0.25,
+      "text": 0.5,
+      "score": 0.081377
+    },
+    {
+      "audio": 0.25,
+      "text": 0.75,
+      "score": 0.471751
+    },
+    {
+      "audio": 0.25,
+      "text": 1.0,
+      "score": 0.90003
+    },
+    {
+      "audio": 0.5,
+      "text": 0.0,
+      "score": 0.008734
+    },
+    {
+      "audio": 0.5,
+      "text": 0.25,
+      "score": 0.081576
+    },
+    {
+      "audio": 0.5,
+      "text": 0.5,
+      "score": 0.472414
+    },
+    {
+      "audio": 0.5,
+      "text": 0.75,
+      "score": 0.900269
+    },
+    {
+      "audio": 0.5,
+      "text": 1.0,
+      "score": 0.989131
+    },
+    {
+      "audio": 0.75,
+      "text": 0.0,
+      "score": 0.081775
+    },
+    {
+      "audio": 0.75,
+      "text": 0.25,
+      "score": 0.473076
+    },
+    {
+      "audio": 0.75,
+      "text": 0.5,
+      "score": 0.900507
+    },
+    {
+      "audio": 0.75,
+      "text": 0.75,
+      "score": 0.989159
+    },
+    {
+      "audio": 0.75,
+      "text": 1.0,
+      "score": 0.998914
+    },
+    {
+      "audio": 1.0,
+      "text": 0.0,
+      "score": 0.473739
+    },
+    {
+      "audio": 1.0,
+      "text": 0.25,
+      "score": 0.900745
+    },
+    {
+      "audio": 1.0,
+      "text": 0.5,
+      "score": 0.989188
+    },
+    {
+      "audio": 1.0,
+      "text": 0.75,
+      "score": 0.998917
+    },
+    {
+      "audio": 1.0,
+      "text": 1.0,
+      "score": 0.999892
+    }
+  ]
+}

@@ -130,11 +130,26 @@ class NpuHelperScorer(
         return null
     }
 
-    /** Read the 4-byte little-endian float32 stress logit the helper published. */
+    /**
+     * Read the 4-byte little-endian float32 stress logit the helper published. The channel is on
+     * a FUSE mount shared cross-uid (shell writes, this app reads); a just-`mv`d file can briefly
+     * `EACCES`/short-read for the app while FUSE propagates the new inode, so retry the open for
+     * up to ~2 s before giving up.
+     */
     private fun readLogit(): Float {
-        val bytes = outRaw.readBytes()
-        require(bytes.size >= 4) { "npu_out.raw is ${bytes.size} bytes (<4)" }
-        return ByteBuffer.wrap(bytes, 0, 4).order(ByteOrder.LITTLE_ENDIAN).float
+        var last: Throwable? = null
+        repeat(40) {
+            try {
+                val bytes = outRaw.readBytes()
+                if (bytes.size >= 4) {
+                    return ByteBuffer.wrap(bytes, 0, 4).order(ByteOrder.LITTLE_ENDIAN).float
+                }
+            } catch (e: Throwable) {
+                last = e
+            }
+            try { Thread.sleep(50) } catch (_: InterruptedException) { return@repeat }
+        }
+        throw last ?: IllegalStateException("npu_out.raw unreadable / <4 bytes after retries")
     }
 
     private fun fallbackScore(pcm: FloatArray): Float =

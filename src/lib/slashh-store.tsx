@@ -107,6 +107,12 @@ interface SlashhState {
   notificationPermissionState: string;
   backendState: string;
   isOnline: boolean;
+  // Live transcription (active session) + the per-signal breakdown feeding the meter.
+  transcript: string;
+  textStress: number | null;   // 0-100, text-model stress of the latest transcript
+  audioScore: number | null;   // 0-100, WavLM(NPU)-or-energy audio leg
+  fused: number | null;        // 0-100, audio+text fusion output (null = audio-only)
+  whisperBackend: string;      // e.g. "Snapdragon NPU (Whisper)" or "—"
   setStage: (s: Stage) => void;
   setView: (v: AppView) => void;
   setHasPasscode: (b: boolean) => void;
@@ -183,6 +189,11 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
   const [notificationPermissionState, setNotificationPermissionState] = useState("checking");
   const [backendState, setBackendState] = useState("IDLE");
   const [isOnline, setIsOnline] = useState(() => typeof navigator !== "undefined" ? navigator.onLine : true);
+  const [transcript, setTranscript] = useState("");
+  const [textStress, setTextStress] = useState<number | null>(null);
+  const [audioScore, setAudioScore] = useState<number | null>(null);
+  const [fused, setFused] = useState<number | null>(null);
+  const [whisperBackend, setWhisperBackend] = useState("—");
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -229,6 +240,11 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
         if (data.notificationPermissionState !== undefined) setNotificationPermissionState(data.notificationPermissionState);
         if (data.state !== undefined) setBackendState(data.state);
         if (data.isOnline !== undefined) setIsOnline(data.isOnline);
+        if (data.transcript !== undefined) setTranscript(data.transcript);
+        if (data.textStress !== undefined) setTextStress(data.textStress);
+        if (data.audioScore !== undefined) setAudioScore(data.audioScore);
+        if (data.fused !== undefined) setFused(data.fused);
+        if (data.whisperBackend !== undefined) setWhisperBackend(data.whisperBackend);
         
         if (data.calibration !== undefined) {
           setCalibration((prev) => ({
@@ -556,6 +572,7 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
       reliefOpen, activeReliefType, calibrationOpen, vadActive, latency, lastOutput,
       backendType, fastRpcStatus, modelStatus, micPermissionState, notificationPermissionState,
       backendState, isOnline,
+      transcript, textStress, audioScore, fused, whisperBackend,
       setStage, setView, setHasPasscode, toggleListening, setListening,
       simulateStress, resetSession, updateSettings, saveCalibration,
       resetCalibration, setReliefOpen: closeRelief, startRelief, stopRelief,
@@ -568,6 +585,7 @@ export function SlashhProvider({ children }: { children: ReactNode }) {
       reliefOpen, activeReliefType, calibrationOpen, vadActive, latency, lastOutput,
       backendType, fastRpcStatus, modelStatus, micPermissionState, notificationPermissionState,
       backendState, isOnline,
+      transcript, textStress, audioScore, fused, whisperBackend,
     ]
   );
 
