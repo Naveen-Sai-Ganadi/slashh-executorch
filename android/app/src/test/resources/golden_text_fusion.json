@@ -153,127 +153,127 @@
     {
       "audio": 0.0,
       "text": 0.0,
-      "score": 8.6e-05
+      "score": 1.5e-05
     },
     {
       "audio": 0.0,
       "text": 0.25,
-      "score": 0.000869
+      "score": 0.000153
     },
     {
       "audio": 0.0,
       "text": 0.5,
-      "score": 0.008688
+      "score": 0.001537
     },
     {
       "audio": 0.0,
       "text": 0.75,
-      "score": 0.081178
+      "score": 0.015283
     },
     {
       "audio": 0.0,
       "text": 1.0,
-      "score": 0.471089
+      "score": 0.135297
     },
     {
       "audio": 0.25,
       "text": 0.0,
-      "score": 0.000871
+      "score": 0.000153
     },
     {
       "audio": 0.25,
       "text": 0.25,
-      "score": 0.008711
+      "score": 0.001541
     },
     {
       "audio": 0.25,
       "text": 0.5,
-      "score": 0.081377
+      "score": 0.015323
     },
     {
       "audio": 0.25,
       "text": 0.75,
-      "score": 0.471751
+      "score": 0.135608
     },
     {
       "audio": 0.25,
       "text": 1.0,
-      "score": 0.90003
+      "score": 0.612638
     },
     {
       "audio": 0.5,
       "text": 0.0,
-      "score": 0.008734
+      "score": 0.001545
     },
     {
       "audio": 0.5,
       "text": 0.25,
-      "score": 0.081576
+      "score": 0.015364
     },
     {
       "audio": 0.5,
       "text": 0.5,
-      "score": 0.472414
+      "score": 0.13592
     },
     {
       "audio": 0.5,
       "text": 0.75,
-      "score": 0.900269
+      "score": 0.613269
     },
     {
       "audio": 0.5,
       "text": 1.0,
-      "score": 0.989131
+      "score": 0.94113
     },
     {
       "audio": 0.75,
       "text": 0.0,
-      "score": 0.081775
+      "score": 0.015404
     },
     {
       "audio": 0.75,
       "text": 0.25,
-      "score": 0.473076
+      "score": 0.136232
     },
     {
       "audio": 0.75,
       "text": 0.5,
-      "score": 0.900507
+      "score": 0.613899
     },
     {
       "audio": 0.75,
       "text": 0.75,
-      "score": 0.989159
+      "score": 0.941277
     },
     {
       "audio": 0.75,
       "text": 1.0,
-      "score": 0.998914
+      "score": 0.99385
     },
     {
       "audio": 1.0,
       "text": 0.0,
-      "score": 0.473739
+      "score": 0.136545
     },
     {
       "audio": 1.0,
       "text": 0.25,
-      "score": 0.900745
+      "score": 0.614529
     },
     {
       "audio": 1.0,
       "text": 0.5,
-      "score": 0.989188
+      "score": 0.941424
     },
     {
       "audio": 1.0,
       "text": 0.75,
-      "score": 0.998917
+      "score": 0.993866
     },
     {
       "audio": 1.0,
       "text": 1.0,
-      "score": 0.999892
+      "score": 0.999388
     }
   ]
 }

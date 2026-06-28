@@ -36,9 +36,11 @@ class StressPipeline(
     var calmAnchor: Float = 0.03f
     var stressAnchor: Float = 0.14f
 
-    // Hysteresis in MAPPED [0,1] stress space: enter high, leave low.
-    var enterThreshold: Float = 0.55f
-    var releaseThreshold: Float = 0.40f
+    // Hysteresis in MAPPED [0,1] stress space: enter high, leave low. Tuned conservative
+    // (0.62 / 0.45) so only sustained, clearly-elevated fused stress latches "stressed" —
+    // fewer false positives on ordinary speech. Pairs with the fusion's a+t>=1.2 boundary.
+    var enterThreshold: Float = 0.62f
+    var releaseThreshold: Float = 0.45f
 
     // Optional late fusion with a text-stress signal (Whisper transcript → text model).
     // When BOTH are set and a fresh text score is available for this window, the audio

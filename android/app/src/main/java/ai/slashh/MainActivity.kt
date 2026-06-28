@@ -343,7 +343,7 @@ class MainActivity : AppCompatActivity() {
     fun setSensitivity(sensitivity: Int) {
         // Map 10-100 sensitivity slider to pipeline threshold offsets
         // Higher sensitivity => lower enter threshold
-        val baseThreshold = 0.55f
+        val baseThreshold = 0.62f
         val sensOffset = (sensitivity - 55f) / 100f * 0.30f
         pipeline.enterThreshold = (baseThreshold - sensOffset).coerceIn(0.15f, 0.90f)
         pipeline.releaseThreshold = (pipeline.enterThreshold - 0.12f).coerceIn(0.10f, pipeline.enterThreshold - 0.03f)

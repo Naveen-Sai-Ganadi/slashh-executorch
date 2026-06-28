@@ -51,6 +51,11 @@ RAVDESS_GLOB = "data/Actor_*"
 N_PAIRS = 20000
 SEED = 0
 
+# Decision-boundary calibration: after training, shift the perceptron bias so fused crosses 0.5
+# only when audio + text >= this sum (i.e. BOTH signals ~0.6+). Higher => more conservative
+# (fewer false "stressed" calls on ordinary speech). 1.2 = the tuned "moderate" setting.
+DECISION_BOUNDARY_SUM = 1.2
+
 # RAVDESS emotion code (3rd field of filename) -> stress label.
 # 05 angry + 06 fearful => stressed(1); 01 neutral + 02 calm => calm(0).
 EMOTION_TO_LABEL = {"05": 1, "06": 1, "01": 0, "02": 0}
@@ -342,6 +347,14 @@ def run(verbose: bool = True) -> dict:
 
     x, y = build_pairs(audio_scores, text_scores, rng)
     model = train_fusion(x, y)
+
+    # Calibrate the decision boundary to be more conservative: keep the learned (symmetric)
+    # weights but set the bias so fused = 0.5 exactly when audio + text == DECISION_BOUNDARY_SUM.
+    # This requires BOTH signals to be moderately elevated before it calls "stressed", cutting
+    # false positives on ordinary speech without reintroducing the old audio-dominant behaviour.
+    with torch.no_grad():
+        wsum = float(model.net.weight.sum())
+        model.net.bias.fill_(-(DECISION_BOUNDARY_SUM / 2.0) * wsum)
 
     CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
     torch.save({"model": model.state_dict()}, CHECKPOINT_PATH)
