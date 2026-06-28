@@ -11,8 +11,10 @@ PY=$(project_python)
 
 # Skip when there is no pytest / no tests yet (e.g. a fresh scaffold).
 "$PY" -c "import pytest" >/dev/null 2>&1 || exit 0
-ls test tests */test */tests >/dev/null 2>&1 || \
-  git ls-files '*_test.py' 'test_*.py' | grep -q . || exit 0
+# Detect test files anywhere in the tree (e.g. tests/test_*.py, pkg/foo_test.py).
+# The previous `git ls-files '*_test.py' 'test_*.py'` pathspecs did not match files
+# under a tests/ subdir, so this gate silently skipped a whole passing suite.
+git ls-files | grep -Eq '(^|/)test_[^/]*\.py$|(^|/)[^/]*_test\.py$' || exit 0
 
 LOG=/tmp/etx-test-gate.log
 # Quiet, offline run. -p no:cacheprovider keeps it side-effect free.
