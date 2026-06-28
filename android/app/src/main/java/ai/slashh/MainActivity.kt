@@ -250,16 +250,11 @@ class MainActivity : AppCompatActivity() {
     /** Auto-start the always-on background NPU monitor: a foreground service owns
      *  the mic and scores WavLM on the Hexagon NPU out-of-process via the shell
      *  helper (CPU StressNet if the helper isn't live). The app only MIRRORS its
-     *  live reading onto the gauge — it never captures the mic in parallel.
-     *  
-     *  TEMPORARILY DISABLED due to native crashes in ExecutorTorch/NPU library.
-     *  Using demo mode only until native crash is fixed. */
+     *  live reading onto the gauge — it never captures the mic in parallel. */
     private fun startMonitor() {
-        Log.w("Slashh", "StressMonitorService temporarily disabled - using demo mode only")
-        backendType = "Demo mode"
-        // DISABLED: capture?.stop(); capture = null
-        // DISABLED: StressMonitorService.start(this)
-        // DISABLED: startMirror()
+        capture?.stop(); capture = null      // never hold the mic alongside the service
+        StressMonitorService.start(this)
+        startMirror()
     }
 
     private fun startMirror() {
@@ -495,7 +490,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun loadClassifier(): StressClassifier? {
         val featLen = AudioConfig.N_MELS * AudioConfig.N_FRAMES
-        for (name in listOf("stress_model.pte")) {
+        for (name in listOf("stress_model_qnn.pte", "stress_model.pte")) {
             try {
                 val c = ExecuTorchStressClassifier(copyAsset(name))
                 // Validate it can actually RUN — a QNN .pte loads fine but its
@@ -533,6 +528,27 @@ class MainActivity : AppCompatActivity() {
         prefs.checkLogin(email, password)
     fun bridgeIsOnboarded(): Boolean = prefs.onboarded
     fun bridgeSetOnboarded(done: Boolean) { prefs.onboarded = done }
+
+    /** Dev bypass: create a dummy local account (if none exists) and mark onboarded
+     *  so the auth screen is skipped entirely during testing. */
+    fun bridgeDevBypassAuth(): Boolean {
+        if (!prefs.hasAccount) {
+            prefs.createAccount("Dev User", "dev@slashh.ai", "devpass")
+        }
+        prefs.onboarded = true
+        return true
+    }
+
+    /** Run WavLmProbe on a background thread. Results appear in logcat under
+     *  the "WavLMProbe" tag. The model file must be adb-pushed to the app's
+     *  external files dir as wavlm_int8.pte before calling this. */
+    fun bridgeRunNpuProbe() {
+        val modelFile = java.io.File(getExternalFilesDir(null), "wavlm_int8.pte")
+        Thread {
+            Log.i("Slashh", "runNpuProbe: launching WavLmProbe against ${modelFile.absolutePath}")
+            ai.slashh.audio.WavLmProbe.run(modelFile)
+        }.start()
+    }
     fun bridgeSetEnabled(csvKeys: String) {
         val types = csvKeys.split(",").mapNotNull { ReliefType.fromKey(it.trim()) }
         if (types.isNotEmpty()) prefs.setEnabled(types)
@@ -616,4 +632,10 @@ class SlashhWebBridge(private val activity: MainActivity) {
 
     @JavascriptInterface
     fun setOnboarded(done: Boolean) = activity.bridgeSetOnboarded(done)
+
+    @JavascriptInterface
+    fun devBypassAuth(): Boolean = activity.bridgeDevBypassAuth()
+
+    @JavascriptInterface
+    fun runNpuProbe() = activity.bridgeRunNpuProbe()
 }

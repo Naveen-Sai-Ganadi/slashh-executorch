@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronDown, Cpu, Activity, Mic, Gauge, Bell, FlaskConical, RotateCcw, ShieldCheck, Terminal, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronDown, Cpu, Activity, Mic, Gauge, Bell, FlaskConical, RotateCcw, ShieldCheck, Terminal, Zap } from "lucide-react";
 import { useSlashh } from "@/lib/slashh-store";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -14,28 +14,15 @@ export function SettingsScreen() {
     settings, updateSettings, resetCalibration, setView, calibration,
     listening, vadActive, latency, lastOutput,
     backendType, fastRpcStatus, modelStatus, micPermissionState,
-    simulateStress,
+    runNpuProbe,
   } = useSlashh();
-  const [techOpen, setTechOpen] = useState(false);
-
-  const handleBack = () => {
-    // Collapse technical status if open before navigating back
-    if (techOpen) {
-      setTechOpen(false);
-    } else {
-      try {
-        setView("dashboard");
-      } catch (e) {
-        console.error("Error navigating back:", e);
-        setView("dashboard");
-      }
-    }
-  };
+  const [techOpen, setTechOpen] = useState(true);  // auto-expanded for dev/testing
+  const [probeStatus, setProbeStatus] = useState<"idle" | "running" | "done">("idle");
 
   return (
     <div className="flex min-h-full flex-col px-5 pb-10 pt-5">
       <header className="flex items-center gap-3">
-        <button onClick={handleBack} className="grid h-10 w-10 place-items-center rounded-full bg-card text-muted-foreground shadow-[var(--shadow-card)] transition active:scale-95">
+        <button onClick={() => setView("dashboard")} className="grid h-10 w-10 place-items-center rounded-full bg-card text-muted-foreground shadow-[var(--shadow-card)] transition active:scale-95">
           <ChevronLeft className="h-5 w-5" />
         </button>
         <h1 className="font-display text-xl font-bold tracking-tight">Settings</h1>
@@ -130,26 +117,29 @@ export function SettingsScreen() {
               <Row icon={Mic} k="Microphone" v={micPermissionState === "granted" ? (listening ? "Active" : "Paused") : "Permission needed"} ok={listening && micPermissionState === "granted"} />
               <Row icon={Terminal} k="Last raw output" v={lastOutput} />
               <Row icon={FlaskConical} k="Model status" v={modelStatus} ok={modelStatus === "loaded"} />
+              {probeStatus !== "idle" && (
+                <Row icon={Zap} k="NPU probe" v={probeStatus === "running" ? "Running… check logcat" : "Launched — see logcat WavLMProbe"} ok={probeStatus === "done"} />
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-1 h-9 w-full rounded-xl text-[12.5px] font-semibold"
+                disabled={probeStatus === "running"}
+                onClick={() => {
+                  setProbeStatus("running");
+                  runNpuProbe();
+                  setTimeout(() => setProbeStatus("done"), 1500);
+                }}
+              >
+                <Zap className="mr-1.5 h-3.5 w-3.5" />
+                {probeStatus === "running" ? "Running NPU probe…" : "Test NPU Model"}
+              </Button>
               <p className="pt-1 text-[11px] leading-relaxed text-muted-foreground/80">
-                Falls back to CPU (XNNPACK) when the NPU is unavailable. Values shown are a simulated diagnostic preview.
+                Falls back to CPU (XNNPACK) when the NPU is unavailable. NPU probe runs WavLmProbe against wavlm_int8.pte — check logcat tag "WavLMProbe" for load/inference latency and logit output.
               </p>
             </div>
           )}
         </div>
-
-        {/* debug section - only show in demo mode */}
-        {settings.demoMode && (
-          <Card>
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-2xl bg-accent/70"><Sparkles className="h-5 w-5 text-primary" /></div>
-              <div className="flex-1">
-                <p className="text-[15px] font-semibold text-foreground">Debug simulation</p>
-                <p className="text-[12.5px] text-muted-foreground">Simulate stress spikes for testing</p>
-              </div>
-              <Button variant="ghost" className="h-9 rounded-xl bg-secondary/70 px-3 text-[13px] font-medium" onClick={simulateStress}>Simulate</Button>
-            </div>
-          </Card>
-        )}
 
         <p className="px-2 pt-1 text-center text-[12px] leading-relaxed text-muted-foreground">
           Slashh supports relaxation and reflection. It is not a medical device or diagnosis tool.

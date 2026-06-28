@@ -13,7 +13,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * bridge owns SHA-256 hashing). No network anywhere in this path.
  */
 export function AuthScreen() {
-  const { authHasAccount, signup, login, setStage } = useSlashh();
+  const { authHasAccount, signup, login, devBypass } = useSlashh();
   const [mode, setMode] = useState<"signup" | "login">(authHasAccount() ? "login" : "signup");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -120,19 +120,6 @@ export function AuthScreen() {
           <ArrowRight className="ml-1 h-5 w-5" />
         </Button>
 
-        <Button
-          variant="ghost"
-          className="mt-2 h-11 w-full rounded-2xl text-muted-foreground"
-          onClick={() => {
-            const onboarded = window.AndroidBridge?.isOnboarded
-              ? !!window.AndroidBridge.isOnboarded()
-              : localStorage.getItem("slashh_onboarded") === "1";
-            setStage(onboarded ? "app" : "onboarding");
-          }}
-        >
-          Continue without account
-        </Button>
-
         <button
           type="button"
           className="mt-4 text-center text-[13.5px] text-muted-foreground"
@@ -158,6 +145,14 @@ export function AuthScreen() {
         <Lock className="h-3.5 w-3.5" />
         Stored only on this device
       </div>
+
+      <button
+        type="button"
+        className="mt-3 text-center text-[11px] text-muted-foreground/50 underline underline-offset-2"
+        onClick={devBypass}
+      >
+        Dev skip →
+      </button>
     </div>
   );
 }
