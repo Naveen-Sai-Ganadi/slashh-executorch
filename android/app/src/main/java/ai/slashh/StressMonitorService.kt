@@ -98,7 +98,16 @@ class StressMonitorService : Service() {
             // 644 MB context load) and must never run on the main thread. Windows
             // captured while we probe just pile up in `latest` (latest-wins) and the
             // newest one is scored as soon as we enter the loop.
-            val pipeline = buildPipeline()
+            val pipeline = try {
+                buildPipeline()
+            } catch (e: Throwable) {
+                Log.e("Slashh", "Failed to build pipeline: ${e.message}", e)
+                // Can't recover from pipeline build failure - stop the service
+                alive = false
+                stopSelf()
+                return@Thread
+            }
+            
             prefs.enterThreshold?.let { pipeline.enterThreshold = it }
             prefs.releaseThreshold?.let { pipeline.releaseThreshold = it }
 
@@ -116,7 +125,9 @@ class StressMonitorService : Service() {
                     if (calmCue.justTriggered) fireStressNotification()
                     Log.d("Slashh", "monitor voiced=${state.voiced} raw=${state.rawScore} level=${state.level} stressed=${state.stressed}")
                 } catch (e: Throwable) {
-                    Log.w("Slashh", "monitor scoring error: ${e.message}")
+                    Log.w("Slashh", "monitor scoring error: ${e.message}", e)
+                    // On native crash or scoring failure, sleep longer to avoid tight loop
+                    try { Thread.sleep(1000) } catch (_: InterruptedException) { break }
                 }
             }
         }, "slashh-monitor").apply { isDaemon = true; start() }
@@ -176,24 +187,33 @@ class StressMonitorService : Service() {
      * StressNet. Returns null if no CPU model ships in assets, so the monitor
      * degrades to "no stress" rather than crashing. Used as the NPU-helper fallback.
      */
-    private fun cpuRawScorerOrNull(): RawWaveScorer? = try {
-        val name = "stress_model.pte"
-        val present = runCatching { assets.list("")?.toSet() ?: emptySet() }.getOrDefault(emptySet())
-        if (name !in present) {
-            null
-        } else {
-            val outFile = File(filesDir, name)
-            if (!outFile.exists()) {
-                assets.open(name).use { input -> outFile.outputStream().use { input.copyTo(it) } }
+    private fun cpuRawScorerOrNull(): RawWaveScorer? {
+        return try {
+            val name = "stress_model.pte"
+            val present = runCatching { assets.list("")?.toSet() ?: emptySet() }.getOrDefault(emptySet())
+            if (name !in present) {
+                Log.w("Slashh", "CPU fallback: $name not found in assets")
+                null
+            } else {
+                val outFile = File(filesDir, name)
+                if (!outFile.exists()) {
+                    assets.open(name).use { input -> outFile.outputStream().use { input.copyTo(it) } }
+                }
+                // Validate file exists and has reasonable size before loading
+                if (!outFile.exists() || outFile.length() < 1000) {
+                    Log.w("Slashh", "CPU fallback: model file invalid (size=${outFile.length()})")
+                    null
+                } else {
+                    val cpu = ExecuTorchStressClassifier(outFile.absolutePath)
+                    cpuFallback = cpu
+                    val logMel = LogMel()
+                    RawWaveScorer { pcm -> cpu.score(logMel.extractFlat(pcm)) }
+                }
             }
-            val cpu = ExecuTorchStressClassifier(outFile.absolutePath)
-            cpuFallback = cpu
-            val logMel = LogMel()
-            RawWaveScorer { pcm -> cpu.score(logMel.extractFlat(pcm)) }
+        } catch (e: Throwable) {
+            Log.w("Slashh", "CPU fallback unavailable: ${e.message}", e)
+            null
         }
-    } catch (e: Throwable) {
-        Log.w("Slashh", "CPU fallback unavailable: ${e.message}")
-        null
     }
 
     private fun startForegroundCompat() {
