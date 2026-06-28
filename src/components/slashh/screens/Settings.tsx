@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronDown, Cpu, Activity, Mic, Gauge, Bell, FlaskConical, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
+import { ChevronLeft, ChevronDown, Cpu, Activity, Mic, Gauge, Bell, FlaskConical, RotateCcw, ShieldCheck, Terminal, Sparkles } from "lucide-react";
 import { useSlashh } from "@/lib/slashh-store";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -14,6 +14,7 @@ export function SettingsScreen() {
     settings, updateSettings, resetCalibration, setView, calibration,
     listening, vadActive, latency, lastOutput,
     backendType, fastRpcStatus, modelStatus, micPermissionState,
+    simulateStress,
   } = useSlashh();
   const [techOpen, setTechOpen] = useState(false);
 
@@ -135,6 +136,20 @@ export function SettingsScreen() {
             </div>
           )}
         </div>
+
+        {/* debug section - only show in demo mode */}
+        {settings.demoMode && (
+          <Card>
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-2xl bg-accent/70"><Sparkles className="h-5 w-5 text-primary" /></div>
+              <div className="flex-1">
+                <p className="text-[15px] font-semibold text-foreground">Debug simulation</p>
+                <p className="text-[12.5px] text-muted-foreground">Simulate stress spikes for testing</p>
+              </div>
+              <Button variant="ghost" className="h-9 rounded-xl bg-secondary/70 px-3 text-[13px] font-medium" onClick={simulateStress}>Simulate</Button>
+            </div>
+          </Card>
+        )}
 
         <p className="px-2 pt-1 text-center text-[12px] leading-relaxed text-muted-foreground">
           Slashh supports relaxation and reflection. It is not a medical device or diagnosis tool.

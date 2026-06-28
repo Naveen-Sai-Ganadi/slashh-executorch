@@ -1,4 +1,4 @@
-import { Settings as SettingsIcon, Play, Pause, Sparkles, RotateCcw, Wifi, Lock, HeartHandshake, SlidersHorizontal, Mic } from "lucide-react";
+import { Settings as SettingsIcon, Play, Pause, RotateCcw, Wifi, Lock, HeartHandshake, SlidersHorizontal, Mic } from "lucide-react";
 import { Logo } from "@/components/slashh/Logo";
 import { StressMeter } from "@/components/slashh/StressMeter";
 import { Waveform } from "@/components/slashh/Waveform";
@@ -125,20 +125,17 @@ export function Dashboard() {
         </Button>
 
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" onClick={simulateStress} className="h-12 rounded-2xl border-primary/20 bg-card text-[14px] font-medium text-foreground hover:bg-accent/50">
-            <Sparkles className="mr-1.5 h-4 w-4" /> Simulate
-          </Button>
           <Button variant="outline" onClick={resetSession} className="h-12 rounded-2xl border-primary/20 bg-card text-[14px] font-medium text-foreground hover:bg-accent/50">
             <RotateCcw className="mr-1.5 h-4 w-4" /> Reset
           </Button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Button onClick={() => setReliefOpen(true)} className="h-12 rounded-2xl text-[14px] font-semibold text-white shadow-[var(--shadow-card)]" style={{ background: "var(--grad-lavender)" }}>
-            <HeartHandshake className="mr-1.5 h-4 w-4" /> Relief
-          </Button>
           <Button onClick={() => setCalibrationOpen(true)} variant="ghost" className="h-12 rounded-2xl bg-secondary/70 text-[14px] font-medium text-secondary-foreground hover:bg-secondary">
             <SlidersHorizontal className="mr-1.5 h-4 w-4" /> Calibrate
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3">
+          <Button onClick={() => setReliefOpen(true)} className="h-12 rounded-2xl text-[14px] font-semibold text-white shadow-[var(--shadow-card)]" style={{ background: "var(--grad-lavender)" }}>
+            <HeartHandshake className="mr-1.5 h-4 w-4" /> Relief
           </Button>
         </div>
       </div>
